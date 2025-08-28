@@ -1,7 +1,5 @@
 const SECRET = 42;
 
-
-
 function checkInput(){
     let userInput = document.getElementById("userInput").value;
     getType(userInput.toLowerCase())
@@ -21,8 +19,6 @@ function getType(userInput){
 
 
 }
-
-
 function wasTheGuessRight(userInput){
     if(userInput == 42){
         document.getElementById("output").innerHTML = "you did it!"
