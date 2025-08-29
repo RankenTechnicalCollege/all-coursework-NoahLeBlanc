@@ -1,22 +1,21 @@
-function getInput(){
-    input = document.getElementById("userInput").value;
-    determineTorF(input)
-    determineDataType(input)
+
+const profile = {
+    name: "Niah LeBlanc",
+    email: "niah_leblanc@insideranken.org",
+    isOnline: true
 }
 
-function determineTorF(input){
-    if(input == 0 || -0 || "false" || 0n || "")
-        document.getElementById("output").innerHTML = `You're input ${input} is Falsy`
-    else{
-        document.getElementById("output").innerHTML = `You're input ${input} is Truthy`
-    }       
+document.getElementById("name").innerText += " " + profile.name
+document.getElementById("email").innerText += " " + profile.email
+
+if(profile.isOnline){
+    document.getElementById("online").innerText += " ✅"
+}
+else{
+    document.getElementById("online").innerHTML += " ❌"
 }
 
-function determineDataType(input){
-    if(!isNaN(input)){
-        document.getElementById("dataType").innerHTML = "DataType: Number"
-    }
-    else if(input == "true" || "false"){
-        document.getElementById("dataType").innerHTML = "DataType: Bool"
-    }
+function update(){
+    profile.email = document.getElementById("updateEmail").value
+    document.getElementById("email").innerText = "Email: " + profile.email
 }
