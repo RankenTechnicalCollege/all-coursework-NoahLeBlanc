@@ -1,22 +1,80 @@
-function getInput(){
-    input = document.getElementById("userInput").value;
-    determineTorF(input)
-    determineDataType(input)
+function VowelCount(){
+    document.getElementById("VowelCountOutput").innerHTML 
+    = 
+    VowelCountFunction(document.getElementById("VowelCountInput").value);
 }
 
-function determineTorF(input){
-    if(input == 0 || -0 || "false" || 0n || "")
-        document.getElementById("output").innerHTML = `You're input ${input} is Falsy`
-    else{
-        document.getElementById("output").innerHTML = `You're input ${input} is Truthy`
-    }       
+function VowelCountFunction(input){
+    let output = 0
+    let inputCharArray = [...input]
+
+    for (i = 0; i <= inputCharArray.length; i++ ){
+        switch(inputCharArray[i]){
+            case 'a' || 'A':
+                output ++;
+                break;
+            case 'e' || 'E':
+                output ++;
+                break;
+            case 'i' || 'I':
+                output ++;
+                break;
+            case 'o' || 'O':
+                output ++;
+                break;
+            case 'u' || 'U':
+                output ++;
+                break;
+        }
+    }
+    return output;
 }
 
-function determineDataType(input){
-    if(!isNaN(input)){
-        document.getElementById("dataType").innerHTML = "DataType: Number"
-    }
-    else if(input == "true" || "false"){
-        document.getElementById("dataType").innerHTML = "DataType: Bool"
-    }
+function ReverseString(){
+    document.getElementById("ReverseStringOutput").innerHTML
+    =
+    ReverseStringFunction(document.getElementById("ReverseStringInput").value)
 }
+
+function ReverseStringFunction(input){
+    let output = "";
+    let inputCharArray = [...input];
+
+    inputCharArray.reverse().forEach(element => {
+        output += element
+    });
+
+    return output;
+}
+
+function CapitalizeWords(){
+    document.getElementById("CapitalizeWordsOutput").innerHTML
+    =
+    CapitalizeWordFunction(document.getElementById("CapitalizeWordsInput").value)
+}
+
+let CapitalizeWordFunction = function(input){
+    let inputArrary = input.split(" ").map(word => word[0].toUpperCase() + word.slice(1));
+    return inputArrary.join(' ');
+}
+
+function WordCount(){
+    document.getElementById("WordCountOutput").innerHTML
+    =
+    WordCountFunction(document.getElementById("WordCountInput").value)
+}
+
+let WordCountFunction = (input) => {
+    let inputArrary = input.split(" ");
+    output = inputArrary.length;
+    return output;
+}
+
+function ConcatenateStrings(){
+    document.getElementById("ConcatenateStringsOutput").innerHTML
+    =
+    ConcatenateStringsFunction(document.getElementById("ConcatenateStringsInput1").value, document.getElementById("ConcatenateStringsInput2").value)
+}
+
+let ConcatenateStringsFunction = (input1, input2) => input1 + " " + input2;
+
