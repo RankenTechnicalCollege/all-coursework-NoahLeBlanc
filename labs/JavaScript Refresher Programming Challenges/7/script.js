@@ -1,22 +1,20 @@
-function getInput(){
-    input = document.getElementById("userInput").value;
-    determineTorF(input)
-    determineDataType(input)
+function brewCoffee(){
+    document.getElementById("coffeeStatus").innerText = "Brewing..."
+    setTimeout(() => {
+        document.getElementById("coffeeStatus").innerText = "Done"
+    }, "3000");
 }
 
-function determineTorF(input){
-    if(input == 0 || -0 || "false" || 0n || "")
-        document.getElementById("output").innerHTML = `You're input ${input} is Falsy`
-    else{
-        document.getElementById("output").innerHTML = `You're input ${input} is Truthy`
-    }       
+function makeToast(){
+    document.getElementById("toastStatus").innerText = "Toasting..."
+    setTimeout(() => {
+        document.getElementById("toastStatus").innerText = "Done"
+    }, "2000");
 }
 
-function determineDataType(input){
-    if(!isNaN(input)){
-        document.getElementById("dataType").innerHTML = "DataType: Number"
-    }
-    else if(input == "true" || "false"){
-        document.getElementById("dataType").innerHTML = "DataType: Bool"
-    }
+function pourJuice(){
+    document.getElementById("juiceStatus").innerText = "Pouring..."
+     setTimeout(() => {
+        document.getElementById("juiceStatus").innerText = "Done"
+     }, "1000")
 }
