@@ -1,17 +1,19 @@
-import readline from 'readline';
+import * as readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
-import { createInterface } from 'readline';
+const rl = readline.createInterface({ input, output });
 
-// Create a basic interface
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout
-}); 
+const milesDriven = parseFloat(await rl.question('Miles Driven: '));
+const gallonsUsed = parseFloat(await rl.question('Gallons used: '));
 
-
-
-rl.question("Miles Driven: ", (milesDriven))
-
-function calculateMPG(milesDriven, gallonsUsed){
-
+if(isNaN(milesDriven) || isNaN(gallonsUsed)){
+  console.log("Error: Please Input a number")
 }
+else if(milesDriven <= 0 || gallonsUsed <= 0){
+  console.log("Error: Value's must be greater than 0")
+}
+else{
+  console.log(`Your MPG is ${(milesDriven + gallonsUsed).toFixed(2)}`)
+}
+
+rl.close();
