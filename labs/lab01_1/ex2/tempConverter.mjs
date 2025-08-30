@@ -7,8 +7,8 @@ let tempt = parseFloat(await rl.question('Please Input the Temp you\'d like to c
 let celsiusOrFahrenheit = await rl.question('Convert to [C]elsius Or [F]ahrenheit?: ');
 
 
-if(isNaN(tempt)){
-    console.log("Please enter a number for temperature")
+if(isNaN(tempt) || (tempt <= 0)){
+    console.log("Please enter a valid number for temperature")
 }
 else if ((celsiusOrFahrenheit.toString().toLowerCase()) == "c" || (celsiusOrFahrenheit.toString().toLowerCase()) == "celsius") {
     const output = (tempt - 32) * (5 / 9);
