@@ -13,7 +13,6 @@ else if(milesDriven <= 0 || gallonsUsed <= 0){
   console.log("Error: Value's must be greater than 0")
 }
 else{
-  console.log(`Your MPG is ${(milesDriven + gallonsUsed).toFixed(2)}`)
+  console.log(`Your MPG is ${(milesDriven / gallonsUsed).toFixed(2)}`)
 }
-
 rl.close();
