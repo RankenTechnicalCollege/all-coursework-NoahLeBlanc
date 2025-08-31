@@ -13,7 +13,7 @@ while (!(a > tableSize)) {
     let row = [];
 
     while (!(b > tableSize)) {
-        row.push((b * a).toString().padStart(4, " ")); // pad to align columns
+        row.push((b * a).toFixed().padStart(4, " ")); // pad to align columns
         b++;
     }
 
