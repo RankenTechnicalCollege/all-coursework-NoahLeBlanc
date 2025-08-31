@@ -31,10 +31,10 @@ function statusCheck(marriageStatus){
 
 function calcIncomeTax(marriageStatus, taxableIncome){
     if(marriageStatus){
-        return marriedTaxCalc(taxableIncome).toFixed(2)
+        return `$${Math.ceil(marriedTaxCalc(taxableIncome)).toFixed(2)}`
     }
     else{
-        return singleTaxCalc(taxableIncome).toFixed(2)
+        return `$${Math.ceil(singleTaxCalc(taxableIncome).toFixed(2))}`
     }
 }
 
