@@ -1,0 +1,25 @@
+{
+  "name": "issue_tracker",
+  "version": "1.0.0",
+  "description": "Issue Tracker for Tracking software bugs during development.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc.git#master"
+  },
+  "keywords": [
+    "Issue",
+    "Tracker",
+    "Niah",
+    "LeBlanc"
+  ],
+  "author": "Niah LeBlanc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc/issues"
+  },
+  "homepage": "https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc/tree/master#readme"
+}
