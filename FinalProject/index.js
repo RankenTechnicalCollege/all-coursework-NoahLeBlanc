@@ -2,7 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv'
 dotenv.config(); //This sets up process.env.PORT
 import debug from 'debug';
-
 const debugServer = debug('app:Server');//Like a fancy console.log
 
 const app = express();
