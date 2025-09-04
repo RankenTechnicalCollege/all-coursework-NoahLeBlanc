@@ -7,7 +7,8 @@ import { userRouter } from './routes/api/user.js';//this is a route
 
 const app = express();
 
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: true})); //no reqs work without this
+app.use(express.json());//needed for req.body
 
 app.use(express.static('frontend/dist'));
 app.use('/api/user', userRouter);
