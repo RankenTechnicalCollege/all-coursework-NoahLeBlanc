@@ -21,19 +21,35 @@ function App() {
       </ul>
     </nav>  
 
-    <main className='d-flex justify-content-evenly'> 
-      <div className='d-flex justfiy-content-center'>
-        <h1>Users</h1>  
+    <main className='container d-flex justify-content-evenly'> 
+      <div className='d-flex justify-content-center border border-primary'>
+        <div className='vstack'>
+        <h1 className=''>Users</h1>  
+        <ul className=''>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+        </div>
       </div>
 
-      <div className='d-flex justfiy-content-center'>
-        <h1>Bugs</h1>  
+      <div className='d-flex justify-content-center border border-danger'>
+        <div className='vstack'>
+        <h1 className=''>Bugs</h1>  
+        <ul className=''>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+        </div>
       </div>
     </main>
 
-    <footer className="footer bg-dark text-light">
+    <footer className="footer  bg-dark text-light">
       <div className="container">
-        <span className="">@2025 Niah LeBlanc</span>
+        <h4 className="d-flex justify-content-center">@2025 Niah LeBlanc</h4>
       </div>
     </footer>
     </>
