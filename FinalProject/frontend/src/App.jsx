@@ -12,13 +12,13 @@ function App() {
 
   useEffect(() => {
     // Fetch users
-    fetch("http://localhost:2025/api/user/list")
+    fetch("https://issuetracker-service-1029534851049.us-central1.run.app/api/user/list")
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error("Error fetching users:", err));
 
     // Fetch bugs
-    fetch("http://localhost:2025/api/bug/list")
+    fetch("http://localhost:2026/api/bug/list")
       .then((res) => res.json())
       .then((data) => setBugs(data))
       .catch((err) => console.error("Error fetching bugs:", err))
