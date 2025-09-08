@@ -1,0 +1,27 @@
+1: db.movies.find()
+
+2:db.theaters.find()
+
+3:db.movies.find({genres:"Documentary"})
+
+4:db.movies.find({$and:[{'imdb.rating':{$gte: 7}},{'imdb.votes':{$gte: 1000}}]})
+
+5:db.movies.find({countries:'France'})
+
+6:db.movies.find({released: {$gte: new Date("2010-01-01"),$lt: new Date("2011-01-01")}})
+
+
+7:db.theaters.find(
+   {
+     'location.geo':
+       { $near :
+          {
+            $geometry: { type: "Point",  coordinates: [ -90.24858684761676, 38.65340478261058 ] },
+            $minDistance: 0,
+            $maxDistance: 160934.4
+          }
+       }
+   }
+)
+
+8:
