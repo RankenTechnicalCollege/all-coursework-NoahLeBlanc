@@ -1,0 +1,166 @@
+Exercise 2: Manipulating an example database - 5pts each
+Using the provided Mflix sample database. Write and test commands for each of the prompts below,
+using the MongoDB Shell and save them to a file named lab02-01.txt
+
+1.​ Add yourself as a new user to the database.
+	
+	db.users.insertOne({
+	  name: 'Niah Leblanc',
+	  email: 'niah_leblanc@insideranken.org',
+	  password: 'YouCantGuessMe'
+	})
+
+2.​ Add a new movie to the database.
+
+db.movies.insertOne({
+  title: 'Everything Everywhere All at Once',
+  plot: 'An exhausted Chinese-American woman becomes embroiled in a surreal multiverse battle while dealing with family tensions and an audit.',
+  fullplot: "Evelyn Quan Wang, a stressed Chinese-American laundromat owner, is audited by the IRS while grappling with a failing marriage, generational conflict, and her daughter's identity struggles. She unexpectedly gains access to multiverse 'verse-jumping' technology and must navigate alternate versions of her life—kung fu master, star, and more—to stop a nihilistic force known as Jobu Tupaki from destroying reality. Through verse-jumping emotional and bizarre worlds, Evelyn learns empathy, reconciliation, and ultimately saves the multiverse—and her family—by embracing kindness over chaos.",
+  genres: [
+    'Comedy',
+    'Drama',
+    'Science Fiction',
+    'Action',
+    'Fantasy'
+  ],
+  runtime: 139,
+  cast: [
+    'Michelle Yeoh',
+    'Stephanie Hsu',
+    'Ke Huy Quan',
+    'James Hong',
+    'Jamie Lee Curtis',
+    'Jenny Slate',
+    'Harry Shum Jr.'
+  ],
+  poster: '<insert the displayed poster image URL here>',
+  languages: [
+    'English'
+  ],
+  released: ISODate('2022-03-25T00:00:00.000Z'),
+  directors: [
+    'Daniel Kwan',
+    'Daniel Scheinert'
+  ],
+  rated: 'R',
+  awards: {
+    wins: 7,
+    nominations: 11,
+    text: 'Won 7 Oscars including Best Picture, Best Director, Best Actress, and two supporting acting awards.'
+  },
+  year: 2022,
+  imdb: {
+    rating: null,
+    votes: null,
+    id: null
+  },
+  countries: [
+    'USA'
+  ],
+  type: 'movie',
+  tomatoes: {
+    viewer: {
+      rating: null,
+      numReviews: null,
+      meter: null
+    },
+    fresh: null,
+    critic: {
+      rating: null,
+      numReviews: null,
+      meter: null
+    },
+    rotten: null,
+    lastUpdated: null
+  },
+  num_mflix_comments: 0
+})
+
+3.​ Add a new theater to the database.
+
+db.theaters.insertOne({
+  theaterId: 2045,
+  location: {
+    address: {
+      street1: '234 W 42nd St',
+      city: 'New York',
+      state: 'NY',
+      zipcode: '10036'
+    },
+    geo: {
+      type: 'Point',
+      coordinates: [
+        -73.9895,
+        40.7562
+      ]
+    }
+  }
+})
+
+4.​ Add a new comment to the database.
+
+db.comments.insertOne({
+  name: 'Niah LeBlanc',
+  email: 'NiahNiah@gmail.com',
+  movie_id: ObjectId('573a1391f29313caabcd8268'),
+  text: 'Eh, didn\'t like it',
+  date: new Date()
+})
+	
+5.​ Update the imdb and rotten tomatoes ratings (including votes) for a movie in the database.
+Hint: Use the $set operator.
+
+db.movies.updateOne(
+  {_id:ObjectId("573a1390f29313caabcd42e8")},
+  {
+    $set:{
+      "imdb.votes":5,
+      "imdb.rating":5,
+      "tomatoes.viewer.rating":5,
+      "tomatoes.critic.rating":5,
+    
+    }
+  }
+)
+
+
+6.​ Make a movie available in a new country.(Hint: Use the $push operator.)
+
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $push:{
+      countries:"Russia"
+    }
+  }
+)
+
+7.​ Add a movie to a new genre.(Hint: Use the $push operator.)
+
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $push:{
+      genres:"horror"
+    }
+  }
+)
+
+8.​ Add a list of actors to a movie.(Hint: Use the $set operator.)
+
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $set:{
+      actors:[ "tim blake",'mary jane', 'kim Posble']
+    }
+  }
+)
+
+9.​ Delete a theater.
+
+db.theaters.deleteOne({theaterId:1023})
+
+10.​Delete a user.
+
+db.users.find().projection({'name':1})
