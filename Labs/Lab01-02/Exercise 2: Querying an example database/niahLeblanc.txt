@@ -108,15 +108,59 @@ db.comments.insertOne({
 })
 	
 5.​ Update the imdb and rotten tomatoes ratings (including votes) for a movie in the database.
-
 Hint: Use the $set operator.
+
+db.movies.updateOne(
+  {_id:ObjectId("573a1390f29313caabcd42e8")},
+  {
+    $set:{
+      "imdb.votes":5,
+      "imdb.rating":5,
+      "tomatoes.viewer.rating":5,
+      "tomatoes.critic.rating":5,
+    
+    }
+  }
+)
+
 
 6.​ Make a movie available in a new country.(Hint: Use the $push operator.)
 
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $push:{
+      countries:"Russia"
+    }
+  }
+)
+
 7.​ Add a movie to a new genre.(Hint: Use the $push operator.)
+
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $push:{
+      genres:"horror"
+    }
+  }
+)
 
 8.​ Add a list of actors to a movie.(Hint: Use the $set operator.)
 
+db.movies.updateOne(
+  {_id: ObjectId('573a1391f29313caabcd70b4')},
+  {
+    $set:{
+      actors:[ "tim blake",'mary jane', 'kim Posble']
+    }
+  }
+)
+
 9.​ Delete a theater.
 
+db.theaters.deleteOne({theaterId:1023})
+
 10.​Delete a user.
+
+db.users.find().projection({'name':1})
