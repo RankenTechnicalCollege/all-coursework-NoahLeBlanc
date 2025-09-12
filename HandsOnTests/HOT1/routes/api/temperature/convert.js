@@ -1,7 +1,7 @@
 import express from 'express';
 import debug from 'debug';
 import { parse } from 'dotenv';
-const debugCalc = debug('app:tempRouter');
+const debugTemp = debug('app:tempRouter');
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ router.post('/convert', (req,res) =>{
     
 
     
-    console.log(convertedTemp(mode,temp))
+    debugTemp(convertedTemp(mode,temp))
     res.status(200).json({ message: `${convertedTemp(mode,temp)}` });
 })
 

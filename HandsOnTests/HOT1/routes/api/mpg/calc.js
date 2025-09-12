@@ -31,7 +31,7 @@ router.post('/calc', (req, res) => {
 
     const mpg = (mD, gU) => (parseFloat(mD) / parseFloat(gU)).toFixed(2);
 
-    console.log(mpg)
+    debugCalc(`MPG = ${mpg(mD,gU)}`)
     res.status(200).json({ message: `MPG = ${mpg(mD, gU)} !` });
 });
 
