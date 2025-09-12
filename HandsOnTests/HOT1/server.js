@@ -12,7 +12,7 @@ app.use(express.urlencoded({extended: true})); //no reqs work without this
 app.use(express.json());//needed for req.body
 
 app.use(express.static('frontend/dist'));
-app.use('/api/mpg/calc.js', calcRouter);
+app.use('/api/mpg/', calcRouter);
 
 const port = process.env.PORT || 3000;
 
