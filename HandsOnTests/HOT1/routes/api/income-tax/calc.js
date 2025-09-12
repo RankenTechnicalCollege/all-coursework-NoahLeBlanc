@@ -1,7 +1,5 @@
 import express from 'express';
 import debug from 'debug';
-import { parse } from 'dotenv';
-import e from 'express';
 const debugCalc = debug('app:incomeRouter');
 
 const router = express.Router();
@@ -12,14 +10,14 @@ router.post('/calc', (req, res) => {
     const incomeTax = req.body;
 
     const mode = incomeTax.mode
-    const income = incomeTax.income
+    const income = parseFloat(incomeTax.income)
 
-    if ((String(mode).toLowerCase() != 'single' && String(mode).toLowerCase() != 'married') || !mode) {
+    if (!mode || !['single', 'married'].includes(String(mode).toLowerCase())){
         res.status(400).type('text/plain').send('Please enter Single or Married');
         return;
     }
 
-    if (!income || isNaN(parseFloat(income))) {
+    if (isNaN(income)) {
         res.status(400).type('text/plain').send('Please enter a number for your income');
         return;
     } else if (income <= 0.00) {
