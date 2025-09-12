@@ -1,7 +1,7 @@
 import express from 'express';
 import debug from 'debug';
 import { parse } from 'dotenv';
-const debugCalc = debug('app:calcRouter');
+const debugMPG = debug('app:MPGRouter');
 
 const router = express.Router();
 
@@ -31,8 +31,8 @@ router.post('/calc', (req, res) => {
 
     const mpg = (mD, gU) => (parseFloat(mD) / parseFloat(gU)).toFixed(2);
 
-    debugCalc(`MPG = ${mpg(mD,gU)}`)
+    debugMPG(`MPG = ${mpg(mD,gU)}`)
     res.status(200).json({ message: `MPG = ${mpg(mD, gU)} !` });
 });
 
-export { router as calcRouter };
+export { router as MPGRouter };
