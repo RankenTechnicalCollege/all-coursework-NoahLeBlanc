@@ -18,8 +18,8 @@ app.use(express.static('frontend/dist'));
 
 //------------------------------ Routes --------------------------------
 app.use('/api/mpg/', MPGRouter);
-app.use('/api/temp/', tempRouter);
-app.use('/api/incomeTax/', incomeRouter);
+app.use('/api/temperature/', tempRouter);
+app.use('/api/income-tax/', incomeRouter);
 app.use('/api/interest/', interestRouter);
 
 //--------------------------- Port Handling -----------------------------
