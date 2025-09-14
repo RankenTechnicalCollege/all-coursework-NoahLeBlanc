@@ -1,6 +1,5 @@
 import express from 'express';
 import debug from 'debug';
-import { parse } from 'dotenv';
 const debugTemp = debug('app:tempRouter');
 
 const router = express.Router();
@@ -14,6 +13,7 @@ router.post('/convert', (req,res) =>{
     const mode = convertPost.mode;
     const temp = convertPost.temp;
 
+    //--------------------------- Error Handling ----------------------------
     if(mode != 'FtoC' && mode != 'CtoF'){    
         res.status(400).type('text/plain').send('Please enter a valid mode: either FtoC or CtoF');
         return;
@@ -27,17 +27,14 @@ router.post('/convert', (req,res) =>{
         res.status(400).type('text/plain').send('Temp can\'t be less than or equal to 0');
         return;
     };
-
-    
-    
-
-    
+    //-------------------------- Output and Debug --------------------------
     debugTemp(convertedTemp(mode,temp))
     res.status(200).json({ message: `${convertedTemp(mode,temp)}` });
 })
 
 export {router as tempRouter}
 
+//---------------------------- Calculation -----------------------------
 const convertedTemp = (mode, temp) =>{
         if(mode == 'FtoC'){
             return `Fahrenheit converted to Celsius is ${((temp -32) / (9/5)).toFixed(2)}.`

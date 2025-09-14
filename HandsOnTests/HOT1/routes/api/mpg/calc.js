@@ -1,6 +1,5 @@
 import express from 'express';
 import debug from 'debug';
-import { parse } from 'dotenv';
 const debugMPG = debug('app:MPGRouter');
 
 const router = express.Router();
@@ -14,6 +13,7 @@ router.post('/calc', (req, res) => {
     const mD = newMPG.milesDriven;
     const gU = newMPG.gallonsUsed;
 
+    //--------------------------- Error Handling ----------------------------
     if (!mD || isNaN(parseFloat(mD))) {
         res.status(400).type('text/plain').send('Please enter a number for Miles Driven');
         return;
@@ -29,9 +29,10 @@ router.post('/calc', (req, res) => {
         res.status(400).type('text/plain').send('Gallons Used can\'t be less than or equal to zero');
         return;
     }
-
+    //---------------------------- Calculation -----------------------------
     const mpg = (mD, gU) => (parseFloat(mD) / parseFloat(gU)).toFixed(2);
 
+    //-------------------------- Output and Debug --------------------------
     debugMPG(`MPG = ${mpg(mD,gU)}`)
     res.status(200).json({ message: `MPG = ${mpg(mD, gU)} !` });
 });

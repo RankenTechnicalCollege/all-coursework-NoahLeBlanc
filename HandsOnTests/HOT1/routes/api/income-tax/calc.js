@@ -12,6 +12,7 @@ router.post('/calc', (req, res) => {
     const mode = incomeTax.mode
     const income = parseFloat(incomeTax.income)
 
+    //--------------------------- Error Handling ----------------------------
     if (!mode || !['single', 'married'].includes(String(mode).toLowerCase())){
         res.status(400).type('text/plain').send('Please enter Single or Married');
         return;
@@ -33,13 +34,14 @@ router.post('/calc', (req, res) => {
             return marriedTaxCalc(i)
         }
     };
-
+    //-------------------------- Output and Debug --------------------------
     debugCalc(`Taxable income = $${calculatedIncomeTax(mode,income)}`)
     res.status(200).json({ message: `Your taxable income is $${calculatedIncomeTax(mode,income)}!` });
 });
 
 export { router as incomeRouter };
 
+//---------------------------- Calculation -----------------------------
 function singleTaxCalc(tI){
     if(!(tI <= 0) && tI <= 11925)/*$0 to $11,925.*/{
         //10% of taxable income.
