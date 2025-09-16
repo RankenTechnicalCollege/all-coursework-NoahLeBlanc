@@ -47,40 +47,75 @@
 
 
 10:	
-	
-
-11:	
-
+	db.comments.insertOne({
+		name:"Existing_UserName",
+		movie_id:ObjectId('573a1391f29313caabcd71f5'),
+		text:"Great movie! Highly recommend it."
+	})
+11:
+	db.comments.aggregate([
+	  {$lookup: {//						handles retriving the data from movies
+	      from: "movies",  //				doc: movies        
+	      localField: "movie_id",  //			field in comments: movie_id
+	      foreignField: "_id", //				field in movies: _id
+	      as: "movie_info"}//				Output: movie_info[]
+	  },
+	  {$unwind:"$movie_info"},//				Makes it look nice
+	  {$project: {_id:0, name: 1, text: 1, "movie_info.title":1}}
+	]);
 
 12:	
-
+	db.comments.updateOne({_id:ObjectId("5a9427648b0beebeb6957b63")}, 
+		{$set:{text:"This movie is a masterpiece!"}})
 
 13:	
+	db.comments.deleteOne({_id: ObjectId("5a9427648b0beebeb6957b63")})
 
 
 14:	
-
+	db.movies.find({genres:"Comedy"}).projection({title:1, genres:1})
 
 15:	
+	db.movies.updateOne(
+	  { _id: ObjectId("573a139af29313caabcf184a") },
+	  { $push: { genres: "Drama"} }
+	)
 
 
 16:	
+	db.movies.deleteMany({
+	  year:{$lt: 2000}
+	})
 
 
 17:	
-
+	db.movies.aggregate([
+	  { $match: { year: { $gt: 2010, $lt: 2020 } } },
+	  {
+	    $project: {
+	      title: 1,
+	      year: 1,
+	      avgRating: { $avg: ["$tomatoes.viewer.rating", "$imdb.rating"] }
+	    }
+	  },
+	  { $sort: { avgRating: -1 } }
+	])
 
 18:	
+	db.movies.updateMany(
+	    {year:2015},
+	    {$set: { year: 2016} }
+	  )
 
 
 19:	
-
+	db.movies.deleteMany({directors:"Christopher Nolan"})
 
 20:	
-
+	db.users.insertOne({email:"admin@example.com"})
 
 21:	
-
+	db.users.find({email:{$regex:/admin/}})
 
 22:	
 
