@@ -37,17 +37,17 @@
 		_id:0})
 	.sort({name:-1})
 
-7:	
-
-
+7:
+	db.users.updateOne({email:"johndoe@example.com"}, {$set:{name:"John Smith"}})
 8:	
-
+	db.users.updateOne({email:"johndoe@example.com"}, {$set:{password:"newpassword"}})
 
 9:	
+	db.users.deleteOne( { _id: ObjectId("68c1e6ad52aa832572d440ce") } );
 
 
 10:	
-
+	
 
 11:	
 
