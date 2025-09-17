@@ -1,0 +1,25 @@
+{
+    "title": "",
+    "description": "",
+    "stepsToReproduce": "",
+    "authorOfBug": "",
+    "dateTimeOfCreation": "",
+    "classificationOfBug": "",
+    "edits": [
+        {
+            "userId": "",
+            "dateTime": "",
+            "operation": ""
+        }
+    ],
+    "comments": [
+        {
+            "commentAuthor": "userId(ObjectId)",
+            "dateTime": "DateTime",
+            "text": ""
+        }
+    ],
+    "classification": "",
+    "testCases": "",
+    "workHoursLog": []
+}

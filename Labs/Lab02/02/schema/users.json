@@ -1,0 +1,10 @@
+{
+    "email": "user@example.com",
+    "password": "hashed_password",
+    "fullName": "",
+    "givenName": "",
+    "familyName": "",
+    "role": "",
+    "createdBugs":"bugId(ObjectId)",
+    "assignedBugs":"bugId(ObjectId)"
+}
