@@ -1,27 +1,69 @@
-//-----------------------------------createIndex-----------------------------
-//-----------------------Users Index-----------------------------------------
-db.users.createIndex(
-     //What to index
-     { email: 1 }, 
-     //Options
-     { 
-       unique: true,//Specifies Unique
-     	 collation:{ //makes it case insensitive
-         locale:"en",
-         strength:2
-     }
-   });
-db.users.createIndex(
-     //What to index
-     {password:1}, 
-     //Options
-     { unique: true}
-   );
-//-----------------------Bugs Index------------------------------------------
+//----------------------------------- Create Indexes ------------------------
 
-db.bugs.createIndex({ title: 1 }, { unique: true });
+//----------------------- Users Index --------------------------------------
+db.users.createIndex(
+  { email: 1 },                    // Field to index
+  { 
+    unique: true,                  // Enforce unique emails
+    collation: {                   // Case-insensitive
+      locale: "en",
+      strength: 2
+    }
+  }
+);
 
-//----------------------------------Create Users----------------------------
+db.users.createIndex(
+  { password: 1 },                 // Field to index
+  { unique: true }                 // Enforce unique passwords
+);
+
+//----------------------- Bugs Index ---------------------------------------
+db.bugs.createIndex(
+  { title: 1 },                    // Field to index
+  { 
+    unique: true,                  // Enforce unique titles
+    collation: {
+      locale: "en",
+      strength: 2
+    }
+  }
+);
+
+db.bugs.createIndex(
+  { authorOfBug: 1 },              // Index on bug author
+  { 
+    collation: {
+      locale: "en",
+      strength: 2
+    }
+  }
+);
+
+db.bugs.createIndex(
+  { "comments.commentAuthor": 1 }, // Index on nested comment author
+  { 
+    collation: {
+      locale: "en",
+      strength: 2
+    }
+  }
+);
+
+db.bugs.createIndex(
+  { classificationOfBug: 1 },      // Index on classification
+  { 
+    collation: {
+      locale: "en",
+      strength: 2
+    }
+  }
+);
+
+db.bugs.createIndex(
+  { dateTimeOfCreation: -1 }       // Descending for recent first
+);
+
+//---------------------------------- Create Users --------------------------
 db.users.insertOne({
   email: "",
   password: "hashedPassword",
@@ -29,12 +71,11 @@ db.users.insertOne({
   givenName: "",
   familyName: "",
   role: "",
-  createdBugs: ["BugId(ObjectId())"],
-  assignedBugs: ["BugIg(ObjectId())"]
-})
+  createdBugs: [ ObjectId() ],     // Example placeholder
+  assignedBugs: [ ObjectId() ]     // Example placeholder
+});
 
-
-//----------------------------------Create Bugs-----------------------------
+//---------------------------------- Create Bugs ---------------------------
 db.bugs.insertOne({
   title: "",
   description: "",
@@ -59,5 +100,4 @@ db.bugs.insertOne({
   classification: "",   
   testCases: "",        
   workHoursLog: [0]     
-})
-
+});
