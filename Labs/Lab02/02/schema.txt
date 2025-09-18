@@ -1,10 +1,63 @@
 //-----------------------------------createIndex-----------------------------
-db.users.createIndex({ email: 1 }, { unique: true });
+//-----------------------Users Index-----------------------------------------
+db.users.createIndex(
+     //What to index
+     { email: 1 }, 
+     //Options
+     { 
+       unique: true,//Specifies Unique
+     	 collation:{ //makes it case insensitive
+         locale:"en",
+         strength:2
+     }
+   });
+db.users.createIndex(
+     //What to index
+     {password:1}, 
+     //Options
+     { unique: true}
+   );
+//-----------------------Bugs Index------------------------------------------
 
 db.bugs.createIndex({ title: 1 }, { unique: true });
 
 //----------------------------------Create Users----------------------------
+db.users.insertOne({
+  email: "",
+  password: "hashedPassword",
+  fullName: "",
+  givenName: "",
+  familyName: "",
+  role: "",
+  createdBugs: ["BugId(ObjectId())"],
+  assignedBugs: ["BugIg(ObjectId())"]
+})
 
 
 //----------------------------------Create Bugs-----------------------------
+db.bugs.insertOne({
+  title: "",
+  description: "",
+  stepsToReproduce: "",
+  authorOfBug: "",
+  dateTimeOfCreation: new Date(), 
+  classificationOfBug: ObjectId(),
+  edits: [
+    {
+      userId: ObjectId(),   
+      dateTime: new Date(), 
+      operation: ""         
+    }
+  ],
+  comments: [
+    {
+      commentAuthor: ObjectId(), 
+      dateTime: new Date(),      
+      text: ""                   
+    }
+  ],
+  classification: "",   
+  testCases: "",        
+  workHoursLog: [0]     
+})
 
