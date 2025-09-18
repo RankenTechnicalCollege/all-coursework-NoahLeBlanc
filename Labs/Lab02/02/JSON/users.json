@@ -5,6 +5,6 @@
     "givenName": "",
     "familyName": "",
     "role": "",
-    "createdBugs":"bugId(ObjectId)",
-    "assignedBugs":"bugId(ObjectId)"
+    "createdBugs":["bugId(ObjectId)"],
+    "assignedBugs":["bugId(ObjectId)"]
 }
