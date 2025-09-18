@@ -4,11 +4,7 @@
 db.users.createIndex(
   { email: 1 },                    // Field to index
   { 
-    unique: true,                  // Enforce unique emails
-    collation: {                   // Case-insensitive
-      locale: "en",
-      strength: 2
-    }
+    unique: true                  // Enforce unique emails
   }
 );
 
@@ -28,35 +24,15 @@ db.bugs.createIndex(
     }
   }
 );
-
 db.bugs.createIndex(
-  { authorOfBug: 1 },              // Index on bug author
-  { 
-    collation: {
-      locale: "en",
-      strength: 2
-    }
-  }
+  { authorOfBug: 1 }              // Index on bug author
+);  
+db.bugs.createIndex(
+  { "comments.commentAuthor": 1 } // Index on nested comment author
 );
 
 db.bugs.createIndex(
-  { "comments.commentAuthor": 1 }, // Index on nested comment author
-  { 
-    collation: {
-      locale: "en",
-      strength: 2
-    }
-  }
-);
-
-db.bugs.createIndex(
-  { classificationOfBug: 1 },      // Index on classification
-  { 
-    collation: {
-      locale: "en",
-      strength: 2
-    }
-  }
+  { classificationOfBug: 1 }      // Index on classification
 );
 
 db.bugs.createIndex(
