@@ -1,25 +1,106 @@
-{
-    "title": "",
-    "description": "",
-    "stepsToReproduce": "",
-    "authorOfBug": "",
-    "dateTimeOfCreation": "",
-    "classificationOfBug": "",
+[
+  {
+    "_id": { "$oid": "68cc5f0e57300fd1b2f1ef5b" },
+    "title": "Bug 1",
+    "description": "This is a description for bug 1.",
+    "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 1.",
+    "authorOfBug": { "$oid": "64b123abc123abc123abc201" },
+    "dateTimeOfCreation": "2025-03-15T12:00:00Z",
+    "classificationOfBug": "UI",
     "edits": [
-        {
-            "userId": "",
-            "dateTime": "",
-            "operation": ""
-        }
+      {
+        "userId": { "$oid": "64b123abc123abc123abc202" },
+        "dateTime": "2025-03-15T12:10:00Z",
+        "operation": "Initial creation for bug 1"
+      }
     ],
     "comments": [
-        {
-            "commentAuthor": "userId(ObjectId)",
-            "dateTime": "DateTime",
-            "text": ""
-        }
+      {
+        "commentAuthor": { "$oid": "64b123abc123abc123abc203" },
+        "dateTime": "2025-03-15T12:15:00Z",
+        "text": "Comment on bug 1"
+      }
     ],
-    "classification": "",
-    "testCases": "",
-    "workHoursLog": []
-}
+    "classification": "UI",
+    "testCases": "Test case 1",
+    "workHoursLog": [2, 3]
+  },
+  {
+    "_id": { "$oid": "68cc5f0e57300fd1b2f1ef5c" },
+    "title": "Bug 2",
+    "description": "This is a description for bug 2.",
+    "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 2.",
+    "authorOfBug": { "$oid": "64b123abc123abc123abc202" },
+    "dateTimeOfCreation": "2025-04-10T09:30:00Z",
+    "classificationOfBug": "Backend",
+    "edits": [
+      {
+        "userId": { "$oid": "64b123abc123abc123abc201" },
+        "dateTime": "2025-04-10T09:45:00Z",
+        "operation": "Initial creation for bug 2"
+      }
+    ],
+    "comments": [
+      {
+        "commentAuthor": { "$oid": "64b123abc123abc123abc203" },
+        "dateTime": "2025-04-10T09:50:00Z",
+        "text": "Comment on bug 2"
+      }
+    ],
+    "classification": "Backend",
+    "testCases": "Test case 2",
+    "workHoursLog": [1, 4]
+  },
+  {
+    "_id": { "$oid": "68cc5f0e57300fd1b2f1ef5d" },
+    "title": "Bug 3",
+    "description": "This is a description for bug 3.",
+    "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 3.",
+    "authorOfBug": { "$oid": "64b123abc123abc123abc203" },
+    "dateTimeOfCreation": "2025-05-20T14:45:00Z",
+    "classificationOfBug": "UI",
+    "edits": [
+      {
+        "userId": { "$oid": "64b123abc123abc123abc202" },
+        "dateTime": "2025-05-20T15:00:00Z",
+        "operation": "Initial creation for bug 3"
+      }
+    ],
+    "comments": [
+      {
+        "commentAuthor": { "$oid": "64b123abc123abc123abc203" },
+        "dateTime": "2025-05-20T15:05:00Z",
+        "text": "Comment on bug 3"
+      }
+    ],
+    "classification": "UI",
+    "testCases": "Test case 3",
+    "workHoursLog": [2, 3]
+  },
+  {
+    "_id": { "$oid": "68cc5f0e57300fd1b2f1ef5e" },
+    "title": "Bug 4",
+    "description": "This is a description for bug 4.",
+    "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 4.",
+    "authorOfBug": { "$oid": "64b123abc123abc123abc204" },
+    "dateTimeOfCreation": "2025-06-05T11:20:00Z",
+    "classificationOfBug": "Database",
+    "edits": [
+      {
+        "userId": { "$oid": "64b123abc123abc123abc203" },
+        "dateTime": "2025-06-05T11:30:00Z",
+        "operation": "Initial creation for bug 4"
+      }
+    ],
+    "comments": [
+      {
+        "commentAuthor": { "$oid": "64b123abc123abc123abc202" },
+        "dateTime": "2025-06-05T11:35:00Z",
+        "text": "Comment on bug 4"
+      }
+    ],
+    "classification": "Database",
+    "testCases": "Test case 4",
+    "workHoursLog": [5, 2]
+  }
+]

@@ -1,10 +1,52 @@
-{
-    "email": "user@example.com",
-    "password": "hashed_password",
-    "fullName": "",
-    "givenName": "",
-    "familyName": "",
-    "role": "",
-    "createdBugs":["bugId(ObjectId)"],
-    "assignedBugs":["bugId(ObjectId)"]
-}
+[
+  {
+    "email": "user1@example.com",
+    "password": "hashed_password_1",
+    "fullName": "Alice Smith",
+    "givenName": "Alice",
+    "familyName": "Smith",
+    "role": "developer",
+    "createdBugs": ["68cc5f0e57300fd1b2f1ef5b"],
+    "assignedBugs": ["68cc5f0e57300fd1b2f1ef5c"]
+  },
+  {
+    "email": "user2@example.com",
+    "password": "hashed_password_2",
+    "fullName": "Bob Johnson",
+    "givenName": "Bob",
+    "familyName": "Johnson",
+    "role": "tester",
+    "createdBugs": ["68cc5f0e57300fd1b2f1ef5c"],
+    "assignedBugs": ["68cc5f0e57300fd1b2f1ef5d"]
+  },
+  {
+    "email": "user3@example.com",
+    "password": "hashed_password_3",
+    "fullName": "Charlie Davis",
+    "givenName": "Charlie",
+    "familyName": "Davis",
+    "role": "manager",
+    "createdBugs": ["68cc5f0e57300fd1b2f1ef5d"],
+    "assignedBugs": ["68cc5f0e57300fd1b2f1ef5e"]
+  },
+  {
+    "email": "user4@example.com",
+    "password": "hashed_password_4",
+    "fullName": "David Wilson",
+    "givenName": "David",
+    "familyName": "Wilson",
+    "role": "developer",
+    "createdBugs": ["68cc5f0e57300fd1b2f1ef5e"],
+    "assignedBugs": ["68cc5f0e57300fd1b2f1ef5b"]
+  },
+  {
+    "email": "user5@example.com",
+    "password": "hashed_password_5",
+    "fullName": "Eve Adams",
+    "givenName": "Eve",
+    "familyName": "Adams",
+    "role": "designer",
+    "createdBugs": [],
+    "assignedBugs": []
+  }
+]
