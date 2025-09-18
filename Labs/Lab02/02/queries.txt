@@ -1,0 +1,67 @@
+//----------------------- 1 ---------------------------------------
+Q:
+    List all of the bugs that your user created.
+A:
+	db.bugs.find({_id:ObjectId("68cc5f0e57300fd1b2f1ef5e")})
+
+//----------------------- 2 ---------------------------------------
+Q:
+    List all of the bugs that you are assigned to.
+A:
+
+//----------------------- 3 ---------------------------------------
+Q:
+    List all of the bugs that you created or are assigned to. 
+    (This is a combination of 1 and 2, but must be returned in a single result set.)
+A:
+
+//----------------------- 4 ---------------------------------------
+Q:
+    List all of the bugs that are unclassified.
+A:
+
+//----------------------- 5 ---------------------------------------
+Q:
+    List all of the bugs that have been approved by a Business Analyst, but are not closed. 
+    (Note that these may be in the process of being tested or fixed.)
+A:
+
+//----------------------- 6 ---------------------------------------
+Q:
+    List all of the bugs that are fixed, but are not closed.
+A:
+
+//----------------------- 7 ---------------------------------------
+Q:
+    List all of the bugs that do not have steps to reproduce.
+A:
+
+//----------------------- 8 ---------------------------------------
+Q:
+    List all of the bugs that do not have test cases.
+A:
+
+//----------------------- 9 ---------------------------------------
+Q:
+    List all of the bugs that do not have hours/work/labor recorded.
+A:
+
+//----------------------- 10 ---------------------------------------
+Q:
+    List all bugs, with the number of comments for each bug. 
+    (Do not list the same bug multiple times! 
+    Also remember to include bugs with no comments!)
+A:
+
+//----------------------- 11 ---------------------------------------
+Q:
+    List all bugs, with the total number of hours worked on each bug. 
+    (Do not list the same bug multiple times! 
+    Also remember to include bugs with no recorded hours!)
+A:
+
+//----------------------- 12 ---------------------------------------
+Q:
+    List all of the bugs with failing test cases. 
+    (Do not list the same bug multiple times!)
+A:
