@@ -5,8 +5,8 @@
     "description": "This is a description for bug 1.",
     "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 1.",
     "authorOfBug": { "$oid": "64b123abc123abc123abc201" },
+    "classificationOfBug": "unclassified",
     "dateTimeOfCreation": "2025-03-15T12:00:00Z",
-    "classificationOfBug": "UI",
     "edits": [
       {
         "userId": { "$oid": "64b123abc123abc123abc202" },
@@ -21,8 +21,7 @@
         "text": "Comment on bug 1"
       }
     ],
-    "classification": "UI",
-    "testCases": "Test case 1",
+    "status": "fixed",
     "workHoursLog": [2, 3]
   },
   {
@@ -31,8 +30,8 @@
     "description": "This is a description for bug 2.",
     "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 2.",
     "authorOfBug": { "$oid": "64b123abc123abc123abc202" },
+    "classificationOfBug": "unclassified",
     "dateTimeOfCreation": "2025-04-10T09:30:00Z",
-    "classificationOfBug": "Backend",
     "edits": [
       {
         "userId": { "$oid": "64b123abc123abc123abc201" },
@@ -47,8 +46,7 @@
         "text": "Comment on bug 2"
       }
     ],
-    "classification": "Backend",
-    "testCases": "Test case 2",
+    "status": "fixed",
     "workHoursLog": [1, 4]
   },
   {
@@ -57,8 +55,8 @@
     "description": "This is a description for bug 3.",
     "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 3.",
     "authorOfBug": { "$oid": "64b123abc123abc123abc203" },
+    "classificationOfBug": "unclassified",
     "dateTimeOfCreation": "2025-05-20T14:45:00Z",
-    "classificationOfBug": "UI",
     "edits": [
       {
         "userId": { "$oid": "64b123abc123abc123abc202" },
@@ -73,8 +71,7 @@
         "text": "Comment on bug 3"
       }
     ],
-    "classification": "UI",
-    "testCases": "Test case 3",
+    "status": "fixed",
     "workHoursLog": [2, 3]
   },
   {
@@ -83,8 +80,8 @@
     "description": "This is a description for bug 4.",
     "stepsToReproduce": "Step 1, Step 2, Step 3 for bug 4.",
     "authorOfBug": { "$oid": "64b123abc123abc123abc204" },
+    "classificationOfBug": "unclassified",
     "dateTimeOfCreation": "2025-06-05T11:20:00Z",
-    "classificationOfBug": "Database",
     "edits": [
       {
         "userId": { "$oid": "64b123abc123abc123abc203" },
@@ -99,8 +96,7 @@
         "text": "Comment on bug 4"
       }
     ],
-    "classification": "Database",
-    "testCases": "Test case 4",
+    "status": "closed",
     "workHoursLog": [5, 2]
   }
 ]

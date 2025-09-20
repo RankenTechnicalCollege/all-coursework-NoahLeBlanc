@@ -2,49 +2,175 @@
 Q:
     List all of the bugs that your user created.
 A:
-	db.bugs.find({_id:ObjectId("68cc5f0e57300fd1b2f1ef5e")})
+	db.users.aggregate([
+	  { $match: { givenName: "niah" } },
+	  {
+	    $lookup: {
+	      from: "bugs",
+	      let: { bugIds: "$createdBugs" },
+	      pipeline: [
+	        {
+	          $match: {
+	            $expr: { 
+	              $in: [
+	                "$_id",
+	                { $map: { input: "$$bugIds", as: "id", in: { $toObjectId: "$$id" } } }
+	              ]
+	            }
+	          }
+	        },
+	        { $project: { title: 1, _id: 0 } }
+	      ],
+	      as: "createdBugsDetails"
+	    }
+	  },
+	  { $project: { givenName: 1, createdBugsDetails: 1, _id: 0 } }
+	]);
+
 
 //----------------------- 2 ---------------------------------------
 Q:
     List all of the bugs that you are assigned to.
 A:
+	db.users.aggregate([
+	  { $match: { givenName: "niah" } },
+	  {
+	    $lookup: {
+	      from: "bugs",
+	      let: { bugIds: "$assignedBugs" },
+	      pipeline: [
+	        {
+	          $match: {
+	            $expr: { 
+	              $in: [
+	                "$_id",
+	                { $map: { input: "$$bugIds", as: "id", in: { $toObjectId: "$$id" } } }
+	              ]
+	            }
+	          }
+	        },
+	        { $project: { title: 1, _id: 0 } }
+	      ],
+	      as: "assignedBugDetails"
+	    }
+	  },
+	  { $project: { givenName: 1, assignedBugDetails: 1, _id: 0 } }
+	]);
 
+	
 //----------------------- 3 ---------------------------------------
 Q:
     List all of the bugs that you created or are assigned to. 
     (This is a combination of 1 and 2, but must be returned in a single result set.)
 A:
+	db.users.aggregate([
+	  { $match: { givenName: "niah" } },
+
+	  // Lookup for createdBugs
+	  {
+	    $lookup: {
+	      from: "bugs",
+	      let: { bugIds: "$createdBugs" },
+	      pipeline: [
+	        {
+	          $match: {
+	            $expr: {
+	              $in: [
+	                "$_id",
+	                { $map: { input: "$$bugIds", as: "id", in: { $toObjectId: "$$id" } } }
+	              ]
+	            }
+	          }
+	        },
+	        { $project: { title: 1, _id: 0 } }
+	      ],
+	      as: "createdBugsDetails"
+	    }
+	  },
+
+	  // Lookup for assignedBugs
+	  {
+	    $lookup: {
+	      from: "bugs",
+	      let: { bugIds: "$assignedBugs" },
+	      pipeline: [
+	        {
+	          $match: {
+	            $expr: {
+	              $in: [
+	                "$_id",
+	                { $map: { input: "$$bugIds", as: "id", in: { $toObjectId: "$$id" } } }
+	              ]
+	            }
+	          }
+	        },
+	        { $project: { title: 1, _id: 0 } }
+	      ],
+	      as: "assignedBugsDetails"
+	    }
+	  },
+
+	  { $project: { givenName: 1, createdBugsDetails: 1, assignedBugsDetails: 1, _id: 0 } }
+	]);
+
 
 //----------------------- 4 ---------------------------------------
 Q:
     List all of the bugs that are unclassified.
 A:
+	db.bugs.find({classificationOfBug:"Unclassified"})	
 
 //----------------------- 5 ---------------------------------------
 Q:
     List all of the bugs that have been approved by a Business Analyst, but are not closed. 
     (Note that these may be in the process of being tested or fixed.)
 A:
+	db.bugs.find({
+	  approvedBy: "Business Analyst",
+	  status: { $ne: "Closed" }
+	});
 
 //----------------------- 6 ---------------------------------------
 Q:
     List all of the bugs that are fixed, but are not closed.
 A:
+db.bugs.find({
+  status: "fixed",
+  closed: { $ne: true }
+})
 
 //----------------------- 7 ---------------------------------------
 Q:
     List all of the bugs that do not have steps to reproduce.
 A:
+db.bugs.find({
+  $or: [
+    { stepsToReproduce: { $exists: false } },
+    { stepsToReproduce: "" }
+  ]
+})
 
 //----------------------- 8 ---------------------------------------
 Q:
     List all of the bugs that do not have test cases.
 A:
+db.bugs.find({
+  $or: [
+    { testCases: { $exists: false } },
+    { testCases: { $size: 0 } }
+  ]
+})
 
 //----------------------- 9 ---------------------------------------
 Q:
     List all of the bugs that do not have hours/work/labor recorded.
 A:
+db.bugs.find({
+  $or: [
+    { hours: { $exists: false } },
+    { hours: 0 }
+  ]
+})
 
 //----------------------- 10 ---------------------------------------
 Q:
@@ -52,6 +178,14 @@ Q:
     (Do not list the same bug multiple times! 
     Also remember to include bugs with no comments!)
 A:
+db.bugs.aggregate([
+  {
+    $project: {
+      title: 1,
+      numComments: { $size: { $ifNull: ["$comments", []] } }
+    }
+  }
+])
 
 //----------------------- 11 ---------------------------------------
 Q:
@@ -59,9 +193,21 @@ Q:
     (Do not list the same bug multiple times! 
     Also remember to include bugs with no recorded hours!)
 A:
+db.bugs.aggregate([
+  {
+    $project: {
+      title: 1,
+      totalHours: { $ifNull: ["$hours", 0] }
+    }
+  }
+])
 
 //----------------------- 12 ---------------------------------------
 Q:
     List all of the bugs with failing test cases. 
     (Do not list the same bug multiple times!)
 A:
+db.bugs.find({
+  status: "failing"
+})
+
