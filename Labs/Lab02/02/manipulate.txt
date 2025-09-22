@@ -1,0 +1,99 @@
+//----------------------- 1 ---------------------------------------
+Q:
+    Add a new developer to the database.
+A:
+db.developers.insertOne({
+  name: "New Developer",
+  role: "Developer",
+  email: "newdev@example.com"
+})
+
+
+//----------------------- 2 ---------------------------------------
+Q:
+    Add a new bug to the database,
+    but only include the minimum required fields.
+A:
+db.bugs.insertOne({
+  title: "Bug 5",
+  description: "This is a description for bug 5.",
+  stepsToReproduce: "Step 1, Step 2, Step 3 for bug 5.",
+  authorOfBug: ObjectId("64b123abc123abc123abc201"),
+  classificationOfBug: "unclassified",
+  dateTimeOfCreation: new Date()
+})
+
+
+//----------------------- 3 ---------------------------------------
+Q:
+    Assign this bug to a Quality Analyst.
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") }, // Bug 1 as example
+  { $set: { assignedTo: ObjectId("64b123abc123abc123abc202") } }
+)
+
+
+//----------------------- 4 ---------------------------------------
+Q:
+    Add a comment to this bug.
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") },
+  { $push: { comments: {
+      commentAuthor: ObjectId("64b123abc123abc123abc203"),
+      dateTime: new Date(),
+      text: "Additional QA comment on bug 1"
+  }} }
+)
+
+
+//----------------------- 5 ---------------------------------------
+Q:
+    Add a test case to this bug.
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") },
+  { $push: { testCases: {
+      description: "Verify steps reproduce consistently",
+      status: "pending"
+  }} }
+)
+
+
+//----------------------- 6 ---------------------------------------
+Q:
+    Add hours to this bug.
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") },
+  { $push: { workHoursLog: 4 } }
+)
+
+
+//----------------------- 7 ---------------------------------------
+Q:
+    Mark the bug fixed by you
+    with the time it was fixed
+    and the version it was fixed in.
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") },
+  { $set: {
+      status: "fixed",
+      fixedBy: ObjectId("64b123abc123abc123abc201"),
+      fixedAt: new Date(),
+      fixedVersion: "1.0.1"
+  }}
+)
+
+
+//----------------------- 8 ---------------------------------------
+Q:
+    Close the bug.
+    (Do not delete it, information must be retained.)
+A:
+db.bugs.updateOne(
+  { _id: ObjectId("68cc5f0e57300fd1b2f1ef5b") },
+  { $set: { status: "closed" } }
+)
