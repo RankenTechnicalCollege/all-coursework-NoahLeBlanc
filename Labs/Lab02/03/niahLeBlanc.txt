@@ -118,31 +118,53 @@
 	db.users.find({email:{$regex:/admin/}})
 
 22:	
-
+	db.comments.deleteMany({ email: "johndoe@example.com" })
 
 23:	
-
+	db.movies.createIndex({ title: 1 })
 
 24:	
-
+	db.movies.find({ title: { $regex: /^A/ } })
 
 25:	
-
+	db.movies.updateMany({ genre: "Action" }, { $set: { genre: "Adventure" } })
 
 26:	
+	db.users.updateOne(
+	  { name: "Evan" },
+	  { $set: { lastLogin: new Date("December 17, 1995") } }
+	)
+	const sixMonthsAgo = new Date()
+	sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+	db.users.deleteMany({ lastLogin: { $lt: sixMonthsAgo } })
+
 
 
 27:	
+	db.movies.aggregate([
+	  { $group: { _id: null, avgRating: { $avg: "$rating" } } }
+	])
 
 
 28:	
+	db.movies.updateOne(
+	  { _id: ObjectId("MOVIE_ID") },
+	  { $set: { rating: 4.5 } }
+	)
 
 
 29:	
-
+	db.comments.insertOne({ text: "This is a spoiler comment." })
+	db.comments.deleteMany({ text: { $regex: /spoiler/i } })
 
 30:	
-
+	db.movies.aggregate([
+	  { $group: { _id: "$genre", count: { $sum: 1 } } }
+	])
 
 31:	
+	db.movies.updateMany(
+	  {},
+	  [{ $set: { title: { $toUpper: "$title" } } }]
+	)
 
