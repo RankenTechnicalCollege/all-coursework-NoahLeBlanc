@@ -1,5 +1,4 @@
-/FinalProject/frontend/node_modules
-/FinalProject/node_modules
-/FinalProject/routes
-/FinalProject/.env
+node_modules/
+*.env
+*.pdf
 
