@@ -1,0 +1,175 @@
+//----------------------- 1 ---------------------------------------
+Q:
+    Create a new document in the listingsAndReviews collection 
+    with the following fields: name, property_type, and price.
+A:
+	db.listingsAndReviews.insertOne({
+	  name:"",
+	  property_type:"",
+	  price:NumberDecimal("0.00")
+	})
+//----------------------- 2 ---------------------------------------
+Q:
+    Retrieve all documents from the listingsAndReviews collection.
+A:
+	db.listingsAndReviews.find()
+//----------------------- 3 ---------------------------------------
+Q:
+    Retrieve only the documents from the listingsAndReviews collection 
+    where the property_type is "Apartment".
+A:
+	db.listingsAndReviews.find({property_type:"Apartment"}).projection({property_type:1})
+
+//----------------------- 4 ---------------------------------------
+Q:
+    Update the name of a document in the listingsAndReviews collection 
+    with a specific _id value.
+A:
+	db.listingsAndReviews.updateOne(
+	  { _id: "10059872" },
+	  { 
+	    $set: { 
+	      name: "newNameAdded" 
+	    } 
+	  }
+	)
+
+
+//----------------------- 5 ---------------------------------------
+Q:
+    Delete a document from the listingsAndReviews collection 
+    based on a specific _id value.
+A:
+	db.listingsAndReviews.deleteOne({_id:"10059872"})
+//----------------------- 6 ---------------------------------------
+Q:
+    Retrieve the documents from the listingsAndReviews collection 
+    where the price is greater than 200.
+A:
+	db.listingsAndReviews.find({ price: { $gt: 200 } })
+
+//----------------------- 7 ---------------------------------------
+Q:
+    Create an index on the name field in the listingsAndReviews collection.
+A:
+	db.listingsAndReviews.createIndex({name:1})
+//----------------------- 8 ---------------------------------------
+Q:
+    Retrieve only the name and price fields from the documents 
+    in the listingsAndReviews collection.
+A:
+	db.listingsAndReviews.find().projection({_id:0, name:1, price:1})
+
+//----------------------- 9 ---------------------------------------
+Q:
+    Retrieve the first 5 documents from the listingsAndReviews collection.
+A:
+	db.listingsAndReviews.find().limit(5)
+
+//----------------------- 10 ---------------------------------------
+Q:
+    Retrieve a document from the listingsAndReviews collection 
+    based on a specific _id value.
+A:
+	db.listingsAndReviews.find({_id:"10030955"})
+
+//----------------------- 11 ---------------------------------------
+Q:
+    Update the price of a document in the listingsAndReviews collection 
+    with a specific _id value.
+A:
+	db.listingsAndReviews.updateOne({_id:"10030955"},
+                                {$set:
+                                {price:NumberDecimal(0.00)}
+                                })
+
+//----------------------- 12 ---------------------------------------
+Q:
+    Delete all documents from the listingsAndReviews collection 
+    where the property_type is "House".
+A:
+	db.listingsAndReviews.deleteMany({
+		property_type: { $eq: "House" }
+	})	
+
+
+//----------------------- 13 ---------------------------------------
+Q:
+    Retrieve the documents from the listingsAndReviews collection 
+    where the name contains the word "Luxury".
+A:
+	db.listingsAndReviews.find({name:{$regex:"Luxury"}}).projection({name:1})
+//----------------------- 14 ---------------------------------------
+Q:
+    Create a new collection called "guests".
+A:
+	db.createCollection("guests")
+//----------------------- 15 ---------------------------------------
+Q:
+    Insert a new document into the guests collection 
+    with the fields: name, age, and email.
+A:
+	db.guests.insertOne(
+	  {
+	    name:'Niah LeBlanc',
+	    age:22,
+	    email:"niah_leblanc@insideranken.org"
+	  }
+	)
+
+//----------------------- 16 ---------------------------------------
+Q:
+    Retrieve all documents from the guests collection.
+A:
+	db.guests.find()
+//----------------------- 17 ---------------------------------------
+Q:
+    Update the age of a document in the guests collection 
+    with a specific _id value.
+A:
+	db.guests.updateOne(
+	  { _id: ObjectId("68d19506eff2bb747dba167f") },
+	  { 
+	    $set: {
+	      age: 222
+	    }
+	  }
+	)
+
+
+//----------------------- 18 ---------------------------------------
+Q:
+    Retrieve the 5 most popular locations (using address.market) 
+    by number of listings.
+A:
+	db.listingsAndReviews.aggregate([
+	  {
+	    $group: {
+	      _id: "$address.market",
+	      totalListings: { $sum: 1 }
+	    }
+	  },
+	  { $sort: { totalListings: -1 } },
+	  { $limit: 5 }
+	])
+
+
+//----------------------- 19 ---------------------------------------
+Q:
+    Retrieve the documents from the guests collection 
+    where the age is greater than 30.
+A:
+	db.guests.find({age:{$gt:30}})
+//----------------------- 20 ---------------------------------------
+Q:
+    List the average price of Listings by property type.
+A:
+	db.listingsAndReviews.aggregate([
+	  {
+	    $group: {
+	      _id: "$property_type",
+	      averagePrice: { $avg: "$price" }
+	    }
+	  }
+	])
+
