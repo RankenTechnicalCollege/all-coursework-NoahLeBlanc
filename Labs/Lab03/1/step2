@@ -1,5 +1,0 @@
-//.env
-DEBUG=app:*​
-PORT=5000​
-DB_URL=<put the url for your mongodb atlas cluster here>​
-DB_NAME=<put the url for your db here>
