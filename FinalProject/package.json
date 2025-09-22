@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc/tree/master#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.8",
     "debug": "^4.4.1",
     "dotenv": "^17.2.1",

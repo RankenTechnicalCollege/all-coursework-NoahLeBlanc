@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css'
 
+import Navbar from './components/Navbar';
 
 import { useEffect, useState } from "react";
 
@@ -29,56 +30,7 @@ function App() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-        <a className="navbar-brand d-flex align-items-center gap-2" href="#">
-          <i className="bi bi-code-slash"></i>
-          <span className="h4 mb-0">Bug Tracker</span>
-        </a>
-        <ul className="navbar-nav ms-3">
-          <li className="nav-item">
-            <a className="nav-link text-light" href="#">Users</a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link text-light" href="#">Bugs</a>
-          </li>
-        </ul>
-      </nav>
-
-      <main className="container d-flex justify-content-evenly mt-4">
-        {/* Users section */}
-        <div className="d-flex justify-content-center border border-dark border-5  rounded-bottom px-5">
-          <div className="vstack">
-            <h1>Users</h1>
-            <ul>
-              {users.map((user) => (
-                <li key={user.userId}>
-                  {user.givenName} {user.familyName} — {user.role}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Bugs section */}
-        <div className="d-flex justify-content-center border border-dark border-5 rounded-bottom px-5">
-          <div className="vstack">
-            <h1>Bugs</h1>
-            <ul>
-              {bugs.map((bug) => (
-                <li key={bug.id}>
-                  {bug.title} — {bug.description}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </main>
-
-      <footer className="footer bg-dark text-light mt-5">
-        <div className="container">
-          <h4 className="d-flex justify-content-center">@2025 Niah LeBlanc</h4>
-        </div>
-      </footer>
+      <Navbar />
     </>
   );
 }
