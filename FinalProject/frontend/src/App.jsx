@@ -1,10 +1,14 @@
-import 'bootstrap/dist/css/bootstrap.css';
+
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css'
 
+//Components
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+
 
 import { useEffect, useState } from "react";
+
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -31,6 +35,7 @@ function App() {
   return (
     <>
       <Navbar />
+      <Footer />
     </>
   );
 }
