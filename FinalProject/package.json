@@ -1,38 +1,21 @@
 {
-  "name": "issue_tracker",
+  "name": "frontend",
   "version": "1.0.0",
-  "description": "Issue Tracker for Tracking software bugs during development.",
+  "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "start-dev": "nodemon -r dotenv/config index.js"
+    "dev": "nodemon --env-file .env index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc.git#master"
-  },
-  "keywords": [
-    "Issue",
-    "Tracker",
-    "Niah",
-    "LeBlanc"
-  ],
   "author": "Niah LeBlanc",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc/issues"
-  },
-  "homepage": "https://github.com/RankenTechnicalCollege/all-coursework-NoahLeBlanc/tree/master#readme",
+  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "bootstrap": "^5.3.8",
-    "debug": "^4.4.1",
-    "dotenv": "^17.2.1",
+    "debug": "^4.4.3",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "mongodb": "^6.20.0",
-    "nanoid": "^5.1.5",
-    "nodemon": "^3.1.10"
+    "vite": "^7.1.7"
   }
 }

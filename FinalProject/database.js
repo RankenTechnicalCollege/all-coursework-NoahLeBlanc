@@ -1,39 +1,43 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-import { MongoClient, ObjectId } from "mongodb";
-import debug from 'debug';
+import { MongoClient } from "mongodb"
+import debug from "debug"
+const debugDb = debug("app:Database");
 
-const debugDb = debug('app:Database');
-
-// Generate/Parse an ObjectId
-const newId = (str) => new ObjectId(str);
-
-// Global variable storing the open connection
 let _db = null;
 
-// Connect to the database
-async function connect() {
-    if (!_db) {
-        const dbUrl = process.env.DB_URL;
-        const dbName = process.env.DB_NAME;
-        const client = await MongoClient.connect(dbUrl, { serverSelectionTimeoutMS: 5000 });
-        _db = client.db(dbName);
-        debugDb('Connected to MongoDB.');
-    }
-    return _db;
+//Handles connection to the database
+async function connectToDatabase() {
+   if (!_db){
+    const connectionString = process.env.MONGO_URI;
+    const dbName = process.env.MONGO_DB_NAME;
+        
+    const client = await MongoClient.connect(connectionString)
+    _db = client.db(dbName);
+   }
+   return _db;
 }
 
-// Connect to the database and verify the connection
-async function ping() {
-    try {
-        const db = await connect();
-        await db.command({ ping: 1 });
-        debugDb('Ping successful.');
-    } catch (err) {
-        debugDb('Ping failed:', err);
-        throw err;
-    }
+//-----------------------------------------------------User Functions-------------------------------------------
+async function getUsers(){
+    const db = await connectToDatabase();
+    return db.collection("users").find({}).toArray();
+}
+    
+async function searchUsers(field, value) {
+  const db = await connectToDatabase();
+  return await db.collection("users").findOne({ [field]: value });
 }
 
-export { connect, ping, newId };
-// FIXME: add more functions here​
+async function addUsers(user){
+    const db = await connectToDatabase();
+    const result = await db.collection("users").insertOne(user);
+    console.log(`A document was inserted with the _id: ${result.insertedId}`);
+    return result;
+}
+
+//Function calls connect to db and if it works it puts it in the debug
+async function ping(){
+    const db = await connectToDatabase();
+    const pong = await db.command({ping:1});
+    debugDb(`ping: ${JSON.stringify(pong)}`);
+}
+export {ping, getUsers, addUsers, searchUsers};

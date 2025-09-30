@@ -1,23 +1,20 @@
 import express from 'express';
 import dotenv from 'dotenv';
-dotenv.config(); //This sets up process.env.PORT
-import debug from 'debug';
-const debugServer = debug('app:Server');//Like a fancy console.log
+dotenv.config();
 
-import { userRouter } from './routes/api/user.js';//this is a route
-import { bugRouter } from './routes/api/bug.js';
-
+const port = process.env.PORT || 8080;
 const app = express();
 
-app.use(express.urlencoded({extended: true})); //no reqs work without this
-app.use(express.json());//needed for req.body
-
+import { userRouter } from './routes/api/user.js';
+import { ping } from './database.js';
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static('frontend/dist'));
 app.use('/api/user', userRouter);
-app.use('/api/Bug', bugRouter)
-const port = process.env.PORT || 3000;
-
-app.listen(port, () =>{
-    debugServer(`server is now running on port http://localhost:${port}`);
+//Get api user
+app.use('/api/user', (await import('./routes/api/user.js')).userRouter);
+ping();
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
-
