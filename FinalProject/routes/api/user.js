@@ -1,8 +1,7 @@
 import express from 'express';
-
 import { ObjectId } from 'mongodb'; //Converts text id's to object _id's like in mongo
 //Database functions
-import { getUsers, addUsers, searchUsers} from '../../database.js';
+import {connectToDatabase} from '../../database.js';
 const router = express.Router();
 
 import debug from 'debug';
@@ -11,7 +10,6 @@ const debugUser = debug('app:UserRouter');
 
 router.use(express.urlencoded({extended:false}));
 
-import { nanoid } from 'nanoid';
 //--------------------------------Router Gets----------------------------
 router.get('/list', async (req,res) => {
     const users = await getUsers();
@@ -34,8 +32,8 @@ router.get("/:userId", async (req,res) =>{
         res.status(404).send('user not found')
     }
 });
-////--------------------------------Router Posts---------------------------
 
+////--------------------------------Router Posts---------------------------
 router.post('/register', async (req,res) =>{
     //Req object has a body prop that contains the data sent by client
     const newUser = req.body;
@@ -131,3 +129,19 @@ router.post('/login', async (req,res) =>{
 
 export {router as userRouter}
 //export {userArray as userArray}
+
+//Functions
+async function getUsers(){
+    const db = await connectToDatabase();
+    return db.collection("users").find({}).toArray();
+}
+async function searchUsers(field, value) {
+  const db = await connectToDatabase();
+  return await db.collection("users").findOne({ [field]: value });
+}
+async function addUsers(user){
+    const db = await connectToDatabase();
+    const result = await db.collection("users").insertOne(user);
+    console.log(`A document was inserted with the _id: ${result.insertedId}`);
+    return result;
+}

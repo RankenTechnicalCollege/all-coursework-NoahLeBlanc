@@ -7,7 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Main() {
   return (
-    <div className='bg-dark text-light'>
+    <div>
         <Users/>
         <Footer/>
     </div>

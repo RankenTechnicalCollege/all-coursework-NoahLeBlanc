@@ -1,20 +1,27 @@
-import express from 'express';
-import dotenv from 'dotenv';
+import express from "express";
+import dotenv from "dotenv";
+
+import { userRouter } from "./routes/api/user.js";
+import { ping } from "./database.js";
+
 dotenv.config();
 
-const port = process.env.PORT || 8080;
+//-------------------------------------------- Config ---------------------------------------------
+const port = process.env.PORT || 5050;
 const app = express();
 
-import { userRouter } from './routes/api/user.js';
-import { ping } from './database.js';
-// Middleware
+//--------------------------------------------Middleware-------------------------------------------
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('frontend/dist'));
-app.use('/api/user', userRouter);
-//Get api user
-app.use('/api/user', (await import('./routes/api/user.js')).userRouter);
+app.use(express.static("frontend/dist"));
+
+//---------------------------------------------Route-----------------------------------------------
+app.use("/api/user", userRouter);
+//app.use("api/bugs", bugsRouter);
+//--------------------------------------------Database---------------------------------------------
 ping();
+
+//------------------------------------------ Start Server -----------------------------------------
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });

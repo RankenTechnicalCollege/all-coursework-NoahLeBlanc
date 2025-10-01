@@ -12,6 +12,7 @@
   "author": "Niah LeBlanc",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bootstrap-icons": "^1.13.1",
     "debug": "^4.4.3",
     "dotenv": "^17.2.2",
