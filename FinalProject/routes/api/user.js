@@ -1,5 +1,6 @@
 import express from 'express';
-import { ObjectId } from 'mongodb';
+
+import { ObjectId } from 'mongodb'; //Converts text id's to object _id's like in mongo
 //Database functions
 import { getUsers, addUsers, searchUsers} from '../../database.js';
 const router = express.Router();
@@ -66,27 +67,27 @@ router.post('/register', async (req,res) =>{
     addUsers(newUser)
     res.status(200).json({message: `New User ${newUser.givenName} Registered!`});
 }); 
-
-//router.post('/login', (req,res) =>{
-    //const user = req.body;
-    //if(!user.email){
-        //res.status(400).type('text/plain').send('Email is required');
-        //return;
-    //}
-    //else if(!user.password){
-        //res.status(400).type('text/plain').send('Password is required');
-        //return;
-    //}
-    //else{
-        //const search = userArray.find(u => u.email === user.email && u.password === user.password);
-        //if(search){
-            //res.status(200).json('User logged in succesfully');
-        //}
-        //else{
-            //res.status(401).send('Invalid credentials');
-        //}
-    //}
-//});
+router.post('/login', async (req,res) =>{
+    const userLogin = req.body;
+    if(!userLogin.email){//Checks to make sure user inputs information
+        res.status(400).type('text/plain').send('Email is required');
+        return;
+    }
+    else if(!userLogin.password){
+        res.status(400).type('text/plain').send('Password is required');
+        return;
+    }
+    else{//Handles logging user in.
+        const userFound = await searchUsers("email", userLogin.email)
+        const passwordFound = await searchUsers("password", userLogin.password)
+        if(search){
+            res.status(200).json('User logged in succesfully');
+        }
+        else{
+            res.status(401).send('Invalid credentials');
+        }
+    }
+});
 
 ////--------------------------------Router Put---------------------------
 
