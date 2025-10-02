@@ -10,7 +10,7 @@ function Users() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await axios.get('http://localhost:5050/api/user/list')
+      const response = await axios.get('http://localhost:5000/api/user/list')
       setUsers(response.data)
     }
     fetchUsers()
@@ -21,9 +21,9 @@ function Users() {
 
   return (
     <div className='position-absolute top-0 start-0 bg-dark text-light w-100 h-100'>
-    <div className="d-flex flex-wrap gap-3 justify-content-center">
+    <div className="d-flex flex-wrap gap-2 mx-5 border border-solid row-cols-4 justify-content-center">
       {users.map(user => (
-        <div className="border rounded p-3" key={user._id}>
+        <div className="border rounded p-3 mx-1" key={user._id}>
           <h3>
             {capitalize(user.givenName)} {capitalize(user.familyName)}
           </h3>

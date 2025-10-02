@@ -7,7 +7,7 @@ import { ping } from "./database.js";
 dotenv.config();
 
 //-------------------------------------------- Config ---------------------------------------------
-const port = process.env.PORT || 5050;
+const port = process.env.PORT || 5000;
 const app = express();
 
 //--------------------------------------------Middleware-------------------------------------------
