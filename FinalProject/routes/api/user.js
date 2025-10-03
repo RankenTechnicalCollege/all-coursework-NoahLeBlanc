@@ -1,7 +1,7 @@
 import express from 'express';
-import {ObjectId} from 'mongodb';// Converts text id's to object _id's like in mongo
-// Database functions
-import {getCollection} from '../../database.js';
+import { ObjectId } from 'mongodb'; // Converts text id's to object _id's like in mongo
+import { getCollection } from '../../database.js';
+
 const router = express.Router();
 
 import debug from 'debug';
@@ -10,31 +10,38 @@ const debugUser = debug('app:UserRouter');
 router.use(express.urlencoded({ extended: false }));
 let userCollection = await getCollection("users");
 
-//Bycrypt stuff...
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 const saltRounds = 10;
+
 bcrypt.genSalt(saltRounds, (err, salt) => {
-if (err) {
+  if (err) {
     // Handle error
     return;
-}});
-// ------------------------------- Router GETs -------------------------------
-router.get('/list', async (req, res) => {
-  try {
-    const allUsers = await userCollection.find({},
-        {projection:{
-            _id:1, 
-            email:1, 
-            familyName:1, 
-            givenName:1, 
-            createdBugs:1, 
-            assignedBugs:1,
-            role:1
-        }}).toArray(); // convert cursor to array of docs
+  }
+});
 
-    res
-      .status(200)
-      .json(allUsers); // now safe to stringify
+// ===========================================================================
+// [                               ROUTER GETS                               ]
+// ===========================================================================
+router.get('/list', async (req, res) => {
+  debugUser("list route hit")
+  try {
+    const allUsers = await userCollection.find(
+      {},
+      {
+        projection: {
+          _id: 1,
+          email: 1,
+          familyName: 1,
+          givenName: 1,
+          createdBugs: 1,
+          assignedBugs: 1,
+          role: 1
+        }
+      }
+    ).toArray();
+
+    res.status(200).json(allUsers);
 
   } catch (err) {
     console.error(err);
@@ -43,33 +50,42 @@ router.get('/list', async (req, res) => {
 });
 
 router.get("/:userId", async (req, res) => {
+  debugUser("ID route hit")
   try {
-        const id = new ObjectId(req.params.userId);
-        const user = await userCollection.findOne({ _id: id },
-            {projection:{
-                       _id:0,
-                       email:1,
-                       familyName:1,
-                       givenName:1, 
-                       createdBugs:1, 
-                       assignedBugs:1
-            }}
-        );
-        if (!user) {
-        throw new Error(`User ${id} Not found`);
+    const id = new ObjectId(req.params.userId);
+    const user = await userCollection.findOne(
+      { _id: id },
+      {
+        projection: {
+          _id: 0,
+          email: 1,
+          familyName: 1,
+          givenName: 1,
+          createdBugs: 1,
+          assignedBugs: 1
         }
-        res // Below formats it to look nicer
-        .status(200)
-        .json(user)
-    }
-    catch (err) {
-    if (err.name === "BSONError") {// Handles BSON errors
-      return res.status(400).json({ error: "Invalid user ID format" });
-    }res.status(404).json({ error: err.message });
-  }});
+      }
+    );
 
-// ------------------------------- Router POSTs ------------------------------
+    if (!user) {
+      throw new Error(`User ${id} Not found`);
+    }
+
+    res.status(200).json(user);
+
+  } catch (err) {
+    if (err.name === "BSONError") {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+    res.status(404).json({ error: err.message });
+  }
+});
+
+// ===========================================================================
+// [                              ROUTER POSTS                               ]
+// ===========================================================================
 router.post('/register', async (req, res) => {
+  debugUser("Register Hit")
   const newUser = req.body;
 
   // Validation
@@ -86,25 +102,22 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
     newUser.password = hashedPassword;
-    
-    //Handles adding new date in mm/dd/yyyy like the db
+
+    // Format new date as mm/dd/yyyy
     const today = new Date();
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const yyyy = today.getFullYear();
 
-    //Applies the new date to the user
     newUser.creationDate = `${mm}/${dd}/${yyyy}`;
 
     await userCollection.insertOne(newUser);
 
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
-    
-  }
-  catch (err) {
+
+  } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json("Internal Server Error");
   }
@@ -113,26 +126,19 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const userLogin = req.body;
   try {
-    if (!userLogin.email) {
-      throw new ReferenceError("Please input email");
-    }
-    if (!userLogin.password) {
-      throw new ReferenceError("Please input password");
-    }
+    if (!userLogin.email) throw new ReferenceError("Please input email");
+    if (!userLogin.password) throw new ReferenceError("Please input password");
 
-
-    // Find user by email
     const user = await userCollection.findOne({ email: userLogin.email });
 
     if (!user) {
       return res.status(401).json('Invalid credentials');
     }
 
-    // Compare hashed password with login input
     const isMatch = await bcrypt.compare(userLogin.password, user.password);
 
     if (isMatch) {
-      return res.json(user); // success
+      return res.json(user);
     }
 
     return res.status(401).json('Invalid credentials');
@@ -145,14 +151,14 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
-// ------------------------------- Router PUTs -------------------------------
-
+// ===========================================================================
+// [                               ROUTER PUTS                               ]
+// ===========================================================================
 router.put('/:userId', async (req, res) => {
+  debugUser("Put ID hit")
   try {
     const id = req.params.userId;
     const objectId = new ObjectId(id);
-
     const updatedInfo = req.body;
 
     if (!updatedInfo || Object.keys(updatedInfo).length === 0) {
@@ -184,9 +190,11 @@ router.put('/:userId', async (req, res) => {
   }
 });
 
-
-// ------------------------------- Router DELETE ----------------------------
+// ===========================================================================
+// [                              ROUTER DELETE                              ]
+// ===========================================================================
 router.delete('/:userId', async (req, res) => {
+  debugUser("DELETE userId hit")
   try {
     const id = req.params.userId;
     const objectId = new ObjectId(id);
@@ -211,4 +219,4 @@ router.delete('/:userId', async (req, res) => {
   }
 });
 
-export { router as userRouter }
+export { router as userRouter };

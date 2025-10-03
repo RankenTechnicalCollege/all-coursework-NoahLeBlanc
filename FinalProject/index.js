@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 
 import { userRouter } from "./routes/api/user.js";
+import { bugRouter } from "./routes/api/bug.js";
 import { ping } from "./database.js";
 
 dotenv.config();
@@ -17,7 +18,7 @@ app.use(express.static("frontend/dist"));
 
 //---------------------------------------------Route-----------------------------------------------
 app.use("/api/user", userRouter);
-//app.use("api/bugs", bugsRouter);
+app.use("/api/bug", bugRouter);
 //--------------------------------------------Database---------------------------------------------
 ping();
 

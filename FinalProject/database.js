@@ -17,9 +17,8 @@ const debugDb = debug("app:Database");
 /** Global variable storing the open connection, do not use it directly. *​*/
 let _db = null;
 
-
-//-------------------------------------------- Connection --------------------------------------------
-async function connectToDatabase() {
+//------------------------------------------ Functions ------------------------------------------
+export async function connectToDatabase() {
   if (!_db) {
     const connectionString = process.env.MONGO_URI;
     const dbName = process.env.MONGO_DB_NAME;
@@ -30,7 +29,6 @@ async function connectToDatabase() {
   return _db;
 }
 
-//------------------------------------------ Functions ------------------------------------------
 //Generate/Parse an ObjectId 
 const newId = (str) => ObjectId.createFromHexString(str);
 
@@ -39,10 +37,11 @@ async function ping() {
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
 }
+
 export async function getCollection(collectionName) {
   const db = await connectToDatabase();
   return db.collection(collectionName);
 }
 
 //--------------------------------------------- Exports ----------------------------------------------
-export { ping, connectToDatabase};
+export {ping};
