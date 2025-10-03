@@ -43,14 +43,6 @@ export async function getCollection(collectionName) {
   const db = await connectToDatabase();
   return db.collection(collectionName);
 }
-export async function hash(userPassword){
-    bcrypt.hash(userPassword, salt, (err, hash) => {
-    if (err) {
-        return;
-    
-      }
-    return hash;
-  })};
 
 //--------------------------------------------- Exports ----------------------------------------------
 export { ping, connectToDatabase};

@@ -1,14 +1,14 @@
 import express from 'express';
-import { BSON, ObjectId } from 'mongodb';// Converts text id's to object _id's like in mongo
+import {ObjectId} from 'mongodb';// Converts text id's to object _id's like in mongo
 // Database functions
-import {getCollection, hash} from '../../database.js';
+import {getCollection} from '../../database.js';
 const router = express.Router();
 
 import debug from 'debug';
 const debugUser = debug('app:UserRouter');
 
 router.use(express.urlencoded({ extended: false }));
-let userCollection = getCollection("users");
+let userCollection = await getCollection("users");
 
 //Bycrypt stuff...
 import bcrypt from 'bcrypt'
@@ -21,10 +21,9 @@ if (err) {
 // ------------------------------- Router GETs -------------------------------
 router.get('/list', async (req, res) => {
   try {
-    const users = await userCollection;        // this should already be a collection
-    const allUsers = await users.find({},
+    const allUsers = await userCollection.find({},
         {projection:{
-            id:1, 
+            _id:1, 
             email:1, 
             familyName:1, 
             givenName:1, 
@@ -35,8 +34,7 @@ router.get('/list', async (req, res) => {
 
     res
       .status(200)
-      .setHeader('Content-Type', 'application/json')
-      .send(JSON.stringify(allUsers, null, 2)); // now safe to stringify
+      .json(allUsers); // now safe to stringify
 
   } catch (err) {
     console.error(err);
@@ -47,11 +45,9 @@ router.get('/list', async (req, res) => {
 router.get("/:userId", async (req, res) => {
   try {
         const id = new ObjectId(req.params.userId);
-
-        const users = await userCollection;
-        const user = await users.findOne({ _id: id },
+        const user = await userCollection.findOne({ _id: id },
             {projection:{
-                       _id:1,
+                       _id:0,
                        email:1,
                        familyName:1,
                        givenName:1, 
@@ -59,15 +55,14 @@ router.get("/:userId", async (req, res) => {
                        assignedBugs:1
             }}
         );
-
         if (!user) {
-        throw new Error("User Not found");
+        throw new Error(`User ${id} Not found`);
         }
         res // Below formats it to look nicer
         .status(200)
-        .setHeader("Content-Type", "application/json")
-        .send(JSON.stringify(user, null, 2));
-    }catch (err) {
+        .json(user)
+    }
+    catch (err) {
     if (err.name === "BSONError") {// Handles BSON errors
       return res.status(400).json({ error: "Invalid user ID format" });
     }res.status(404).json({ error: err.message });
@@ -78,37 +73,45 @@ router.post('/register', async (req, res) => {
   const newUser = req.body;
 
   // Validation
-  if (!newUser.email) return res.status(400).send('email is required');
-  if (!newUser.password) return res.status(400).send('password is required');
-  if (!newUser.givenName) return res.status(400).send('Given Name is required');
-  if (!newUser.familyName) return res.status(400).send('Family Name is required');
-  if (!newUser.role) return res.status(400).send('role is required');
+  if (!newUser.email) return res.status(400).json('email is required');
+  if (!newUser.password) return res.status(400).json('password is required');
+  if (!newUser.givenName) return res.status(400).json('Given Name is required');
+  if (!newUser.familyName) return res.status(400).json('Family Name is required');
+  if (!newUser.role) return res.status(400).json('role is required');
 
-  const users = await userCollection; 
-  const search = await users.findOne({ email: newUser.email });
+  const search = await userCollection.findOne({ email: newUser.email });
 
   if (search) {
-    return res.status(400).send('Email already registered');
+    return res.status(400).json('Email already registered');
   }
 
   try {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
     newUser.password = hashedPassword;
+    
+    //Handles adding new date in mm/dd/yyyy like the db
+    const today = new Date();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const dd = String(today.getDate()).padStart(2, '0');
+    const yyyy = today.getFullYear();
 
-    await users.insertOne(newUser);
+    //Applies the new date to the user
+    newUser.creationDate = `${mm}/${dd}/${yyyy}`;
+
+    await userCollection.insertOne(newUser);
 
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
-  } catch (err) {
+    
+  }
+  catch (err) {
     console.error("Registration error:", err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json("Internal Server Error");
   }
 });
 
-
 router.post('/login', async (req, res) => {
   const userLogin = req.body;
-
   try {
     if (!userLogin.email) {
       throw new ReferenceError("Please input email");
@@ -117,77 +120,95 @@ router.post('/login', async (req, res) => {
       throw new ReferenceError("Please input password");
     }
 
-    const users = await userCollection;
 
     // Find user by email
-    const user = await users.findOne({ email: userLogin.email });
+    const user = await userCollection.findOne({ email: userLogin.email });
 
     if (!user) {
-      return res.status(401).send('Invalid credentials'); // no user with that email
+      return res.status(401).json('Invalid credentials');
     }
 
-    // Compare passwords 
-    if (user.password === userLogin.password) {
-      return res.status(200).json({ 
-        message: `User ${user.givenName} logged in successfully`,
-        user: {
-          _id: user._id,
-          email: user.email,
-          givenName: user.givenName,
-          familyName: user.familyName,
-          role: user.role
-        }
-      });
+    // Compare hashed password with login input
+    const isMatch = await bcrypt.compare(userLogin.password, user.password);
+
+    if (isMatch) {
+      return res.json(user); // success
     }
 
-    return res.status(401).send('Invalid credentials'); // wrong password
-  } 
-  catch (err) {
+    return res.status(401).json('Invalid credentials');
+  } catch (err) {
     if (err instanceof ReferenceError) {
-      return res.status(400).send(err.message);
+      return res.status(400).json(err.message);
     }
     console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+
 // ------------------------------- Router PUTs -------------------------------
 
-// router.put('/:userId', (req,res) => {
-//   const id = req.params.userId;                // Sending data with params
-//   const userToUpdate = userArray.find(user => user.userId == id);
-//   const updatedUser = req.body;                // Sending data with body
+router.put('/:userId', async (req, res) => {
+  try {
+    const id = req.params.userId;
+    const objectId = new ObjectId(id);
 
-//   if (userToUpdate) {
-//     for (const key in updatedUser) {
-//       userToUpdate[key] = updatedUser[key];
-//     }
-//     // Save updated user in the users array
-//     const index = userArray.findIndex(user => user.userId == id);
-//     if (index != -1) {
-//       userArray[index] = userToUpdate;
-//     }
-//     res.status(200).send(`user ${id} updated successfully`);
-//   } else {
-//     res.status(404).send(`user not found`);
-//   }
-// });
+    const updatedInfo = req.body;
 
-// ------------------------------- Router DELETEs ----------------------------
+    if (!updatedInfo || Object.keys(updatedInfo).length === 0) {
+      return res.status(400).json({ message: "No update data provided" });
+    }
 
-// router.delete('/:userId', (req,res) => {
-//   const id = req.params.userId;
-//   const index = userArray.findIndex(user => user.userId == id);
+    const user = await userCollection.findOne({ _id: objectId });
+    if (!user) {
+      return res.status(404).json({ message: `User ${id} not found` });
+    }
 
-//   if (index != -1) {
-//     userArray.splice(index,1);                 // Start at index, remove one element
-//     res.status(200).send(`User ${id} deleted successfully`);
-//   } else {
-//     res.status(404).send(`User not found`);
-//   }
-// });
+    const result = await userCollection.updateOne(
+      { _id: objectId },
+      { $set: updatedInfo }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(200).json({ message: `No changes were made` });
+    }
+
+    res.status(200).json({ message: `User ${id} updated successfully` });
+
+  } catch (err) {
+    if (err.name === "BSONError") {
+      return res.status(400).json({ error: "Invalid user ID format" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Error updating user" });
+  }
+});
+
+
+// ------------------------------- Router DELETE ----------------------------
+router.delete('/:userId', async (req, res) => {
+  try {
+    const id = req.params.userId;
+    const objectId = new ObjectId(id);
+
+    const user = await userCollection.findOne({ _id: objectId });
+
+    if (!user) {
+      return res.status(404).json({ message: `User ${id} not found` });
+    }
+
+    const result = await userCollection.deleteOne({ _id: objectId });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: `User ${id} deleted successfully` });
+    } else {
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 export { router as userRouter }
-// export { userArray as userArray }
-
-// ------------------------------- Functions --------------------------------
