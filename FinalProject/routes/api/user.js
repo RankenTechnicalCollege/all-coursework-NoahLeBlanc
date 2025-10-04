@@ -86,32 +86,24 @@ router.get("/:userId", async (req, res) => {
 // ===========================================================================
 router.post('/register', async (req, res) => {
   debugUser("Register Hit")
-  const newUser = req.body;
-
-  // Validation
-
-  //Changed code: make each input needed an array
-  for (const inputField of ['email', 'password', 'givenName', 'familyName', 'role']) {
-    if (!newUser[inputField]) {
-      debugUser(inputField)
-      return res.status(400).json({ message: `${inputField} is required` });
-
-    }
-  }
-  //old code:
-    //if (!newUser.email) return res.status(400).json('email is required');
-    //if (!newUser.password) return res.status(400).json('password is required');
-    //if (!newUser.givenName) return res.status(400).json('Given Name is required');
-    //if (!newUser.familyName) return res.status(400).json('Family Name is required');
-    //if (!newUser.role) return res.status(400).json('role is required');
-
-  const search = await userCollection.findOne({ email: newUser.email });
-
-  if (search) {
-    return res.status(400).json('Email already registered');
-  }
-
   try {
+    const newUser = req.body;
+
+    // Validation
+    const inputField = ['email', 'password', 'givenName', 'familyName', 'role'];
+    for(const field of inputField){
+      if (!newUser[field]) {
+        const error = new Error(`${field} is required`);
+        error.status = 400;
+        throw error;
+      }
+    }
+    if(await userCollection.findOne({email: newUser[inputField[0]]})){
+        const error = new Error(`Email is already registered`);
+        error.status = 400;
+        throw error;
+    }
+
     const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
     newUser.password = hashedPassword;
 
@@ -126,10 +118,10 @@ router.post('/register', async (req, res) => {
     await userCollection.insertOne(newUser);
 
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
-
+    debugUser("User Created")
   } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json("Internal Server Error");
+    debugUser(err.message);
+    res.status(err.status || 500).json({ message: err.message });
   }
 });
 
@@ -159,6 +151,7 @@ router.post('/login', async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
   }
+
 });
 
 // ===========================================================================
