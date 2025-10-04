@@ -89,11 +89,21 @@ router.post('/register', async (req, res) => {
   const newUser = req.body;
 
   // Validation
-  if (!newUser.email) return res.status(400).json('email is required');
-  if (!newUser.password) return res.status(400).json('password is required');
-  if (!newUser.givenName) return res.status(400).json('Given Name is required');
-  if (!newUser.familyName) return res.status(400).json('Family Name is required');
-  if (!newUser.role) return res.status(400).json('role is required');
+
+  //Changed code: make each input needed an array
+  for (const inputField of ['email', 'password', 'givenName', 'familyName', 'role']) {
+    if (!newUser[inputField]) {
+      debugUser(inputField)
+      return res.status(400).json({ message: `${inputField} is required` });
+
+    }
+  }
+  //old code:
+    //if (!newUser.email) return res.status(400).json('email is required');
+    //if (!newUser.password) return res.status(400).json('password is required');
+    //if (!newUser.givenName) return res.status(400).json('Given Name is required');
+    //if (!newUser.familyName) return res.status(400).json('Family Name is required');
+    //if (!newUser.role) return res.status(400).json('role is required');
 
   const search = await userCollection.findOne({ email: newUser.email });
 
