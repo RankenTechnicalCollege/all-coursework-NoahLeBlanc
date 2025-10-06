@@ -1,6 +1,7 @@
 import express from 'express';
-import { ObjectId } from 'mongodb'; // Converts text id's to object _id's like in mongo
+import { ObjectId } from 'mongodb';
 import { getCollection } from '../../database.js';
+import Joi from 'joi';
 
 const router = express.Router();
 
@@ -14,17 +15,14 @@ import bcrypt from 'bcrypt';
 const saltRounds = 10;
 
 bcrypt.genSalt(saltRounds, (err, salt) => {
-  if (err) {
-    // Handle error
-    return;
-  }
+  if (err) return;
 });
 
 // ===========================================================================
 // [                               ROUTER GETS                               ]
 // ===========================================================================
 router.get('/list', async (req, res) => {
-  debugUser("list route hit")
+  debugUser("list route hit");
   try {
     const allUsers = await userCollection.find(
       {},
@@ -42,17 +40,21 @@ router.get('/list', async (req, res) => {
     ).toArray();
 
     res.status(200).json(allUsers);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
-router.get("/:userId", async (req, res) => {
-  debugUser("ID route hit")
+router.get('/:userId', async (req, res) => {
+  debugUser("ID route hit");
+  const { userId } = req.params;
   try {
-    const id = new ObjectId(req.params.userId);
+    if (!ObjectId.isValid(userId)) {
+      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
+    }
+
+    const id = new ObjectId(userId);
     const user = await userCollection.findOne(
       { _id: id },
       {
@@ -68,128 +70,120 @@ router.get("/:userId", async (req, res) => {
     );
 
     if (!user) {
-      throw new Error(`User ${id} Not found`);
+      return res.status(404).json({ error: `User ${userId} not found.` });
     }
 
     res.status(200).json(user);
-
   } catch (err) {
-    if (err.name === "BSONError") {
-      return res.status(400).json({ error: "Invalid user ID format" });
-    }
-    res.status(404).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ===========================================================================
-// [                              ROUTER POSTS                               ]
-// ===========================================================================
+// ===================================================================================================
+// [                                           ROUTER POSTS                                          ]
+// ===================================================================================================
+const userSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(3).required(),
+  givenName: Joi.string().min(1).required(),
+  familyName: Joi.string().min(1).required(),
+  role: Joi.string().valid('Admin', 'Developer', 'Tester', 'Project Manager').required()
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(3).required()
+});
+
 router.post('/register', async (req, res) => {
-  debugUser("Register Hit")
+  debugUser("Register Hit");
   try {
     const newUser = req.body;
+    const { error } = userSchema.validate(newUser);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-    // Validation
-    const inputField = ['email', 'password', 'givenName', 'familyName', 'role'];
-    for(const field of inputField){
-      if (!newUser[field]) {
-        const error = new Error(`${field} is required`);
-        error.status = 400;
-        throw error;
-      }
-    }
-    if(await userCollection.findOne({email: newUser[inputField[0]]})){
-        const error = new Error(`Email is already registered`);
-        error.status = 400;
-        throw error;
-    }
+    const existingUser = await userCollection.findOne({ email: newUser.email });
+    if (existingUser) return res.status(400).json({ error: 'Email is already registered' });
 
     const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
     newUser.password = hashedPassword;
 
-    // Format new date as mm/dd/yyyy
     const today = new Date();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const yyyy = today.getFullYear();
-
     newUser.creationDate = `${mm}/${dd}/${yyyy}`;
 
     await userCollection.insertOne(newUser);
-
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
-    debugUser("User Created")
   } catch (err) {
     debugUser(err.message);
-    res.status(err.status || 500).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
 router.post('/login', async (req, res) => {
   const userLogin = req.body;
   try {
-    if (!userLogin.email) throw new ReferenceError("Please input email");
-    if (!userLogin.password) throw new ReferenceError("Please input password");
+    const { error } = loginSchema.validate(userLogin);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
     const user = await userCollection.findOne({ email: userLogin.email });
-
-    if (!user) {
-      return res.status(401).json('Invalid credentials');
-    }
+    if (!user) return res.status(401).json('Invalid credentials');
 
     const isMatch = await bcrypt.compare(userLogin.password, user.password);
-
-    if (isMatch) {
-      return res.json(user);
-    }
+    if (isMatch) return res.json(user);
 
     return res.status(401).json('Invalid credentials');
   } catch (err) {
-    if (err instanceof ReferenceError) {
-      return res.status(400).json(err.message);
-    }
     console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
   }
-
 });
 
 // ===========================================================================
-// [                               ROUTER PUTS                               ]
+// [                               ROUTER PATCH                              ]
 // ===========================================================================
-router.put('/:userId', async (req, res) => {
-  debugUser("Put ID hit")
+const patchSchema = Joi.object({
+  password: Joi.string().min(3).optional(),
+  fullName: Joi.string().min(1).optional(),
+  givenName: Joi.string().min(1).optional(),
+  familyName: Joi.string().min(1).optional(),
+  role: Joi.string().valid('Admin', 'Developer', 'Tester', 'Project Manager').optional()
+}).min(1);
+
+router.patch('/:userId', async (req, res) => {
+  debugUser("PATCH userId hit");
+  const { userId } = req.params;
+  const updates = req.body;
+
   try {
-    const id = req.params.userId;
-    const objectId = new ObjectId(id);
-    const updatedInfo = req.body;
-
-    if (!updatedInfo || Object.keys(updatedInfo).length === 0) {
-      return res.status(400).json({ message: "No update data provided" });
+    if (!ObjectId.isValid(userId)) {
+      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
     }
 
-    const user = await userCollection.findOne({ _id: objectId });
-    if (!user) {
-      return res.status(404).json({ message: `User ${id} not found` });
+    const { error } = patchSchema.validate(updates);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    if (updates.password) {
+      updates.password = await bcrypt.hash(updates.password, saltRounds);
     }
 
+    const objectId = new ObjectId(userId);
     const result = await userCollection.updateOne(
       { _id: objectId },
-      { $set: updatedInfo }
+      { $set: updates }
     );
 
-    if (result.modifiedCount === 0) {
-      return res.status(200).json({ message: `No changes were made` });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: `User ${userId} not found.` });
     }
 
-    res.status(200).json({ message: `User ${id} updated successfully` });
-
+    res.status(200).json({ message: `User ${userId} updated successfully.` });
   } catch (err) {
-    if (err.name === "BSONError") {
-      return res.status(400).json({ error: "Invalid user ID format" });
-    }
     console.error(err);
-    res.status(500).json({ message: "Error updating user" });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -197,28 +191,32 @@ router.put('/:userId', async (req, res) => {
 // [                              ROUTER DELETE                              ]
 // ===========================================================================
 router.delete('/:userId', async (req, res) => {
-  debugUser("DELETE userId hit")
-  try {
-    const id = req.params.userId;
-    const objectId = new ObjectId(id);
+  debugUser("DELETE userId hit");
+  const { userId } = req.params;
 
+  try {
+    // Validate ObjectId
+    if (!ObjectId.isValid(userId)) {
+      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
+    }
+
+    const objectId = new ObjectId(userId);
     const user = await userCollection.findOne({ _id: objectId });
 
     if (!user) {
-      return res.status(404).json({ message: `User ${id} not found` });
+      return res.status(404).json({ message: `User ${userId} not found.` });
     }
 
     const result = await userCollection.deleteOne({ _id: objectId });
 
     if (result.deletedCount === 1) {
-      res.status(200).json({ message: `User ${id} deleted successfully` });
+      res.status(200).json({ message: `User ${userId} deleted successfully.` });
     } else {
-      res.status(500).json({ message: "Failed to delete user" });
+      res.status(500).json({ message: 'Failed to delete user.' });
     }
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
