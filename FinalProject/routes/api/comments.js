@@ -65,27 +65,37 @@ router.get('/:bugId/comments/:commentId', async (req, res) => {
   try {
     const { bugId, commentId } = req.params;
 
+    //Checks if inputs are valid ObjectsId's
     if (!ObjectId.isValid(bugId) || !ObjectId.isValid(commentId)) {
       return res.status(404).json({ error: `The ID's do not have valid ObjectId's.` });
     }
-
-    const bug = await bugCollection
-    .findOne({_id: bugId});
-
-    if(!bug){
-      return res.status(404).json({ error: `Bug ${bug} not found.` });
-    }
-
+    
     const bugObjectId = newId(bugId);
     const commentObjectId = newId(commentId);
 
-    const comment = await bugCollection
-    .findOne({_id: bugObjectId, "comments._id": commentObjectId}, {"comment.$": 1});
+    // Check if bug exists
+    const bugExists = await bugCollection.findOne(
+      { _id: bugObjectId },
+      { projection: { _id: 1 } }
+    );
 
+    if (!bugExists) {
+      return res.status(404).json({ error: `Bug ${bugId} not found.` });
+    }
+
+
+const comment = await bugCollection.findOne(
+  { _id: bugObjectId, "comments._id": commentObjectId },
+  { projection: { "comments.$": 1 } }
+);
+                
     if (!comment) {
       return res.status(404).json({ error: `Comment ${commentObjectId} not found.` });
     }
-    res.status(200).json(comments);
+
+
+    res.status(200).json(comment);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -94,5 +104,32 @@ router.get('/:bugId/comments/:commentId', async (req, res) => {
 // ===========================================
 //            [ POST COMMENT ONTO BUGID ]
 // ==========================================
-router.get('/:bugId/comments', async (req, res) => {})
+router.post('/:bugId/comments', async (req, res) => {
+  try{
+    const { bugId, commentId } = req.params;
+
+    //Checks if inputs are valid ObjectsId's
+    if (!ObjectId.isValid(bugId) || !ObjectId.isValid(commentId)) {
+      return res.status(404).json({ error: `The ID's do not have valid ObjectId's.` });
+    }
+    
+    const bugObjectId = newId(bugId);
+    const commentObjectId = newId(commentId);
+
+    // Check if bug exists
+    const bugExists = await bugCollection.findOne(
+      { _id: bugObjectId },
+      { projection: { _id: 1 } }
+    );
+
+    if (!bugExists) {
+      return res.status(404).json({ error: `Bug ${bugId} not found.` });
+    }
+    
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ error: `Failed to fetch ${bugId}'s comments.` });
+  }
+})
+
 export {router as commentRouter};
