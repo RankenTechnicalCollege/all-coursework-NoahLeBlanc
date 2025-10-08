@@ -12,10 +12,10 @@ router.use(express.json());
 let bugCollection = await getCollection('bugs');
 
 // =====================================================================================
-//                                       [ GET REQUESTS ] 
+// |                                     [ GET REQUESTS ]                              | 
 // =====================================================================================
 // ===========================================
-//    [ GET ALL TESTS FOR A SPECIFIC BUG ]   |
+// |  [ GET ALL TESTS FOR A SPECIFIC BUG ]   |
 // ===========================================
 //GET /api/bugs/:bugId/tests(10pts)
 router.get('/:bugId/tests', async (req, res) => {
@@ -36,7 +36,7 @@ router.get('/:bugId/tests', async (req, res) => {
         }
     }});
 // ===========================================
-//  [ GET SPECIFIC TEST FOR A SPECIFIC BUG ] |
+// |[ GET SPECIFIC TEST FOR A SPECIFIC BUG ] |
 // ===========================================
 //GET /api/bugs/:bugId/tests/:testId(10pts)
 router.get('/:bugId/tests/:testId', async (req, res) => {
@@ -56,10 +56,10 @@ router.get('/:bugId/tests/:testId', async (req, res) => {
         }
     }});
 // =====================================================================================
-//                                       [ POST REQUESTS ] 
+// |                                     [ POST REQUESTS ]                             | 
 // =====================================================================================
 // ===========================================
-//   [ CREATE NEW TEST FOR A SPECIFIC BUG]   |
+// | [ CREATE NEW TEST FOR A SPECIFIC BUG]   |
 // ===========================================
 //POST /api/bugs/:bugId/tests(10pts)
 router.post('/:bugId/tests', async (req, res) => {
@@ -79,10 +79,10 @@ router.post('/:bugId/tests', async (req, res) => {
         }
     }});
 // =====================================================================================
-//                                       [ PATCH REQUESTS ] 
+// |                                     [ PATCH REQUESTS ]                            | 
 // =====================================================================================
 // ===========================================
-// [ UPDATE SPECIFIC TEST FOR A SPECIFIC BUG ]
+// | UPDATE SPECIFIC TEST FOR A SPECIFIC BUG |
 // ===========================================
 //PATCH /api/bugs/:bugId/tests/:testId
 router.patch('/:bugId/tests/:testId', async (req, res) => {
@@ -102,10 +102,10 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
         }
     }});
 // =====================================================================================
-//                                       [ DELETE REQUESTS ] 
+// |                                     [ DELETE REQUESTS ]                           |
 // =====================================================================================
 // ===========================================
-// [ DELETE SPECIFIC TEST FOR A SPECIFIC BUG ]
+// | DELETE SPECIFIC TEST FOR A SPECIFIC BUG |
 // ===========================================
 //DELETE /api/bugs/:bugId/tests/:testId
 router.delete('/:bugId/tests/:testId', async (req, res) => {
@@ -113,7 +113,6 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
         debugTests(`DEBUG TEST: delete testID on bugId`);
         const {bugId, testId} = req.params;
         validateID(bugId);validateID(testId);
-
     }
     catch(err){
         console.error(err);
@@ -125,10 +124,10 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
         }
     }});
 // =====================================================================================
-//                                       [ FUNCTIONS ] 
+// |                                     [ FUNCTIONS ]                                 |
 // =====================================================================================
 // ===========================================
-//            [ VALIDATOR FUNCTION ]         |
+// |          [ VALIDATOR FUNCTION ]         |
 // ===========================================
 function validateID(i) {
   if (!ObjectId.isValid(i)) {
@@ -138,6 +137,5 @@ function validateID(i) {
   }
   debugTests(`${i} Passed ID validation`);
 }
-
-// =======================================[ EXPORT ROUTER ]=============================
+// |====================================[ EXPORT ROUTER ]==============================|
 export {router as testRouter};
