@@ -124,15 +124,12 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
             res.status(500).json({ error: 'Server error' });
         }
     }});
-
-// =======================================[ EXPORT ROUTER ]=============================
-export {router as testRouter};
-
-
-
+// =====================================================================================
+//                                       [ FUNCTIONS ] 
+// =====================================================================================
 // ===========================================
-//            [ HELPER FUNCTION ]
-// ==========================================
+//            [ VALIDATOR FUNCTION ]         |
+// ===========================================
 function validateID(i) {
   if (!ObjectId.isValid(i)) {
     const err =  new Error(`${i} is not a valid ObjectId.`);
@@ -141,3 +138,6 @@ function validateID(i) {
   }
   debugTests(`${i} Passed ID validation`);
 }
+
+// =======================================[ EXPORT ROUTER ]=============================
+export {router as testRouter};
