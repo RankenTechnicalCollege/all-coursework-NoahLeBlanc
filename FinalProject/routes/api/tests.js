@@ -1,23 +1,38 @@
+//|====================================================================================================|
+//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
+//|====================================================================================================|
+//|==================================================|
+//|---------------------[-IMPORTS-]------------------|
+//|==================================================|
 import express from 'express';
 import { newId, getCollection } from '../../database.js';
 import debug from 'debug';
 import { ObjectId } from 'mongodb';
-
+import Joi from 'joi';
+//|==================================================|
+//|----------------[-JOI-INITIALIZATION-]------------|
+//|==================================================|
+const schema = Joi.object({
+    description: Joi.string().required(),
+    preconditions: Joi.string().required(),
+    steps: Joi.string().required(),
+    expectedResult: Joi.string().required(),
+    actualResult: Joi.string().required()
+});
+//|==================================================|
+//|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
+//|==================================================|
 const router = express.Router();
 const debugTests = debug(`app:TestRouter`)
-
 router.use(express.urlencoded ({extended: false}))
 router.use(express.json());
-
 let bugCollection = await getCollection('bugs');
-
 //|====================================================================================================|
-//|-------------------------------------------[ GET REQUESTS ]-----------------------------------------|
+//|-------------------------------------------[-GET-REQUESTS-]-----------------------------------------|
 //|====================================================================================================|
-//|============================================|
-//|---[-GET-ALL-TESTS-FOR-A-SPECIFIC-BUG-]-----|
-//|============================================|
-//GET /api/bugs/:bugId/tests(10pts)
+//|==================================================|
+//|--------[-GET-ALL-TESTS-FOR-A-SPECIFIC-BUG-]------|
+//|==================================================|
 router.get('/:bugId/tests', async (req, res) => {
     try {
         const { bugId } = req.params;
@@ -39,10 +54,9 @@ router.get('/:bugId/tests', async (req, res) => {
         autoCatch(err, res);
     }
 });
-//|===========================================|
-//|--[ GET SPECIFIC TEST FOR A SPECIFIC BUG ]-|
-//|===========================================|
-//GET /api/bugs/:bugId/tests/:testId(10pts)
+//|==================================================|
+//|-------[ GET SPECIFIC TEST FOR A SPECIFIC BUG ]---|
+//|==================================================|
 router.get('/:bugId/tests/:testId', async (req, res) => {
     try {
         const { bugId, testId } = req.params;
@@ -77,13 +91,13 @@ router.get('/:bugId/tests/:testId', async (req, res) => {
 //|====================================================================================================|
 //|-------------------------------------------[ POST REQUESTS ]----------------------------------------|
 //|====================================================================================================|
-//|============================================|
-//|---[ CREATE NEW TEST FOR A SPECIFIC BUG]----|
-//|============================================|
-//POST /api/bugs/:bugId/tests(10pts)
+//|================================================|
+//|------[ CREATE NEW TEST FOR A SPECIFIC BUG]-----|
+//|================================================|
 router.post('/:bugId/tests', async (req, res) => {
     try{
         const {bugId} = req.params;
+        const {description, preconditions, steps, expectedResult, actualResult} = req.body;
         validateID(bugId);validateID(testId);
         const bugObjectId = new ObjectId(bugId) 
         const bugData = await getBugData(bugCollection, bugObjectId);
@@ -95,16 +109,19 @@ router.post('/:bugId/tests', async (req, res) => {
 //|====================================================================================================|
 //|-------------------------------------------[ PATCH REQUESTS ]---------------------------------------|
 //|====================================================================================================|
-//|=============================================|
-//|-[ UPDATE SPECIFIC TEST FOR A SPECIFIC BUG ]-|
-//|=============================================|
-//PATCH /api/bugs/:bugId/tests/:testId
+//|================================================|
+//|----[ UPDATE SPECIFIC TEST FOR A SPECIFIC BUG ]-|
+//|================================================|
 router.patch('/:bugId/tests/:testId', async (req, res) => {
     try{
         debugTests(`updating test to bugId`);
         const {bugId, testId} = req.params;
+        const {description, preconditions, steps, expectedResult, actualResult} = req.body;
         validateID(bugId);validateID(testId);
         const bugData = await getBugTestCases(bugCollection, bugObjectId);
+        
+        
+
     }
     catch(err){
         autoCatch(err, res);
@@ -112,10 +129,9 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
 //|====================================================================================================|
 //|-----------------------------------------[ DELETE REQUESTS ]----------------------------------------|
 //|====================================================================================================|
-//|=============================================|
-//|---DELETE SPECIFIC TEST FOR A SPECIFIC BUG---|
-//|=============================================|
-//DELETE /api/bugs/:bugId/tests/:testId
+//|================================================|
+//|--[-DELETE SPECIFIC TEST FOR A SPECIFIC BUG-]---|
+//|================================================|
 router.delete('/:bugId/tests/:testId', async (req, res) => {
     try{
         debugTests(`delete testID on bugId`);
@@ -130,9 +146,9 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
 //|====================================================================================================|
 //|-----------------------------------------------[ FUNCTIONS ]----------------------------------------|
 //|====================================================================================================|
-//|=============================================|
-//|-----------[ VALIDATOR FUNCTION ]------------|
-//|=============================================|
+//|================================================|
+//|--------------[ VALIDATOR FUNCTION ]------------|
+//|================================================|
 function validateID(i) {
   if (!ObjectId.isValid(i)) {
     const err =  new Error(`${i} is not a valid ObjectId.`);
@@ -142,18 +158,18 @@ function validateID(i) {
   debugTests(`${i} Passed ID validation`);
 }
 
-//|=============================================|
-//|-------------[ CATCH FUNCTION ]--------------|
-//|=============================================|
+//|================================================|
+//|---------------[ CATCH FUNCTION ]---------------|
+//|================================================|
 function autoCatch(err, res) {
     if(err.status){
         return res.status(err.status).json({error : err.message})
     }
     return res.status(500).json({ error: 'Server error' });
 }
-//|=============================================|
-//|-------------[ GET BUG DATA ]----------------|
-//|=============================================|
+//|================================================|
+//|---------------[ GET BUG DATA ]-----------------|
+//|================================================|
 async function getBugData(bugCollection, bugObjectId) {
     const data = await bugCollection.findOne({ _id: bugObjectId });
     if (!data) {
@@ -163,5 +179,7 @@ async function getBugData(bugCollection, bugObjectId) {
     }
     return data;
 }
-//|=============================================[ EXPORT ROUTER ]======================================|
+//|====================================================================================================|
+//|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
+//|====================================================================================================|
 export {router as testRouter};
