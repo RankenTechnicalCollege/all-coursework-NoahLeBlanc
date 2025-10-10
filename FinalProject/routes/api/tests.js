@@ -11,143 +11,128 @@ router.use(express.json());
 
 let bugCollection = await getCollection('bugs');
 
-// |===================================================================================|
-// |                                    [ GET REQUESTS ]                               | 
-// |===================================================================================|
-// |============================================|
-// |  [ GET ALL TESTS FOR A SPECIFIC BUG ]      |
-// |============================================|
+//|====================================================================================================|
+//|-------------------------------------------[ GET REQUESTS ]-----------------------------------------|
+//|====================================================================================================|
+//|============================================|
+//|---[-GET-ALL-TESTS-FOR-A-SPECIFIC-BUG-]-----|
+//|============================================|
 //GET /api/bugs/:bugId/tests(10pts)
 router.get('/:bugId/tests', async (req, res) => {
-    try{
-        debugTests(`fetching tests for bugId`);
+    try {
         const { bugId } = req.params;
 
-        // Validate ID before using it
         validateID(bugId);
 
         const bugObjectId = new ObjectId(bugId);
+        const bugData = await getBugData(bugCollection, bugObjectId);
 
-        const bugData = await bugCollection.findOne(
-            { _id: bugObjectId },
-            { projection: { testCases: 1 } }
-        );
-
-        if (!bugData) {
-            const err = new Error(`Bug ${bugId} not found`)
+        if (!bugData.testCases || bugData.testCases.length === 0) {
+            const err = new Error(`Bug ${bugObjectId} has no test cases`);
             err.status = 404;
-            throw err
+            throw err;
         }
-        if (!bugData.testCases| bugData.testCases.length === 0) {
-            const err = new Error(`Bug ${bugId} has no test cases`)
-            err.status = 404;
-            throw err
-        }
+        debugTests(`Fetching tests for bugId`);
         res.status(200).json(bugData.testCases);
-    }
+    } 
     catch(err){
-        console.error(err);
-        if(err.status){
-            res.status(err.status).json({error: err.message})
-        }
-        else{
-            res.status(500).json({ error: 'Server error' });
-        }
-    }});
-// |===========================================|
-// |[ GET SPECIFIC TEST FOR A SPECIFIC BUG ]   |
-// |===========================================|
+        autoCatch(err, res);
+    }
+});
+//|===========================================|
+//|--[ GET SPECIFIC TEST FOR A SPECIFIC BUG ]-|
+//|===========================================|
 //GET /api/bugs/:bugId/tests/:testId(10pts)
 router.get('/:bugId/tests/:testId', async (req, res) => {
-    try{
-        debugTests(`fetching specific test for bugId`);
-        const {bugId, testId} = req.params;
-        validateID(bugId);validateID(testId);
+    try {
+        const { bugId, testId } = req.params;
+        validateID(bugId);
+        validateID(testId);
 
-    }
-    catch(err){
-        console.error(err);
-        if(err.status){
-            res.status(err.status).json({error: err.message})
+        const bugObjectId = new ObjectId(bugId);
+        const testCaseObjectId = new ObjectId(testId);
+        const bugData = await getBugData(bugCollection, bugObjectId);
+
+        if (!bugData.testCases || bugData.testCases.length === 0) {
+            const err = new Error(`Bug ${bugId} has no test cases`);
+            err.status = 404;
+            throw err;
         }
-        else{
-            res.status(500).json({ error: 'Server error' });
+
+        const matchingTestCase = bugData.testCases.find(tc =>
+            tc?.testCase?._id?.equals(testCaseObjectId)
+        );
+
+        if (!matchingTestCase) {
+            const err = new Error(`Test case ${testId} not found for bug ${bugId}`);
+            err.status = 404;
+            throw err;
         }
+        debugTests(`Fetching test case ${testCaseObjectId} for bug ${bugObjectId}`);
+        res.status(200).json(matchingTestCase);
+    }catch (err) {
+        autoCatch(err, res)
     }});
-// |===================================================================================|
-// |                                     [ POST REQUESTS ]                             | 
-// |===================================================================================|
-// |============================================|
-// |   [ CREATE NEW TEST FOR A SPECIFIC BUG]    |
-// |============================================|
+
+//|====================================================================================================|
+//|-------------------------------------------[ POST REQUESTS ]----------------------------------------|
+//|====================================================================================================|
+//|============================================|
+//|---[ CREATE NEW TEST FOR A SPECIFIC BUG]----|
+//|============================================|
 //POST /api/bugs/:bugId/tests(10pts)
 router.post('/:bugId/tests', async (req, res) => {
     try{
-        debugTests(`adding test to bugId`);
-        const {bugId, testId} = req.params;
+        const {bugId} = req.params;
         validateID(bugId);validateID(testId);
+        const bugObjectId = new ObjectId(bugId) 
+        const bugData = await getBugData(bugCollection, bugObjectId);
 
     }
     catch(err){
-        console.error(err);
-        if(err.status){
-            res.status(err.status).json({error: err.message})
-        }
-        else{
-            res.status(500).json({ error: 'Server error' });
-        }
+        autoCatch(err, res);
     }});
-// |===================================================================================|
-// |                                     [ PATCH REQUESTS ]                            |
-// |===================================================================================|
-// |=========================================|
-// | UPDATE SPECIFIC TEST FOR A SPECIFIC BUG |
-// |=========================================|
+//|====================================================================================================|
+//|-------------------------------------------[ PATCH REQUESTS ]---------------------------------------|
+//|====================================================================================================|
+//|=============================================|
+//|-[ UPDATE SPECIFIC TEST FOR A SPECIFIC BUG ]-|
+//|=============================================|
 //PATCH /api/bugs/:bugId/tests/:testId
 router.patch('/:bugId/tests/:testId', async (req, res) => {
     try{
         debugTests(`updating test to bugId`);
         const {bugId, testId} = req.params;
         validateID(bugId);validateID(testId);
-
+        const bugData = await getBugTestCases(bugCollection, bugObjectId);
     }
     catch(err){
-        console.error(err);
-        if(err.status){
-            res.status(err.status).json({error: err.message})
-        }
-        else{
-            res.status(500).json({ error: 'Server error' });
-        }
+        autoCatch(err, res);
     }});
-// |===================================================================================|
-// |                                     [ DELETE REQUESTS ]                           |
-// |===================================================================================|
-// |=========================================|
-// | DELETE SPECIFIC TEST FOR A SPECIFIC BUG |
-// |=========================================|
+//|====================================================================================================|
+//|-----------------------------------------[ DELETE REQUESTS ]----------------------------------------|
+//|====================================================================================================|
+//|=============================================|
+//|---DELETE SPECIFIC TEST FOR A SPECIFIC BUG---|
+//|=============================================|
 //DELETE /api/bugs/:bugId/tests/:testId
 router.delete('/:bugId/tests/:testId', async (req, res) => {
     try{
         debugTests(`delete testID on bugId`);
         const {bugId, testId} = req.params;
         validateID(bugId);validateID(testId);
+        const bugData = await getBugTestCases(bugCollection, bugObjectId);
+
     }
     catch(err){
-        console.error(err);
-        if(err.status){
-            res.status(err.status).json({error: err.message})
-        }
-        else{
-            res.status(500).json({ error: 'Server error' });
-        }
+        autoCatch(err, res);
     }});
-// |===================================================================================|
-// |                                     [ FUNCTIONS ]                                 |
-// |===================================================================================|
-// |=========================================|
-// |          [ VALIDATOR FUNCTION ]         |
-// |=========================================|
+//|====================================================================================================|
+//|-----------------------------------------------[ FUNCTIONS ]----------------------------------------|
+//|====================================================================================================|
+//|=============================================|
+//|-----------[ VALIDATOR FUNCTION ]------------|
+//|=============================================|
 function validateID(i) {
   if (!ObjectId.isValid(i)) {
     const err =  new Error(`${i} is not a valid ObjectId.`);
@@ -156,5 +141,27 @@ function validateID(i) {
   }
   debugTests(`${i} Passed ID validation`);
 }
-// |====================================[ EXPORT ROUTER ]==============================|
+
+//|=============================================|
+//|-------------[ CATCH FUNCTION ]--------------|
+//|=============================================|
+function autoCatch(err, res) {
+    if(err.status){
+        return res.status(err.status).json({error : err.message})
+    }
+    return res.status(500).json({ error: 'Server error' });
+}
+//|=============================================|
+//|-------------[ GET BUG DATA ]----------------|
+//|=============================================|
+async function getBugData(bugCollection, bugObjectId) {
+    const data = await bugCollection.findOne({ _id: bugObjectId });
+    if (!data) {
+        const err = new Error(`Bug with ID ${bugObjectId} not found`);
+        err.status = 404;
+        throw err;
+    }
+    return data;
+}
+//|=============================================[ EXPORT ROUTER ]======================================|
 export {router as testRouter};
