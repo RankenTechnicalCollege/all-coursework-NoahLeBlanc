@@ -5,6 +5,12 @@ import Joi from "joi";
 //|====================================================================================================|
 //|-------------------------------------------[-USER-SCHEMA-]------------------------------------------|
 //|====================================================================================================|
+export const userListQuerySchema = Joi.object({
+ role: Joi.string().optional(),
+ maxAge:Joi.string().optional(),
+ minAge:Joi.string().optional(),
+ sortBy:Joi.string().optional() 
+});
 export const userSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().trim().min(3).required(),
