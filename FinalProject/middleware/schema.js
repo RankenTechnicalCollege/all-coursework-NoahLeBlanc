@@ -5,9 +5,6 @@ import Joi from "joi";
 //|====================================================================================================|
 //|-------------------------------------------[-USER-SCHEMA-]------------------------------------------|
 //|====================================================================================================|
-//|==================================================|
-//|---------------[-USER-POST-SCHEMA-]---------------|
-//|==================================================|
 export const userSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().trim().min(3).required(),
@@ -26,9 +23,6 @@ export const userSchema = Joi.object({
     .required()
 });
 
-//|==================================================|
-//|---------------[-USER-PATCH-SCHEMA-]--------------|
-//|==================================================|
 export const userPatchSchema = Joi.object({
   password: Joi.string().min(3).optional(),
   fullName: Joi.string().min(1).optional(), // This field is not in POST schema
@@ -45,9 +39,6 @@ export const userPatchSchema = Joi.object({
     .optional()
 }).min(1);
 
-//|==================================================|
-//|---------------[-USER-LOGIN-SCHEMA-]--------------|
-//|==================================================|
 export const userLoginSchema = Joi.object({
   email: Joi.string().email().min(1).required(),
   password: Joi.string().min(3).required()
@@ -60,20 +51,25 @@ export const bugSchema = Joi.object({
     description: Joi.string().required(),
     stepsToReproduce: Joi.string().required()
 });
+
 export const bugPatchSchema = Joi.object({
   title: Joi.string(),
   description: Joi.string(),
   stepsToReproduce: Joi.string()
 }).min(1);
+
 export const bugClassifySchema = Joi.object({
   classification: Joi.string().valid('Critical', 'Major', 'Minor', 'Trivial').required()
 });
+
 export const bugAssignSchema = Joi.object({
   assignedToUserId: Joi.string().required()
 });
+
 export const bugCloseSchema = Joi.object({
   closed: Joi.boolean().required()
 });
+
 //|====================================================================================================|
 //|------------------------------------------[-COMMENT-SCHEMA-]----------------------------------------|
 //|====================================================================================================|
@@ -81,3 +77,18 @@ export const bugCloseSchema = Joi.object({
 //|====================================================================================================|
 //|-------------------------------------------[-TEST-SCHEMA-]------------------------------------------|
 //|====================================================================================================|
+export const testSchema = Joi.object({
+  description: Joi.string().required(),
+  preconditions: Joi.string().required(),
+  steps: Joi.string().required(),
+  expectedResult: Joi.string().required(),
+  actualResult: Joi.string().required()
+});
+
+export const testPatchSchema = Joi.object({
+  description: Joi.string().optional(),
+  preconditions: Joi.string().optional(),
+  steps: Joi.string().optional(),
+  expectedResult: Joi.string().optional(),
+  actualResult: Joi.string().optional()
+}).min(1);

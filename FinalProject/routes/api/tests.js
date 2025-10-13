@@ -7,27 +7,11 @@
 import express from 'express';
 import debug from 'debug';
 import { ObjectId } from 'mongodb';
-import Joi from 'joi';
-
+import {testSchema, testPatchSchema } from '../../middleware/schema.js';
 import { connect } from '../../database.js';
 //|==================================================|
 //|----------------[-JOI-INITIALIZATION-]--------------|
 //|==================================================|
-const testSchema = Joi.object({
-  description: Joi.string().required(),
-  preconditions: Joi.string().required(),
-  steps: Joi.string().required(),
-  expectedResult: Joi.string().required(),
-  actualResult: Joi.string().required()
-});
-
-const testPatchSchema = Joi.object({
-  description: Joi.string().optional(),
-  preconditions: Joi.string().optional(),
-  steps: Joi.string().optional(),
-  expectedResult: Joi.string().optional(),
-  actualResult: Joi.string().optional()
-}).min(1);
 
 const router = express.Router();
 const debugTests = debug('app:TestAPI');
