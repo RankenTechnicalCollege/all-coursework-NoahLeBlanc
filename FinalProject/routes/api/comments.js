@@ -10,7 +10,7 @@ import { ObjectId } from 'mongodb';
 import { commentSchema } from '../../middleware/schema.js';
 import { connect } from '../../database.js';
 //|==================================================|
-//|----------------[-JOI-INITIALIZATION-]--------------|
+//|----------------[-JOI-INITIALIZATION-]------------|
 //|==================================================|
 const router = express.Router();
 const debugComments = debug('app:Comments');
@@ -18,11 +18,12 @@ const debugIDValidation = debug('app:IDValidation');
 
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
+
 //|========================================================================================|
-//|---------------------------------------[ GET REQUESTS ]---------------------------------|
+//|---------------------------------------[-GET-REQUESTS-]---------------------------------|
 //|========================================================================================|
 //|============================================|
-//|------[ GET ALL COMMENTS FOR A BUG ]--------|
+//|------[-GET-ALL-COMMENTS-FOR-A-BUG-]--------|
 //|============================================|
 router.get('/:bugId/comments', async (req, res) => {
   debugComments(`GET /:bugId/comments hit`);
@@ -39,21 +40,21 @@ router.get('/:bugId/comments', async (req, res) => {
 
     if (!bugData) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     if (!bugData.comments || bugData.comments.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no comments.` });
-    }
+    };
 
     res.status(200).json(bugData.comments);
   } catch (err) {
     console.error(err);
     res.status(err.message.includes('ObjectId') ? 400 : 500).json({ error: err.message });
-  }
+  };
 });
 
 //|============================================|
-//|------[ GET A SPECIFIC COMMENT BY ID ]-----|
+//|------[-GET-A-SPECIFIC-COMMENT-BY-ID-]------|
 //|============================================|
 router.get('/:bugId/comments/:commentId', async (req, res) => {
   debugComments(`GET /:bugId/comments/:commentId hit`);
@@ -75,20 +76,20 @@ router.get('/:bugId/comments/:commentId', async (req, res) => {
 
     if (!bugData || !bugData.comments || bugData.comments.length === 0) {
       return res.status(404).json({ error: `Comment ${commentId} not found.` });
-    }
+    };
 
     res.status(200).json(bugData.comments[0]);
   } catch (err) {
     console.error(err);
     res.status(err.message.includes('ObjectId') ? 400 : 500).json({ error: err.message });
-  }
+  };
 });
 
 //|========================================================================================|
-//|------------------------------------[ POST REQUESTS ]-----------------------------------|
+//|------------------------------------[-POST-REQUESTS-]-----------------------------------|
 //|========================================================================================|
 //|============================================|
-//|-----[ POST A NEW COMMENT TO A BUG ]--------|
+//|-----[-POST-A-NEW-COMMENT-TO-A-BUG-]--------|
 //|============================================|
 router.post('/:bugId/comments', async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
@@ -100,7 +101,7 @@ router.post('/:bugId/comments', async (req, res) => {
     const { error } = commentSchema.validate({ author, commentText });
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
-    }
+    };
 
     // Validate bug ID
     validateID(bugId);
@@ -112,7 +113,7 @@ router.post('/:bugId/comments', async (req, res) => {
     const bugExists = await db.collection('bugs').findOne({ _id: bugObjectId });
     if (!bugExists) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     // Create new comment object
     const newComment = {
@@ -136,21 +137,21 @@ router.post('/:bugId/comments', async (req, res) => {
 });
 
 //|====================================================================================================|
-//|-------------------------------------------[ FUNCTIONS ]----------------------------------------|
+//|-------------------------------------------[-FUNCTIONS-]--------------------------------------------|
 //|====================================================================================================|
-//|------------------------------------------|
-//|-------[ ID Validation Function ]---------|
-//|------------------------------------------|
+//|==========================================|
+//|-------[-ID-Validation-Function-]---------|
+//|==========================================|
 function validateID(i) {
   if (!ObjectId.isValid(i)) {
     const err = new Error(`${i} is not a valid ObjectId.`);
     err.status = 400;
     throw err;
-  }
+  };
   debugIDValidation(`${i} Passed ID validation`);
-}
+};
 
 //|====================================================================================================|
-//|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
+//|-------------------------------------------[-EXPORT-ROUTER-]----------------------------------------|
 //|====================================================================================================|
 export { router as commentRouter };
