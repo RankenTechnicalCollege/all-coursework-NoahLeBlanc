@@ -7,31 +7,22 @@
 import express from 'express';
 import debug from 'debug';
 import { ObjectId } from 'mongodb';
-
+import { commentSchema } from '../../middleware/schema.js';
 import { connect } from '../../database.js';
 //|==================================================|
 //|----------------[-JOI-INITIALIZATION-]--------------|
 //|==================================================|
-import Joi from 'joi';
-
-const commentSchema = Joi.object({
-  author: Joi.string().required(),
-  commentText: Joi.string().required()
-});
-
 const router = express.Router();
 const debugComments = debug('app:Comments');
 const debugIDValidation = debug('app:IDValidation');
 
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
 //|========================================================================================|
 //|---------------------------------------[ GET REQUESTS ]---------------------------------|
 //|========================================================================================|
-
 //|============================================|
-//|------[ GET ALL COMMENTS FOR A BUG ]------|
+//|------[ GET ALL COMMENTS FOR A BUG ]--------|
 //|============================================|
 router.get('/:bugId/comments', async (req, res) => {
   debugComments(`GET /:bugId/comments hit`);
@@ -96,9 +87,8 @@ router.get('/:bugId/comments/:commentId', async (req, res) => {
 //|========================================================================================|
 //|------------------------------------[ POST REQUESTS ]-----------------------------------|
 //|========================================================================================|
-
 //|============================================|
-//|---[ POST A NEW COMMENT TO A BUG ]---------|
+//|-----[ POST A NEW COMMENT TO A BUG ]--------|
 //|============================================|
 router.post('/:bugId/comments', async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
