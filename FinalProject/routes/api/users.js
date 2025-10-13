@@ -25,7 +25,7 @@ router.use(express.json());
 async function getUsersCollection() {
   const db = await require('../../database.js').connect();
   return db.collection('users');
-}
+};
 
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
@@ -39,10 +39,10 @@ router.get('/list', async (req, res) => {
       return res.status(200).json(foundData);
     } else {
       throw new Error('No users found');
-    }
+    };
   } catch (err) {
     res.status(500).json({ message: err.message });
-  }
+  };
 });
 
 //|==================================================|
@@ -76,7 +76,7 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     const existingUser = await userCol.findOne({ email: newUser.email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email is already registered' });
-    }
+    };
 
     newUser.password = await bcrypt.hash(newUser.password, saltRounds);
 
@@ -91,7 +91,7 @@ router.post('/register', validBody(userSchema), async (req, res) => {
   } catch (err) {
     debugUser(err.message);
     res.status(500).json({ message: err.message });
-  }
+  };
 });
 
 //|==================================================|
@@ -113,7 +113,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
-  }
+  };
 });
 
 //|==================================================|
@@ -126,7 +126,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
   try {
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, saltRounds);
-    }
+    };
 
     const db = await require('../../database.js').connect();
     const userCol = db.collection('users');
@@ -138,16 +138,16 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `User ${userId} not found.` });
-    }
+    };
 
     res.status(200).json({ message: `User ${userId} updated successfully.` });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
-  }
+  };
 });
 
 //|==================================================|
-//|----------------[-DELETE-USER-BY-ID-]--------------|
+//|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
 router.delete('/:userId', validId('userId'), async (req, res) => {
   const { userId } = req.params;
@@ -165,10 +165,10 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
-  }
+  };
 });
 
 //|==================================================|
-//|----------------[EXPORT ROUTER]-------------------|
+//|----------------[EXPORT-ROUTER]-------------------|
 //|==================================================|
 export { router as userRouter };

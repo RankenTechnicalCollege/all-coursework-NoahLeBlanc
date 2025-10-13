@@ -1,5 +1,5 @@
 //|====================================================================================================|
-//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
+//|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
@@ -35,10 +35,10 @@ router.get('/list', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch bugs' });
-  }
+  };
 });
 //|==================================================|
-//|-----------------[-GET BUG BY ID-]----------------|
+//|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
 router.get('/:bugId', async (req, res) => {
   const { bugId } = req.params;
@@ -46,30 +46,30 @@ router.get('/:bugId', async (req, res) => {
   try {
     if (!ObjectId.isValid(bugId)) {
       return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-    }
+    };
 
     const bug = await bugCollection.findOne({ _id: new ObjectId(bugId) });
     if (!bug) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     res.status(200).json(bug);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
-  }
+  };
 });
 //|====================================================================================================|
 //|-------------------------------------------[-POST-REQUESTS-]----------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|-----------------[-POST CREATE BUG-]--------------|
+//|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
 router.post('/new', async (req, res) => {
   const validateResult = bugSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
-  }
+  };
 
   try {
     const newBug = {
@@ -77,14 +77,14 @@ router.post('/new', async (req, res) => {
       closed: false,
       createdOn: new Date(),
       lastUpdated: new Date()
-    };
+    };;
 
     const result = await bugCollection.insertOne(newBug);
     res.status(201).json({ message: 'Bug created!', bugId: result.insertedId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create bug' });
-  }
+  };
 });
 //|====================================================================================================|
 //|-------------------------------------------[-PATCH-REQUESTS-]---------------------------------------|
@@ -97,13 +97,13 @@ router.patch('/:bugId', async (req, res) => {
 
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  }
+  };
 
 
   const validateResult = bugPatchSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
-  }
+  };
 
   try {
     const updateData = { ...req.body, lastUpdated: new Date() };
@@ -111,47 +111,47 @@ router.patch('/:bugId', async (req, res) => {
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update bug' });
-  }
+  };
 });
 //|==================================================|
-//|---------------[-PATCH CLASSIFY BUG-]-------------|
+//|---------------[-PATCH-CLASSIFY-BUG-]-------------|
 //|==================================================|
 router.patch('/:bugId/classify', async (req, res) => {
   const { bugId } = req.params;
 
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  }
+  };
 
 
   const validateResult = bugClassifySchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
-  }
+  };
 
   try {
     const updateData = {
       classification: req.body.classification,
       classifiedOn: new Date(),
       lastUpdated: new Date()
-    };
+    };;
 
     const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     res.status(200).json({ message: `Bug ${bugId} classified.` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to classify bug' });
-  }
+  };
 });
 //|==================================================|
 //|-----------------[-PATCH ASSIGN BUG-]-------------|
@@ -161,40 +161,40 @@ router.patch('/:bugId/assign', async (req, res) => {
 
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  }
+  };
   const validateResult = bugAssignSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
-  }
+  };
 
   try {
     const userId = req.body.assignedToUserId;
 
     if (!ObjectId.isValid(userId)) {
       return res.status(400).json({ error: `assignedToUserId ${userId} is not a valid ObjectId.` });
-    }
+    };
 
     const user = await userCollection.findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: `User ${userId} not found.` });
-    }
+    };
 
     const updateData = {
       assignedToUserId: user._id,
       assignedToUserName: `${user.givenName} ${user.familyName}`,
       lastUpdated: new Date()
-    };
+    };;
 
     const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     res.status(200).json({ message: `Bug ${bugId} assigned to ${updateData.assignedToUserName}` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to assign bug' });
-  }
+  };
 });
 
 //|==================================================|
@@ -205,31 +205,31 @@ router.patch('/:bugId/close', async (req, res) => {
 
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  }
+  };
 
 
   const validateResult = bugCloseSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
-  }
+  };
 
   try {
     const updateData = {
       closed: req.body.closed,
       closedOn: new Date(),
       lastUpdated: new Date()
-    };
+    };;
 
     const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    }
+    };
 
     res.status(200).json({ message: `Bug ${bugId} closed.` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to close bug' });
-  }
+  };
 });
 //|====================================================================================================|
 //|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
