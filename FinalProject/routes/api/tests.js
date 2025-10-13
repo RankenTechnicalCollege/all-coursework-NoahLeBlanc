@@ -10,21 +10,17 @@ import { ObjectId } from 'mongodb';
 import {testSchema, testPatchSchema } from '../../middleware/schema.js';
 import { connect } from '../../database.js';
 //|==================================================|
-//|----------------[-JOI-INITIALIZATION-]--------------|
+//|----------------[-JOI-INITIALIZATION-]------------|
 //|==================================================|
-
 const router = express.Router();
 const debugTests = debug('app:TestAPI');
-
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
 //|========================================================================================|
 //|---------------------------------------[ GET REQUESTS ]---------------------------------|
 //|========================================================================================|
-
 //|============================================|
-//|------[ GET ALL TEST CASES FOR A BUG ]-----|
+//|------[ GET ALL TEST CASES FOR A BUG ]------|
 //|============================================|
 router.get('/:bugId/tests', async (req, res) => {
   debugTests(`GET /:bugId/tests hit`);
@@ -91,7 +87,6 @@ router.get('/:bugId/tests/:testId', async (req, res) => {
 //|========================================================================================|
 //|------------------------------------[ POST REQUESTS ]-----------------------------------|
 //|========================================================================================|
-
 //|============================================|
 //|---[ CREATE A NEW TEST CASE FOR A BUG ]-----|
 //|============================================|
@@ -109,7 +104,7 @@ router.post('/:bugId/tests', async (req, res) => {
     const { error } = testSchema.validate(testData);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
-    }
+    };
 
     // Create new test case object
     const newTestCase = {
@@ -125,7 +120,7 @@ router.post('/:bugId/tests', async (req, res) => {
 
     if (result.modifiedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found or test case not added.` });
-    }
+    };
 
     debugTests(`Test case added to bug ${bugId}`);
     res.status(201).json({ message: 'Test case added successfully', testCase: newTestCase });
@@ -136,9 +131,8 @@ router.post('/:bugId/tests', async (req, res) => {
 });
 
 //|========================================================================================|
-//|---------------------------------------[ PATCH REQUESTS ]--------------------------------|
+//|---------------------------------------[ PATCH REQUESTS ]-------------------------------|
 //|========================================================================================|
-
 //|============================================|
 //|--[ UPDATE A TEST CASE FOR A BUG ]----------|
 //|============================================|
@@ -159,7 +153,7 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
     const { error } = testPatchSchema.validate(updates);
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
-    }
+    };
 
     // Prepare update object
     const updateQuery = {};
@@ -175,20 +169,19 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    }
+    };
 
     debugTests(`Test case ${testId} updated for bug ${bugId}`);
     res.status(200).json({ message: 'Test case updated successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
-  }
+  };
 });
 
 //|====================================================================================================|
-//|-----------------------------------------[ DELETE TEST CASES ]-----------------------------------|
+//|-----------------------------------------[ DELETE TEST CASES ]--------------------------------------|
 //|====================================================================================================|
-
 //|============================================|
 //|--[ DELETE A TEST CASE FROM A BUG ]---------|
 //|============================================|
@@ -222,10 +215,8 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
   }
 });
 //|====================================================================================================|
-//|-------------------------------------------[ FUNCTIONS ]----------------------------------------|
+//|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
 //|====================================================================================================|
-
-// Validation function for ObjectId
 function validateID(id) {
   if (!ObjectId.isValid(id)) {
     const err = new Error(`${id} is not a valid ObjectId.`);
@@ -234,6 +225,7 @@ function validateID(id) {
   }
   debugTests(`${id} Passed ID validation`);
 }
-
-// Export the router
+//|====================================================================================================|
+//|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
+//|====================================================================================================|
 export { router as testRouter };
