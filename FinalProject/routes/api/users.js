@@ -1,141 +1,84 @@
-//|====================================================================================================|
-//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
-//|====================================================================================================|
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
 import express from 'express';
+import debug from 'debug';
+import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
-import { getCollection } from '../../database.js';
-import Joi from 'joi';
-//|==================================================|
-//|---------------[-JOI-INITIALIZATION-]-------------|
-//|==================================================|
-const patchSchema = Joi.object({
-  password: Joi.string().min(3).optional(),
-  fullName: Joi.string().min(1).optional(),
-  givenName: Joi.string().min(1).optional(),
-  familyName: Joi.string().min(1).optional(),
-  role: Joi.string().valid('Admin', 'Developer', 'Tester', 'Project Manager').optional()
-}).min(1);
-const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(3).required()
-});
-const userSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(3).required(),
-  givenName: Joi.string().min(1).required(),
-  familyName: Joi.string().min(1).required(),
-  role: Joi.string().valid(
-    'Admin',
-    'Developer',
-    'Tester',
-    'Project Manager'
-  ).required()
-});
+
+import { listAll, getByObject, deleteUser, updateUser } from '../../database.js'; // Removed getCollection
+import { validId } from '../../middleware/validId.js';
+import { validBody } from '../../middleware/validBody.js';
+import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schemas/userSchema.js';
+
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
 const router = express.Router();
-import debug from 'debug';
 const debugUser = debug('app:UserRouter');
-router.use(express.urlencoded({ extended: false }));
-let userCollection = await getCollection("users");
-//|==================================================|
-//|----------------[-BCRYPT-INITIALIZATION-]---------|
-//|==================================================|
-import bcrypt from 'bcrypt';
 const saltRounds = 10;
-bcrypt.genSalt(saltRounds, (err, salt) => {
-  if (err) return;
-});
-//|====================================================================================================|
-//|-------------------------------------------[-GET-REQUESTS-]-----------------------------------------|
-//|====================================================================================================|
+
+router.use(express.urlencoded({ extended: false }));
+router.use(express.json());
+
+// Helper function to get the users collection
+async function getUsersCollection() {
+  const db = await require('../../database.js').connect();
+  return db.collection('users');
+}
+
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
 router.get('/list', async (req, res) => {
-  debugUser("list route hit");
   try {
-    const allUsers = await userCollection.find(
-      {},
-      {
-        projection: {
-          _id: 1,
-          email: 1,
-          familyName: 1,
-          givenName: 1,
-          createdBugs: 1,
-          assignedBugs: 1,
-          role: 1
-        }
-      }
-    ).toArray();
-    /*|===================|*/
-    /*|------[-OUTPUT-]---|*/
-    /*|===================|*/
-    res.status(200).json(allUsers);
+    debugUser(`list: Users`);
+    const foundData = await listAll('users');
+
+    if (foundData) {
+      return res.status(200).json(foundData);
+    } else {
+      throw new Error('No users found');
+    }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    res.status(500).json({ message: err.message });
   }
 });
+
 //|==================================================|
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
-router.get('/:userId', async (req, res) => {
-  debugUser("ID route hit");
-  const { userId } = req.params;
+router.get('/:userId', validId('userId'), async (req, res) => {
   try {
-    if (!ObjectId.isValid(userId)) {
-      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
+    const { userId } = req.params;
+    const foundUser = await getByObject('users', '_id', new ObjectId(userId));
+
+    if (foundUser) {
+      return res.status(200).json(foundUser);
+    } else {
+      return res.status(404).json({ message: `User ID: ${userId} not found` });
     }
-    const id = new ObjectId(userId);
-    const user = await userCollection.findOne(
-      { _id: id },
-      {
-        projection: {
-          _id: 0,
-          email: 1,
-          familyName: 1,
-          givenName: 1,
-          createdBugs: 1,
-          assignedBugs: 1
-        }
-      }
-    );
-    if (!user) {
-      return res.status(404).json({ error: `User ${userId} not found.` });
-    }
-    /*|===================|*/
-    /*|------[-OUTPUT-]---|*/
-    /*|===================|*/
-    res.status(200).json(user);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ message: err.message });
   }
 });
-//|====================================================================================================|
-//|-------------------------------------------[-POST-REQUESTS-]----------------------------------------|
-//|====================================================================================================|
+
 //|==================================================|
-//|----------------[-REGISTER-NEW-USERS-]------------|
+//|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
-router.post('/register', async (req, res) => {
-  debugUser("Register Hit");
+router.post('/register', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
-    const { error } = userSchema.validate(newUser);
-    if (error) return res.status(400).json({ error: error.details[0].message });
 
-    const existingUser = await userCollection.findOne({ email: newUser.email });
-    if (existingUser) return res.status(400).json({ error: 'Email is already registered' });
+    const db = await require('../../database.js').connect();
+    const userCol = db.collection('users');
 
-    const hashedPassword = await bcrypt.hash(newUser.password, saltRounds);
-    newUser.password = hashedPassword;
+    const existingUser = await userCol.findOne({ email: newUser.email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already registered' });
+    }
+
+    newUser.password = await bcrypt.hash(newUser.password, saltRounds);
 
     const today = new Date();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -143,7 +86,7 @@ router.post('/register', async (req, res) => {
     const yyyy = today.getFullYear();
     newUser.creationDate = `${mm}/${dd}/${yyyy}`;
 
-    await userCollection.insertOne(newUser);
+    await userCol.insertOne(newUser);
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
   } catch (err) {
     debugUser(err.message);
@@ -151,105 +94,81 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/login', async (req, res) => {
-  const userLogin = req.body;
+//|==================================================|
+//|------------------[-LOGIN-USER-]------------------|
+//|==================================================|
+router.post('/login', validBody(userLoginSchema), async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { error } = loginSchema.validate(userLogin);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+    const db = await require('../../database.js').connect();
+    const userCol = db.collection('users');
 
-    const user = await userCollection.findOne({ email: userLogin.email });
-    if (!user) return res.status(401).json('Invalid credentials');
+    const user = await userCol.findOne({ email });
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const isMatch = await bcrypt.compare(userLogin.password, user.password);
-    if (isMatch) return res.json(user);
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    return res.status(401).json('Invalid credentials');
+    res.json(user);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-//|====================================================================================================|
-//|-------------------------------------------[-PATCH-REQUESTS-]---------------------------------------|
-//|====================================================================================================|
 //|==================================================|
-//|----------------[-UPDATE-USER-BY-ID-]-------------|
+//|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
-router.patch('/:userId', async (req, res) => {
-  debugUser("PATCH userId hit");
+router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (req, res) => {
   const { userId } = req.params;
   const updates = req.body;
 
   try {
-    if (!ObjectId.isValid(userId)) {
-      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
-    }
-
-    const { error } = patchSchema.validate(updates);
-    if (error) return res.status(400).json({ error: error.details[0].message });
-
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, saltRounds);
     }
 
-    const objectId = new ObjectId(userId);
-    const result = await userCollection.updateOne(
-      { _id: objectId },
+    const db = await require('../../database.js').connect();
+    const userCol = db.collection('users');
+
+    const result = await userCol.updateOne(
+      { _id: new ObjectId(userId) },
       { $set: updates }
     );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `User ${userId} not found.` });
     }
-    /*|===================|*/
-    /*|------[-OUTPUT-]---|*/
-    /*|===================|*/
+
     res.status(200).json({ message: `User ${userId} updated successfully.` });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-//|====================================================================================================|
-//|-------------------------------------------[-DELETE-REQUESTS-]--------------------------------------|
-//|====================================================================================================|
 //|==================================================|
-//|----------------[-DELETE-USER-BY-ID-]-------------|
+//|----------------[-DELETE-USER-BY-ID-]--------------|
 //|==================================================|
-router.delete('/:userId', async (req, res) => {
-  debugUser("DELETE userId hit");
+router.delete('/:userId', validId('userId'), async (req, res) => {
   const { userId } = req.params;
+
   try {
-    // Validate ObjectId
-    if (!ObjectId.isValid(userId)) {
-      return res.status(404).json({ error: `userId ${userId} is not a valid ObjectId.` });
-    }
+    const db = await require('../../database.js').connect();
+    const userCol = db.collection('users');
 
-    const objectId = new ObjectId(userId);
-    const user = await userCollection.findOne({ _id: objectId });
-
-    if (!user) {
-      return res.status(404).json({ message: `User ${userId} not found.` });
-    }
-
-    const result = await userCollection.deleteOne({ _id: objectId });
+    const result = await userCol.deleteOne({ _id: new ObjectId(userId) });
 
     if (result.deletedCount === 1) {
-      /*|===================|*/
-      /*|------[-OUTPUT-]---|*/
-      /*|===================|*/
-      res.status(200).json({ message: `User ${userId} deleted successfully.` });
+      res.status(200).json({ message: `User ${ugserId} deleted successfully.` });
     } else {
-      res.status(500).json({ message: 'Failed to delete user.' });
+      res.status(404).json({ message: `User ${userId} not found.` });
     }
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
-//|====================================================================================================|
-//|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
-//|====================================================================================================|
+
+//|==================================================|
+//|----------------[EXPORT ROUTER]-------------------|
+//|==================================================|
 export { router as userRouter };

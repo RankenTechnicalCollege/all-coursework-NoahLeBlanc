@@ -6,7 +6,6 @@
 //|==================================================|
 import express from 'express';
 import { ObjectId } from 'mongodb';
-import { getCollection } from '../../database.js';
 import debug from 'debug';
 import Joi from 'joi';
 //|==================================================|
@@ -23,8 +22,8 @@ const debugBug = debug('app:BugRouter');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
-let bugCollection = await getCollection('bugs');
-let userCollection = await getCollection('users');
+let bugCollection = await  ('bugs');
+let userCollection = await  ('users');
 
 //|====================================================================================================|
 //|-------------------------------------------[-GET-REQUESTS-]-----------------------------------------|
