@@ -6,13 +6,9 @@
 //|==================================================|
 import express from 'express';
 import { ObjectId } from 'mongodb';
+import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema, bugCloseSchema} from '../../middleware/schema.js';
 import debug from 'debug';
 import Joi from 'joi';
-//|==================================================|
-//|----------------[-JOI-INITIALIZATION-]------------|
-//|==================================================|
-
-
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -70,13 +66,7 @@ router.get('/:bugId', async (req, res) => {
 //|-----------------[-POST CREATE BUG-]--------------|
 //|==================================================|
 router.post('/new', async (req, res) => {
-  const schema = Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
-    stepsToReproduce: Joi.string().required()
-  });
-
-  const validateResult = schema.validate(req.body);
+  const validateResult = bugSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
   }
@@ -109,13 +99,8 @@ router.patch('/:bugId', async (req, res) => {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
   }
 
-  const schema = Joi.object({
-    title: Joi.string(),
-    description: Joi.string(),
-    stepsToReproduce: Joi.string()
-  }).min(1);
 
-  const validateResult = schema.validate(req.body);
+  const validateResult = bugPatchSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
   }
@@ -144,11 +129,8 @@ router.patch('/:bugId/classify', async (req, res) => {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
   }
 
-  const schema = Joi.object({
-    classification: Joi.string().valid('Critical', 'Major', 'Minor', 'Trivial').required()
-  });
 
-  const validateResult = schema.validate(req.body);
+  const validateResult = bugClassifySchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
   }
@@ -180,12 +162,7 @@ router.patch('/:bugId/assign', async (req, res) => {
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
   }
-
-  const schema = Joi.object({
-    assignedToUserId: Joi.string().required()
-  });
-
-  const validateResult = schema.validate(req.body);
+  const validateResult = bugAssignSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
   }
@@ -230,11 +207,8 @@ router.patch('/:bugId/close', async (req, res) => {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
   }
 
-  const schema = Joi.object({
-    closed: Joi.boolean().required()
-  });
 
-  const validateResult = schema.validate(req.body);
+  const validateResult = bugCloseSchema.validate(req.body);
   if (validateResult.error) {
     return res.status(400).json({ error: validateResult.error.message });
   }

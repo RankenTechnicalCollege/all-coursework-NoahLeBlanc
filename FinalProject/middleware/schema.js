@@ -55,10 +55,25 @@ export const userLoginSchema = Joi.object({
 //|====================================================================================================|
 //|-------------------------------------------[-BUGS-SCHEMA-]------------------------------------------|
 //|====================================================================================================|
-//|==================================================|
-//|----------------[-BUG-POST-SCHEMA-]---------------|
-//|==================================================|
-
+export const bugSchema = Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    stepsToReproduce: Joi.string().required()
+});
+export const bugPatchSchema = Joi.object({
+  title: Joi.string(),
+  description: Joi.string(),
+  stepsToReproduce: Joi.string()
+}).min(1);
+export const bugClassifySchema = Joi.object({
+  classification: Joi.string().valid('Critical', 'Major', 'Minor', 'Trivial').required()
+});
+export const bugAssignSchema = Joi.object({
+  assignedToUserId: Joi.string().required()
+});
+export const bugCloseSchema = Joi.object({
+  closed: Joi.boolean().required()
+});
 //|====================================================================================================|
 //|------------------------------------------[-COMMENT-SCHEMA-]----------------------------------------|
 //|====================================================================================================|
