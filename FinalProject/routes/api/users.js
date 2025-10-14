@@ -6,7 +6,7 @@ import debug from 'debug';
 import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { ObjectId } from 'mongodb';
 
-import { listAll, getByObject, deleteByObject, updateUser} from '../../database.js'; // Removed getCollection
+import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; // Removed getCollection
 import { validId } from '../../middleware/validId.js';
 import { validBody } from '../../middleware/validBody.js';
 import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
@@ -70,26 +70,22 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 router.post('/register', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
+    
 
-    const db = await require('../../database.js').connect();
-    const userCol = db.collection('users');
-
-    const existingUser = await userCol.findOne({ email: newUser.email });
+    const existingUser = await getByObject('users', 'email', newUser.email)  
     if (existingUser) {
       return res.status(400).json({ error: 'Email is already registered' });
     };
 
     newUser.password = await genPassword(newUser.password);
 
-    const today = new Date();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    newUser.creationDate = `${mm}/${dd}/${yyyy}`;
-await userCol.insertOne(newUser);
-    res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
+    newUser.creationDate = new Date() 
+    const status = await insertNew('users', newUser) 
+    if(!status.acknowledged){
+      return res.status(500).json({ error: 'Failed to create new user. Please try again later.' });
+    }
+    res.status(201).json({ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` });
   } catch (err) {
-    debugUser(err.message);
     res.status(500).json({ message: err.message });
     console.error(err)
   };
