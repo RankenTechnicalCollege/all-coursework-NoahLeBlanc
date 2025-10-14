@@ -99,16 +99,15 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const db = await require('../../database.js').connect();
-    const userCol = db.collection('users');
-
-    const user = await userCol.findOne({ email });
+    const user = await getByObject("users", "email", email)
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-
     comparePassword(password, user.password);
-    res.json(user);
+
+    res.status(200).json({message: `Welcome back! ${user._id}`})
+
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
+    console.error(err)
   };
 });
 
@@ -124,7 +123,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
       updates.password = await genPassword(updates.password);
     };
 
-    const result = updateUser(userId, updates)
+    const result = await updateUser(userId, updates)
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `User ${userId} not found.` });
