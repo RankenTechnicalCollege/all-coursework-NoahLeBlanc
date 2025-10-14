@@ -131,8 +131,8 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `User ${userId} not found.` });
     };
-
     res.status(200).json({ message: `User ${userId} updated successfully.` });
+
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
     console.error(err)
