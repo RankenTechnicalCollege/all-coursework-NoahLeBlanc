@@ -1,47 +1,108 @@
-import { MongoClient } from "mongodb";
+//|====================================================================================================|
+//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
+//|====================================================================================================|
+//|==================================================|
+//|--------------------[-IMPORTS-]-------------------|
+//|==================================================|
+import { MongoClient, ObjectId } from "mongodb";
 import debug from "debug";
+import dotenv from "dotenv";
 
-//Bcrypt Stuff
-import bcrypt from 'bcrypt'
-const saltRounds = 10;
-bcrypt.genSalt(saltRounds, (err, salt) => {
-if (err) {
-    // Handle error
-    return;
-}});
+// Load environment variables (for local dev)
+dotenv.config();
 
-//---------------------------------------------- Main ------------------------------------------------
-// Logs database status
 const debugDb = debug("app:Database");
-
-/** Global variable storing the open connection, do not use it directly. *​*/
 let _db = null;
 
-//------------------------------------------ Functions ------------------------------------------
-export async function connectToDatabase() {
-  if (!_db) {
-    const connectionString = process.env.MONGO_URI;
-    const dbName = process.env.MONGO_DB_NAME;
+//|==================================================|
+//|-----------[-MONGODB-INITIALIZATION-]--------------|
+//|==================================================|
+export async function connect() {
+  if (_db) return _db;
 
-    const client = await MongoClient.connect(connectionString);
-    _db = client.db(dbName);
+  const connectionString = process.env.MONGO_URI;
+  const dbName = process.env.MONGO_DB_NAME;
+
+  if (!connectionString) {
+    throw new Error("Missing MONGO_URI environment variable");
   }
-  return _db;
+  if (!dbName) {
+    throw new Error("Missing MONGO_DB_NAME environment variable");
+  }
+
+  try {
+    const client = await MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+    _db = client.db(dbName);
+    return _db;
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err);
+    throw err;
+  }
 }
 
-//Generate/Parse an ObjectId 
-const newId = (str) => ObjectId.createFromHexString(str);
+//|====================================================================================================|
+//|-----------------------------------------------[ FUNCTIONS ]----------------------------------------|
+//|====================================================================================================|
+//|================================================|
+//|-----------[ GET ALL FROM COLLECTION ]----------|
+//|================================================|
+export async function listAll(collection) {
+  const db = await connect();
+  const foundData = await db.collection(collection).find().toArray();
+  return foundData;
+};
 
-async function ping() {
-  const db = await connectToDatabase();
+//|================================================|
+//|------------[ INSERT NEW OBJECT ]---------------|
+//|================================================|
+export async function insertNew(newObject, collection) {
+  const db = await connect();
+  const result = await db.collection(collection).insertOne(newObject);
+  return result;
+};
+
+//|================================================|
+//|--------------[ UPDATE USER ]-------------------|
+//|================================================|
+export async function updateUser(userId, updatedUser) {
+  const db = await connect();
+  const result = await db.collection('users').updateOne(
+    { _id: newId(userId) },
+    { $set: { ...updatedUser, lastUpdated: new Date() } }
+  );
+  return result;
+}
+
+//|================================================|
+//|--------------[ DELETE USER ]-------------------|
+//|================================================|
+export async function deleteUser(userId) {
+  const db = await connect();
+  const result = await db.collection('users').deleteOne({ _id: newId(userId) });
+  return result;
+}
+
+//|================================================|
+//|--------------[ GET BY OBJECT ]------------------|
+//|================================================|
+export async function getByObject(collection, object, item) {
+  const db = await connect();
+  const foundItem = await db.collection(collection).findOne({ [object]: item });
+  return foundItem;
+}
+
+//|================================================|
+//|--------------[ PING ]--------------------------|
+//|================================================|
+export async function ping() {
+  const db = await connect();
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
 }
 
-export async function getCollection(collectionName) {
-  const db = await connectToDatabase();
-  return db.collection(collectionName);
-}
-
-//--------------------------------------------- Exports ----------------------------------------------
-export {ping};
+//|================================================|
+//|------------[ CONVERT STRING TO OBJECT ID ]-----|
+//|================================================|
+export function newId(str) {
+  return new ObjectId(str);
+};
