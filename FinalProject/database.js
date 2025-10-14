@@ -74,12 +74,11 @@ export async function insertNew(newObject, collection) {
 export async function updateUser(userId, updatedUser) {
   const db = await connect();
   const result = await db.collection('users').updateOne(
-    { _id: newId(userId) },
+    { _id: userId },
     { $set: { ...updatedUser, lastUpdated: new Date()}}
   );
   return result;
 };
-
 //|================================================|
 //|--------------[-DELETE-BY-OBJECT-]--------------|
 //|================================================|
@@ -96,11 +95,4 @@ export async function ping() {
   const db = await connect();
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
-};
-
-//|================================================|
-//|------------[ CONVERT STRING TO OBJECT ID ]-----|
-//|================================================|
-export function newId(str) {
-  return new ObjectId(str);
 };
