@@ -25,10 +25,10 @@ export async function connect() {
 
   if (!connectionString) {
     throw new Error("Missing MONGO_URI environment variable");
-  }
+  };
   if (!dbName) {
     throw new Error("Missing MONGO_DB_NAME environment variable");
-  }
+  };
 
   try {
     const client = await MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -37,8 +37,8 @@ export async function connect() {
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
     throw err;
-  }
-}
+  };
+};
 
 //|====================================================================================================|
 //|-----------------------------------------------[ FUNCTIONS ]----------------------------------------|
@@ -75,20 +75,19 @@ export async function updateUser(userId, updatedUser) {
   const db = await connect();
   const result = await db.collection('users').updateOne(
     { _id: newId(userId) },
-    { $set: { ...updatedUser, lastUpdated: new Date() } }
+    { $set: { ...updatedUser, lastUpdated: new Date()}}
   );
   return result;
-}
+};
 
 //|================================================|
-//|--------------[ DELETE USER ]-------------------|
+//|--------------[-DELETE-BY-OBJECT-]--------------|
 //|================================================|
-export async function deleteUser(userId) {
+export async function deleteByObject(collection, object, item) {
   const db = await connect();
-  const result = await db.collection('users').deleteOne({ _id: newId(userId) });
-  return result;
-}
-
+  const deletedItem = await db.collection(collection).deleteOne({ [object]: item });
+  return deletedItem;
+};
 
 //|================================================|
 //|--------------[ PING ]--------------------------|
@@ -97,7 +96,7 @@ export async function ping() {
   const db = await connect();
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
-}
+};
 
 //|================================================|
 //|------------[ CONVERT STRING TO OBJECT ID ]-----|
