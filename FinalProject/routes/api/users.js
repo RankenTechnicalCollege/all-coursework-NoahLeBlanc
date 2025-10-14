@@ -3,13 +3,13 @@
 //|==================================================|
 import express from 'express';
 import debug from 'debug';
-import bcrypt from 'bcrypt';
+import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { ObjectId } from 'mongodb';
 
 import { listAll, getByObject, deleteUser, updateUser } from '../../database.js'; // Removed getCollection
 import { validId } from '../../middleware/validId.js';
 import { validBody } from '../../middleware/validBody.js';
-import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schemas/userSchema.js';
+import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
 
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
@@ -32,15 +32,14 @@ async function getUsersCollection() {
 //|==================================================|
 router.get('/list', async (req, res) => {
   try {
-    debugUser(`list: Users`);
     const foundData = await listAll('users');
-
     if (foundData) {
       return res.status(200).json(foundData);
     } else {
       throw new Error('No users found');
     };
   } catch (err) {
+    debugUser(`list: Users`);
     res.status(500).json({ message: err.message });
   };
 });
@@ -78,15 +77,14 @@ router.post('/register', validBody(userSchema), async (req, res) => {
       return res.status(400).json({ error: 'Email is already registered' });
     };
 
-    newUser.password = await bcrypt.hash(newUser.password, saltRounds);
+    newUser.password = await genPassword(newUser.password);
 
     const today = new Date();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const yyyy = today.getFullYear();
     newUser.creationDate = `${mm}/${dd}/${yyyy}`;
-
-    await userCol.insertOne(newUser);
+await userCol.insertOne(newUser);
     res.status(201).json({ message: `New User ${newUser.givenName} Registered!` });
   } catch (err) {
     debugUser(err.message);
@@ -107,9 +105,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     const user = await userCol.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
-
+    comparePassword(password, user.password);
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -125,16 +121,10 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
 
   try {
     if (updates.password) {
-      updates.password = await bcrypt.hash(updates.password, saltRounds);
+      updates.password = await genPassword(updates.password);
     };
 
-    const db = await require('../../database.js').connect();
-    const userCol = db.collection('users');
-
-    const result = await userCol.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: updates }
-    );
+    const result = updateUser(userId, updates)
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `User ${userId} not found.` });
@@ -143,6 +133,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
     res.status(200).json({ message: `User ${userId} updated successfully.` });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
+    console.error(err)
   };
 });
 
@@ -159,7 +150,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     const result = await userCol.deleteOne({ _id: new ObjectId(userId) });
 
     if (result.deletedCount === 1) {
-      res.status(200).json({ message: `User ${ugserId} deleted successfully.` });
+      res.status(200).json({ message: `User ${userId} deleted successfully.` });
     } else {
       res.status(404).json({ message: `User ${userId} not found.` });
     }
