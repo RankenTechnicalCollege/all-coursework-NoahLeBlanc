@@ -6,7 +6,7 @@ import debug from 'debug';
 import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { ObjectId } from 'mongodb';
 
-import { listAll, getByObject, deleteUser, updateUser } from '../../database.js'; // Removed getCollection
+import { listAll, getByObject, deleteByObject, updateUser} from '../../database.js'; // Removed getCollection
 import { validId } from '../../middleware/validId.js';
 import { validBody } from '../../middleware/validBody.js';
 import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
@@ -41,6 +41,7 @@ router.get('/list', async (req, res) => {
   } catch (err) {
     debugUser(`list: Users`);
     res.status(500).json({ message: err.message });
+    console.error(err)
   };
 });
 
@@ -59,6 +60,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
+    console.error(err)
   }
 });
 
@@ -89,6 +91,7 @@ await userCol.insertOne(newUser);
   } catch (err) {
     debugUser(err.message);
     res.status(500).json({ message: err.message });
+    console.error(err)
   };
 });
 
@@ -143,11 +146,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const db = await require('../../database.js').connect();
-    const userCol = db.collection('users');
-
-    const result = await userCol.deleteOne({ _id: new ObjectId(userId) });
-
+    const result = await deleteByObject("users", '_id', userId)
     if (result.deletedCount === 1) {
       res.status(200).json({ message: `User ${userId} deleted successfully.` });
     } else {
@@ -155,6 +154,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+    console.error(err)
   };
 });
 
