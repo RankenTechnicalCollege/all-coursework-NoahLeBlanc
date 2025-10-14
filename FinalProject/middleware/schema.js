@@ -12,10 +12,10 @@ export const userListQuerySchema = Joi.object({
  sortBy:Joi.string().optional() 
 });
 export const userSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().lowercase().trim().email().required(),
   password: Joi.string().trim().min(3).required(),
-  givenName: Joi.string().trim().min(1).required(),
-  familyName: Joi.string().trim().min(1).required(),
+  givenName: Joi.string().lowercase().trim().min(1).required(),
+  familyName: Joi.string().lowercase().trim().min(1).required(),
   role: Joi.string()
     .trim()
     .lowercase()
