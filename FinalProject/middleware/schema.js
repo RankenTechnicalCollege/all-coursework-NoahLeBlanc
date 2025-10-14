@@ -30,10 +30,12 @@ export const userSchema = Joi.object({
 });
 
 export const userPatchSchema = Joi.object({
+
+  email: Joi.string().min(1).optional(),
   password: Joi.string().min(3).optional(),
-  fullName: Joi.string().min(1).optional(), // This field is not in POST schema
   givenName: Joi.string().min(1).optional(),
   familyName: Joi.string().min(1).optional(),
+  fullName: Joi.string().min(1).optional(), 
   role: Joi.string()
     .valid(
       'developer',
