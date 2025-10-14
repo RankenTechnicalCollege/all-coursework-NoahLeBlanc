@@ -51,9 +51,16 @@ export async function listAll(collection) {
   const foundData = await db.collection(collection).find().toArray();
   return foundData;
 };
-
 //|================================================|
-//|------------[ INSERT NEW OBJECT ]---------------|
+//|--------------[ GET BY OBJECT ]-----------------|
+//|================================================|
+export async function getByObject(collection, object, item) {
+  const db = await connect();
+  const foundItem = await db.collection(collection).findOne({ [object]: item });
+  return foundItem;
+};
+//|================================================|
+//|------------[ INSERT NEW OBJECT ]---------------| 
 //|================================================|
 export async function insertNew(newObject, collection) {
   const db = await connect();
@@ -82,14 +89,6 @@ export async function deleteUser(userId) {
   return result;
 }
 
-//|================================================|
-//|--------------[ GET BY OBJECT ]------------------|
-//|================================================|
-export async function getByObject(collection, object, item) {
-  const db = await connect();
-  const foundItem = await db.collection(collection).findOne({ [object]: item });
-  return foundItem;
-}
 
 //|================================================|
 //|--------------[ PING ]--------------------------|
