@@ -88,46 +88,28 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
   try {
     const { bugId } = req.params;
     const updatedBug = req.body;
-    const result = await updateBug(bugId, updatedBug)
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    };
+    await updateBug(bugId, updatedBug)
     res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update bug' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|==================================================|
 //|---------------[-PATCH-CLASSIFY-BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId/classify', async (req, res) => {
-  const { bugId } = req.params;
-
-  if (!ObjectId.isValid(bugId)) {
-    return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  };
-
-
-  const validateResult = bugClassifySchema.validate(req.body);
-  if (validateResult.error) {
-    return res.status(400).json({ error: validateResult.error.message });
-  };
-
+router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema), async (req, res) => {
   try {
-    const updateData = {
-      classification: req.body.classification,
-      classifiedOn: new Date(),
-      lastUpdated: new Date()
-    };;
-
-    const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    };
-
+    const { bugId } = req.params;
+    const updatedBug = req.params;
+    await updateBug(bugId, updatedBug)
     res.status(200).json({ message: `Bug ${bugId} classified.` });
-  } catch (err) {
+  }catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to classify bug' });
   };
@@ -137,7 +119,6 @@ router.patch('/:bugId/classify', async (req, res) => {
 //|==================================================|
 router.patch('/:bugId/assign', async (req, res) => {
   const { bugId } = req.params;
-
   if (!ObjectId.isValid(bugId)) {
     return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
   };
@@ -210,6 +191,13 @@ router.patch('/:bugId/close', async (req, res) => {
     res.status(500).json({ error: 'Failed to close bug' });
   };
 });
+//|====================================================================================================|
+//|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
+//|====================================================================================================|
+function autoCatch(err, res){
+    console.error(err);
+    return res.status(err.status).json({ error: err.message });
+}
 //|====================================================================================================|
 //|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
 //|====================================================================================================|
