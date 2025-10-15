@@ -2,36 +2,33 @@
 //|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|--------------------[-IMPORTS-]-------------------|
+//|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
 import { MongoClient, ObjectId } from "mongodb";
 import debug from "debug";
 import dotenv from "dotenv";
-
-// Load environment variables (for local dev)
+//|==================================================|
+//|----------------[-INSTANTIATION-]-----------------|
+//|==================================================|
 dotenv.config();
-
 const debugDb = debug("app:Database");
 let _db = null;
 
 //|==================================================|
-//|-----------[-MONGODB-INITIALIZATION-]--------------|
+//|-----------[-MONGODB-INITIALIZATION-]-------------|
 //|==================================================|
 export async function connect() {
-  if (_db) return _db;
-
-  const connectionString = process.env.MONGO_URI;
-  const dbName = process.env.MONGO_DB_NAME;
-
-  if (!connectionString) {
-    throw new Error("Missing MONGO_URI environment variable");
-  };
-  if (!dbName) {
-    throw new Error("Missing MONGO_DB_NAME environment variable");
-  };
-
   try {
-    const client = await MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+    if (_db) return _db;
+    const connectionString = process.env.MONGO_URI;
+    const dbName = process.env.MONGO_DB_NAME;
+    if (!connectionString) {
+      throw new Error("Missing MONGO_URI environment variable");
+    };
+    if (!dbName) {
+      throw new Error("Missing MONGO_DB_NAME environment variable");
+    };
+    const client = await MongoClient.connect(connectionString);
     _db = client.db(dbName);
     return _db;
   } catch (err) {
@@ -39,9 +36,8 @@ export async function connect() {
     throw err;
   };
 };
-
 //|====================================================================================================|
-//|-----------------------------------------------[ FUNCTIONS ]----------------------------------------|
+//|-----------------------------------------------[ DATABASE GET ]-------------------------------------|
 //|====================================================================================================|
 //|================================================|
 //|-----------[ GET ALL FROM COLLECTION ]----------|
@@ -59,15 +55,20 @@ export async function getByObject(collection, object, item) {
   const foundItem = await db.collection(collection).findOne({ [object]: item });
   return foundItem;
 };
+//|====================================================================================================|
+//|-----------------------------------------------[ DATABASE INSERT ]----------------------------------|
+//|====================================================================================================|
 //|================================================|
 //|------------[ INSERT NEW OBJECT ]---------------| 
 //|================================================|
-export async function insertNew(newObject, collection) {
+export async function insertNew(collectionName, newObject) {
   const db = await connect();
-  const result = await db.collection(collection).insertOne(newObject);
+  const result = await db.collection(collectionName).insertOne(newObject);
   return result;
 };
-
+//|====================================================================================================|
+//|--------------------------------------------[ DATABASE UPDATE ]-------------------------------------|
+//|====================================================================================================|
 //|================================================|
 //|--------------[ UPDATE USER ]-------------------|
 //|================================================|
@@ -80,6 +81,20 @@ export async function updateUser(userId, updatedUser) {
   return result;
 };
 //|================================================|
+//|--------------[ UPDATE BUG ]--------------------|
+//|================================================|
+export async function updateBug(bugId, updatedBug) {
+  const db = await connect();
+  const result = await db.collection('bugs').updateOne(
+    { _id: bugId},
+    { $set: { ...updatedBug, lastUpdated: new Date()}}
+  );
+  return result;
+};
+//|====================================================================================================|
+//|--------------------------------------------[ DATABASE DELETE ]-------------------------------------|
+//|====================================================================================================|
+//|================================================|
 //|--------------[-DELETE-BY-OBJECT-]--------------|
 //|================================================|
 export async function deleteByObject(collection, object, item) {
@@ -87,10 +102,9 @@ export async function deleteByObject(collection, object, item) {
   const deletedItem = await db.collection(collection).deleteOne({ [object]: item });
   return deletedItem;
 };
-
-//|================================================|
-//|--------------[ PING ]--------------------------|
-//|================================================|
+//|====================================================================================================|
+//|-------------------------------------------------[ PING ]-------------------------------------------|
+//|====================================================================================================|
 export async function ping() {
   const db = await connect();
   const pong = await db.command({ ping: 1 });
