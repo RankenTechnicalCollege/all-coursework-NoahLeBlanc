@@ -119,39 +119,6 @@ export async function updateUser(userId, updatedUser) {
   return result;
 };
 //|================================================|
-//|---------[ UPDATE: ASSIGN USER TO BUG]----------|
-//|================================================|
-export async function assignBugToUser(userId, bugToAssign) {
-  const db = await connect();
-  const existingUser = await getByObject('users', "_id", userId);
-  if(!existingUser){
-    const err = new Error("User not found");
-    err.status = 404;
-    throw err;
-  };
-   // Check if any values actually differ
-  const isDifferent = Object.entries(bugToAssign).some(([key, value]) => {
-    return JSON.stringify(existingUser[key]) !== JSON.stringify(value);
-  });
-  if (!isDifferent) {
-    const err = new Error("No changes were made — values are the same");
-    err.status = 400;
-    throw err;
-  };
-  //Updates the user 
-  const result = await db.collection('users').updateOne(
-    { assignedBugs: bugToAssign},
-    { $set: {lastUpdated: new Date()}}
-  );
-  //if the user isn't modified throws an error
-  if (result.modifiedCount === 0) {
-    const err = new Error("No changes were made to the user");
-    err.status = 400; // Bad Request
-    throw err;
-  };
-  return result;
-};
-//|================================================|
 //|--------------[ UPDATE BUG ]--------------------|
 //|================================================|
 export async function updateBug(bugId, updatedBug) {
@@ -184,6 +151,51 @@ export async function updateBug(bugId, updatedBug) {
   );
   return result;
 };
+//|================================================|
+//|---------[ UPDATE: ASSIGN BUG TO USER]----------|
+//|================================================|
+export async function assignBugToUser(userId, bugId) {
+  const db = await connect();
+
+  const existingUser = await getByObject('users', '_id', userId);
+  if (!existingUser) {
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
+  }
+
+  // Make sure bugId is a proper ObjectId
+  const bugObjectId = typeof bugId === 'string' ? new ObjectId(bugId) : bugId;
+
+  // Check if the bug is already assigned
+  const alreadyAssigned = existingUser.assignedBugs?.some(
+    (assignedId) => assignedId.equals(bugObjectId)
+  );
+
+  if (alreadyAssigned) {
+    const err = new Error("Bug already assigned to user");
+    err.status = 400;
+    throw err;
+  }
+
+  // Add the bug ID to the user's assignedBugs
+  const result = await db.collection('users').updateOne(
+    { _id: userId },
+    {
+      $addToSet: { assignedBugs: bugObjectId },
+      $set: { lastUpdated: new Date() }
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the user");
+    err.status = 400;
+    throw err;
+  }
+
+  return result;
+}
+
 //|====================================================================================================|
 //|--------------------------------------------[ DATABASE DELETE ]-------------------------------------|
 //|====================================================================================================|
