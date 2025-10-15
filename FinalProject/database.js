@@ -74,10 +74,28 @@ export async function insertNew(collectionName, newObject) {
 //|================================================|
 export async function updateUser(userId, updatedUser) {
   const db = await connect();
+  //checks if any updates have been passed
+  if (Object.keys(updateUser).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  }
+  //Updates the user 
   const result = await db.collection('users').updateOne(
     { _id: userId },
     { $set: { ...updatedUser, lastUpdated: new Date()}}
   );
+  if (result.matchedCount === 0) {
+      const err = new Error("User not found");
+      err.status = 404; // Not Found
+      throw err;
+  };
+  //if the user isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the user");
+    err.status = 400; // Bad Request
+    throw err;
+  };
   return result;
 };
 //|================================================|
@@ -85,6 +103,28 @@ export async function updateUser(userId, updatedUser) {
 //|================================================|
 export async function updateBug(bugId, updatedBug) {
   const db = await connect();
+  //checks if any updates have been passed
+  if (Object.values(updatedBug).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  };
+  const existingBug = await getByObject('bugs', "_id", bugId);
+  if(!existingBug){
+    const err = new Error("Bug not found");
+    err.status = 404;
+    throw err;
+  };
+   // Check if any values actually differ
+  const isDifferent = Object.entries(updatedBug).some(([key, value]) => {
+    return JSON.stringify(existingBug[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("No changes were made — values are the same");
+    err.status = 400;
+    throw err;
+  };
+  //Updates the bug
   const result = await db.collection('bugs').updateOne(
     { _id: bugId},
     { $set: { ...updatedBug, lastUpdated: new Date()}}
