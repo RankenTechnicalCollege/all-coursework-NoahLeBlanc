@@ -30,8 +30,13 @@ router.get('/list', async (req, res) => {
     const bugs = await listAll('bugs');
     res.status(200).json(bugs);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch bugs' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|==================================================|
@@ -46,8 +51,13 @@ router.get('/:bugId', validId('bugId'), async (req, res) => {
     };
     res.status(200).json(bug);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|====================================================================================================|
@@ -74,8 +84,13 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
     }
     res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|====================================================================================================|
@@ -109,32 +124,25 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
     const updatedBug = req.params;
     await updateBug(bugId, updatedBug)
     res.status(200).json({ message: `Bug ${bugId} classified.` });
-  }catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to classify bug' });
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug classification' });
+    }
   };
 });
 //|==================================================|
 //|-----------------[-PATCH ASSIGN BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId/assign', async (req, res) => {
-  const { bugId } = req.params;
-  if (!ObjectId.isValid(bugId)) {
-    return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  };
-  const validateResult = bugAssignSchema.validate(req.body);
-  if (validateResult.error) {
-    return res.status(400).json({ error: validateResult.error.message });
-  };
-
+router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), async (req, res) => {
   try {
-    const userId = req.body.assignedToUserId;
+    const { bugId } = req.params;
+    const assignedToUserId = req.body;
 
-    if (!ObjectId.isValid(userId)) {
-      return res.status(400).json({ error: `assignedToUserId ${userId} is not a valid ObjectId.` });
-    };
-
-    const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+    const user = getByObject('users', '_id', assignedToUserId)
     if (!user) {
       return res.status(404).json({ error: `User ${userId} not found.` });
     };
@@ -152,8 +160,13 @@ router.patch('/:bugId/assign', async (req, res) => {
 
     res.status(200).json({ message: `Bug ${bugId} assigned to ${updateData.assignedToUserName}` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to assign bug' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 
@@ -187,8 +200,13 @@ router.patch('/:bugId/close', async (req, res) => {
 
     res.status(200).json({ message: `Bug ${bugId} closed.` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to close bug' });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|====================================================================================================|
