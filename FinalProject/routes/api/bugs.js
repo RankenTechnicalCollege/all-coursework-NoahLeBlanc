@@ -6,8 +6,8 @@
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
 import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { validBody } from '../../middleware/validBody.js';
 import { validId } from '../../middleware/validId.js';
-import { getByObject } from '../../database.js';
 import { ObjectId } from 'mongodb';
 import express from 'express';
 import debug from 'debug';
@@ -37,7 +37,7 @@ router.get('/list', async (req, res) => {
 //|==================================================|
 //|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
-router.get('/:bugId', validId(bugId), async (req, res) => {
+router.get('/:bugId', validId('bugId'), async (req, res) => {
   const { bugId } = req.params;
   try {
     const bug = await getByObject('bugs', '_id', bugId) 
@@ -56,12 +56,7 @@ router.get('/:bugId', validId(bugId), async (req, res) => {
 //|==================================================|
 //|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
-router.post('/new', async (req, res) => {
-  const validateResult = bugSchema.validate(req.body);
-  if (validateResult.error) {
-    return res.status(400).json({ error: validateResult.error.message });
-  };
-
+router.post('/new',validBody(bugSchema), async (req, res) => {
   try {
     const newBug = {
       ...req.body,
@@ -69,12 +64,18 @@ router.post('/new', async (req, res) => {
       createdOn: new Date(),
       lastUpdated: new Date()
     };;
-
-    const result = await bugCollection.insertOne(newBug);
-    res.status(201).json({ message: 'Bug created!', bugId: result.insertedId });
+    const existingBug = await getByObject('bugs', 'title', newBug.title);
+    if (existingBug) {
+      return res.status(400).json({ error: 'bug is already registered' });
+    };
+    const result = await insertNew('bugs', newBug);
+    if(!result){
+      res.status(500).json({ error: 'Failed to create bug' });
+    }
+    res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create bug' });
+    res.status(500).json({ error: 'Internal server error' });
   };
 });
 //|====================================================================================================|
