@@ -4,19 +4,20 @@
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
-import express from 'express';
-import { ObjectId } from 'mongodb';
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
+import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { validId } from '../../middleware/validId.js';
+import { getByObject } from '../../database.js';
+import { ObjectId } from 'mongodb';
+import express from 'express';
 import debug from 'debug';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
 const router = express.Router();
 const debugBug = debug('app:BugRouter');
-
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
 //|====================================================================================================|
 //|-------------------------------------------[-GET-REQUESTS-]-----------------------------------------|
 //|====================================================================================================|
@@ -36,19 +37,13 @@ router.get('/list', async (req, res) => {
 //|==================================================|
 //|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
-router.get('/:bugId', async (req, res) => {
+router.get('/:bugId', validId(bugId), async (req, res) => {
   const { bugId } = req.params;
-  debugBug(`GET /api/bugs/${bugId} hit`);
   try {
-    if (!ObjectId.isValid(bugId)) {
-      return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-    };
-
-    const bug = await bugCollection.findOne({ _id: new ObjectId(bugId) });
+    const bug = await getByObject('bugs', '_id', bugId) 
     if (!bug) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
-
     res.status(200).json(bug);
   } catch (err) {
     console.error(err);
