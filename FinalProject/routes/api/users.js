@@ -47,7 +47,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
     const foundUser = await getByObject('users', '_id', userId);
     if (!foundUser) {
       return res.status(404).json({ message: `User ID: ${userId} not found` });
-    }
+    };
     return res.status(200).json(foundUser);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -103,24 +103,22 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
 //|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
 router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (req, res) => {
-  const { userId } = req.params;
-  const updates = req.body;
-
   try {
+    const { userId } = req.params;
+    const updates = req.body;
     if (updates.password) {
       updates.password = await genPassword(updates.password);
     };
-
-    const result = await updateUser(userId, updates)
-
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: `User ${userId} not found.` });
-    };
+    await updateUser(userId, updates)
     res.status(200).json({ message: `User ${userId} updated successfully.` });
-
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-    console.error(err)
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 
@@ -142,7 +140,13 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     console.error(err)
   };
 });
-
+//|====================================================================================================|
+//|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
+//|====================================================================================================|
+function autoCatch(err, res){
+    console.error(err);
+    return res.status(err.status).json({ error: err.message });
+};
 //|==================================================|
 //|----------------[EXPORT-ROUTER]-------------------|
 //|==================================================|
