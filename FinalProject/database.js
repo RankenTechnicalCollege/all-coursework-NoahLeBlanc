@@ -53,6 +53,11 @@ export async function listAll(collection) {
 export async function getByObject(collection, object, item) {
   const db = await connect();
   const foundItem = await db.collection(collection).findOne({ [object]: item });
+  if(!foundItem){
+    const err = new Error(`${item} not found.`);
+    err.status = 400;
+    throw err;
+  }
   return foundItem;
 };
 //|====================================================================================================|
@@ -105,6 +110,39 @@ export async function updateUser(userId, updatedUser) {
       err.status = 404; // Not Found
       throw err;
   };
+  //if the user isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the user");
+    err.status = 400; // Bad Request
+    throw err;
+  };
+  return result;
+};
+//|================================================|
+//|---------[ UPDATE USER ASSIGNED BUG ]-----------|
+//|================================================|
+export async function assignBugToUser(userId, bugToAssign) {
+  const db = await connect();
+  const existingUser = await getByObject('users', "_id", userId);
+  if(!existingUser){
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
+  };
+   // Check if any values actually differ
+  const isDifferent = Object.entries(bugToAssign).some(([key, value]) => {
+    return JSON.stringify(existingUser[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("No changes were made — values are the same");
+    err.status = 400;
+    throw err;
+  };
+  //Updates the user 
+  const result = await db.collection('users').updateOne(
+    { assignedBugs: bugToAssign},
+    { $set: {lastUpdated: new Date()}}
+  );
   //if the user isn't modified throws an error
   if (result.modifiedCount === 0) {
     const err = new Error("No changes were made to the user");
