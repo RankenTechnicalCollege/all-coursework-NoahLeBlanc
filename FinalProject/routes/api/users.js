@@ -21,12 +21,6 @@ const saltRounds = 10;
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
-// Helper function to get the users collection
-async function getUsersCollection() {
-  const db = await require('../../database.js').connect();
-  return db.collection('users');
-};
-
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
@@ -70,8 +64,6 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 router.post('/register', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
-    
-
     const existingUser = await getByObject('users', 'email', newUser.email)  
     if (existingUser) {
       return res.status(400).json({ error: 'Email is already registered' });
