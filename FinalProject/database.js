@@ -119,7 +119,7 @@ export async function updateUser(userId, updatedUser) {
   return result;
 };
 //|================================================|
-//|---------[ UPDATE USER ASSIGNED BUG ]-----------|
+//|---------[ UPDATE: ASSIGN USER TO BUG]----------|
 //|================================================|
 export async function assignBugToUser(userId, bugToAssign) {
   const db = await connect();
