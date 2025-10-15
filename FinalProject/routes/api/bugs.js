@@ -6,9 +6,8 @@
 //|==================================================|
 import express from 'express';
 import { ObjectId } from 'mongodb';
-import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema, bugCloseSchema} from '../../middleware/schema.js';
+import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
 import debug from 'debug';
-import Joi from 'joi';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -17,9 +16,6 @@ const debugBug = debug('app:BugRouter');
 
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
-let bugCollection = await  ('bugs');
-let userCollection = await  ('users');
 
 //|====================================================================================================|
 //|-------------------------------------------[-GET-REQUESTS-]-----------------------------------------|
@@ -30,7 +26,7 @@ let userCollection = await  ('users');
 router.get('/list', async (req, res) => {
   debugBug("GET /api/bugs hit");
   try {
-    const bugs = await bugCollection.find({}).toArray();
+    const bugs = await listAll('bugs');
     res.status(200).json(bugs);
   } catch (err) {
     console.error(err);
