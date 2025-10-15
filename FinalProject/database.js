@@ -75,11 +75,26 @@ export async function insertNew(collectionName, newObject) {
 export async function updateUser(userId, updatedUser) {
   const db = await connect();
   //checks if any updates have been passed
-  if (Object.keys(updateUser).length === 0) {
+  if (Object.values(updatedUser).length === 0) {
     const err = new Error("No fields provided to update");
     err.status = 400;
     throw err;
-  }
+  };
+  const existingUser = await getByObject('users', "_id", userId);
+  if(!existingUser){
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
+  };
+   // Check if any values actually differ
+  const isDifferent = Object.entries(updatedUser).some(([key, value]) => {
+    return JSON.stringify(existingUser[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("No changes were made — values are the same");
+    err.status = 400;
+    throw err;
+  };
   //Updates the user 
   const result = await db.collection('users').updateOne(
     { _id: userId },
