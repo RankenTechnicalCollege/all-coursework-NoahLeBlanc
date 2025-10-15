@@ -5,8 +5,7 @@ import express from 'express';
 import debug from 'debug';
 import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { ObjectId } from 'mongodb';
-
-import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; // Removed getCollection
+import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
 import { validId } from '../../middleware/validId.js';
 import { validBody } from '../../middleware/validBody.js';
 import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
@@ -45,8 +44,7 @@ router.get('/list', async (req, res) => {
 router.get('/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
-    const foundUser = await getByObject('users', '_id', new ObjectId(userId));
-
+    const foundUser = await getByObject('users', '_id', userId);
     if (foundUser) {
       return res.status(200).json(foundUser);
     } else {
