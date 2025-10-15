@@ -5,7 +5,7 @@
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
-import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { listAll, getByObject, deleteByObject, updateUser, insertNew, updateBug} from '../../database.js'; 
 import { validBody } from '../../middleware/validBody.js';
 import { validId } from '../../middleware/validId.js';
 import { ObjectId } from 'mongodb';
@@ -84,27 +84,14 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
 //|==================================================|
 //|-----------------[-PATCH UPDATE BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId', async (req, res) => {
-  const { bugId } = req.params;
-
-  if (!ObjectId.isValid(bugId)) {
-    return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  };
-
-
-  const validateResult = bugPatchSchema.validate(req.body);
-  if (validateResult.error) {
-    return res.status(400).json({ error: validateResult.error.message });
-  };
-
+router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req, res) => {
   try {
-    const updateData = { ...req.body, lastUpdated: new Date() };
-    const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
-
+    const { bugId } = req.params;
+    const updatedBug = req.body;
+    const result = await updateBug(bugId, updatedBug)
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
-
     res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
     console.error(err);
