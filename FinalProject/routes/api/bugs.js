@@ -5,7 +5,7 @@
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
-import { listAll, getByObject, deleteByObject, updateUser, insertNew, updateBug} from '../../database.js'; 
+import { listAll, getByObject, deleteByObject, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
 import { validBody } from '../../middleware/validBody.js';
 import { validId } from '../../middleware/validId.js';
 import { ObjectId } from 'mongodb';
@@ -141,24 +141,10 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
   try {
     const { bugId } = req.params;
     const assignedToUserId = req.body;
-
-    const user = getByObject('users', '_id', assignedToUserId)
-    if (!user) {
-      return res.status(404).json({ error: `User ${userId} not found.` });
-    };
-
-    const updateData = {
-      assignedToUserId: user._id,
-      assignedToUserName: `${user.givenName} ${user.familyName}`,
-      lastUpdated: new Date()
-    };;
-
-    const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    };
-
-    res.status(200).json({ message: `Bug ${bugId} assigned to ${updateData.assignedToUserName}` });
+    var userId  = validId(Object.values(assignedToUserId)[0]);
+    const user = await getByObject('users', '_id', userId)
+    await assignBugToUser(userId, bugId)
+    res.status(200).json({ message: `Bug ${bugId} assigned to ${user.fullName}` });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
