@@ -169,10 +169,10 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
     if(updatedInfo.closed == true){
-      res.status(200).json({ message: `Bug ${bugId} is now closed.` });
+      return res.status(200).json({ message: `Bug ${bugId} is now closed.` });
     }
     else{
-      res.status(200).json({ message: `Bug ${bugId} is now open.` });
+      return res.status(200).json({ message: `Bug ${bugId} is now open.` });
     }
   } catch (err) {
     if(err.status){
