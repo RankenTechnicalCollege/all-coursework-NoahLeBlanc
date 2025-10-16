@@ -4,18 +4,16 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
+import { listAll, getByObject, deleteByObject, insertNew, updateProduct} from '../../middleware/database.js'; 
+import { productSchema, productPatchSchema} from '../../middleware/schema.js';
+import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
-//import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
-import { listAll, getByObject, deleteByObject, insertNew} from '../../middleware/database.js'; 
-import { validId, validBody } from '../../middleware/validation.js';
-import { productSchema } from '../../middleware/schema.js';
-
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
 const router = express.Router();
-const debugUser = debug('app:UserRouter');
+const debugProduct= debug('app:ProductRoute');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 //|====================================================================================================|
@@ -111,14 +109,28 @@ router.post('/products', validBody(productSchema), async (req, res) => {
     }
   };
 });
-
 //|====================================================================================================|
 //|--------------------------------------[-PRODUCT PATCH FUNCTION-]------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|---------[-PATCH /api/products/:productId-]-------|
 //|==================================================|
-
+router.patch('/:productId', validId('productId'), validBody(productPatchSchema), async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const updates = req.body;
+    await updateProduct(productId, updates)
+    res.status(200).json({ message: `Product ${productId} updated successfully.` });
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to add a product' });
+    }
+  };
+});
 //|====================================================================================================|
 //|--------------------------------------[-PRODUCT DELETE FUNCTION-]-----------------------------------|
 //|====================================================================================================|
