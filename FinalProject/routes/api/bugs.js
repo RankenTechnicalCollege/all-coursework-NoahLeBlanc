@@ -121,9 +121,11 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
 router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema), async (req, res) => {
   try {
     const { bugId } = req.params;
-    const updatedBug = req.params;
+    const updatedBug = req.body;
     await updateBug(bugId, updatedBug)
-    res.status(200).json({ message: `Bug ${bugId} classified.` });
+    res.status(200).json({ 
+      message: `Bug ${bugId} classified as ${updatedBug.classification }.` 
+    });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -155,7 +157,6 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
     }
   };
 });
-
 //|==================================================|
 //|-----------------[-PATCH CLOSE BUG-]--------------|
 //|==================================================|
