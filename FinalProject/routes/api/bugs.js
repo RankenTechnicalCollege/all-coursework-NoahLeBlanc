@@ -102,8 +102,8 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
 router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req, res) => {
   try {
     const { bugId } = req.params;
-    const updatedBug = req.body;
-    await updateBug(bugId, updatedBug)
+    const updatedInfo = req.body;
+    await updateBug(bugId, updatedInfo)
     res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
     if(err.status){
@@ -121,10 +121,10 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
 router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema), async (req, res) => {
   try {
     const { bugId } = req.params;
-    const updatedBug = req.body;
-    await updateBug(bugId, updatedBug)
+    const updatedInfo = req.body;
+    await updateBug(bugId, updatedInfo)
     res.status(200).json({ 
-      message: `Bug ${bugId} classified as ${updatedBug.classification }.` 
+      message: `Bug ${bugId} classified as ${updatedInfo.classification }.` 
     });
   } catch (err) {
     if(err.status){
@@ -160,32 +160,20 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
 //|==================================================|
 //|-----------------[-PATCH CLOSE BUG-]--------------|
 //|==================================================|
-router.patch('/:bugId/close', async (req, res) => {
-  const { bugId } = req.params;
-
-  if (!ObjectId.isValid(bugId)) {
-    return res.status(404).json({ error: `bugId ${bugId} is not a valid ObjectId.` });
-  };
-
-
-  const validateResult = bugCloseSchema.validate(req.body);
-  if (validateResult.error) {
-    return res.status(400).json({ error: validateResult.error.message });
-  };
-
+router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async (req, res) => {
   try {
-    const updateData = {
-      closed: req.body.closed,
-      closedOn: new Date(),
-      lastUpdated: new Date()
-    };;
-
-    const result = await bugCollection.updateOne({ _id: new ObjectId(bugId) }, { $set: updateData });
+    const { bugId } = req.params;
+    const updatedInfo = req.body;
+    const result = await updateBug(bugId, updatedInfo);
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
-
-    res.status(200).json({ message: `Bug ${bugId} closed.` });
+    if(updatedInfo.closed == true){
+      res.status(200).json({ message: `Bug ${bugId} is now closed.` });
+    }
+    else{
+      res.status(200).json({ message: `Bug ${bugId} is now open.` });
+    }
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
