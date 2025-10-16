@@ -8,7 +8,7 @@ import express from 'express';
 import debug from 'debug';
 //import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { listAll, getByObject, deleteByObject, insertNew} from '../../middleware/database.js'; 
-//import { validId } from '../../middleware/validId.js';
+import { validId } from '../../middleware/validation.js';
 //import { validBody } from '../../middleware/validBody.js';
 //import { productSchema } from '../../middleware/schema.js';
 
@@ -46,6 +46,24 @@ router.get('/list', async (req, res) => {
 //|==================================================|
 //|----------[-GET /api/products/:productId-]--------|
 //|==================================================|
+router.get('/:productId', validId('productId'), async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const foundData = await getByObject('products', '_id', productId);
+    if (!foundData) {
+      return res.status(404).json({ message: `User ID: ${productId} not found` });
+    };
+    return res.status(200).json(foundData);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET products' });
+    }
+  };
+});
 
 //|==================================================|
 //|------[-GET /api/products/name/:productName-]-----|
