@@ -65,6 +65,12 @@ export async function getByObject(collectionName, fieldName, fieldValue) {
 //|================================================|
 export async function insertNew(collectionName, newFieldValue) {
   const db = await connect();
+  const foundData = await db.collection(collectionName).findOne({ name: newFieldValue.name});
+  if(foundData){
+    const err = new Error(`${newFieldValue.name} already exists.`);
+    err.status = 400;
+    throw err;
+  }
   const result = await db.collection(collectionName).insertOne(newFieldValue);
   return result;
 };
@@ -82,4 +88,5 @@ export async function deleteByObject(collectionName, fieldName, fieldValue) {
 export async function ping() {
   const db = await connect();
   const pong = await db.command({ ping: 1 });
-}
+  debugDb(`ping: ${JSON.stringify(pong)}`);
+};
