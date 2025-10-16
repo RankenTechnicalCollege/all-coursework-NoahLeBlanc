@@ -68,7 +68,24 @@ router.get('/:productId', validId('productId'), async (req, res) => {
 //|==================================================|
 //|------[-GET /api/products/name/:productName-]-----|
 //|==================================================|
-
+router.get('/name/:productName', async (req, res) => {
+  try {
+    const { productName } = req.params;
+    const foundData = await getByObject('products', 'name', productName);
+    if (!foundData) {
+      return res.status(404).json({ message: `User ID: ${productName} not found` });
+    };
+    return res.status(200).json(foundData);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET products' });
+    }
+  };
+});
 //|====================================================================================================|
 //|--------------------------------------[-PRODUCT POST FUNCTION-]-------------------------------------|
 //|====================================================================================================|
