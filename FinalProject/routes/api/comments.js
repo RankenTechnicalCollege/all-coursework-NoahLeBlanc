@@ -4,84 +4,69 @@
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
+import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
+import {getByObject, insertNew } from '../../database.js'; 
+import { commentSchema } from '../../middleware/schema.js';
+import { validBody } from '../../middleware/validBody.js';
+import { validId } from '../../middleware/validId.js';
 import express from 'express';
 import debug from 'debug';
-import { ObjectId } from 'mongodb';
-import { commentSchema } from '../../middleware/schema.js';
-import { connect } from '../../database.js';
 //|==================================================|
-//|----------------[-JOI-INITIALIZATION-]------------|
+//|-------------[-MIDDLEWARE-INITIALIZATION-]--------|
 //|==================================================|
 const router = express.Router();
 const debugComments = debug('app:Comments');
-const debugIDValidation = debug('app:IDValidation');
-
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
 //|========================================================================================|
 //|---------------------------------------[-GET-REQUESTS-]---------------------------------|
 //|========================================================================================|
 //|============================================|
 //|------[-GET-ALL-COMMENTS-FOR-A-BUG-]--------|
 //|============================================|
-router.get('/:bugId/comments', async (req, res) => {
+router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
   debugComments(`GET /:bugId/comments hit`);
   try {
     const { bugId } = req.params;
-
-    // Validate ID
-    validateID(bugId);
-
-    const bugObjectId = new ObjectId(bugId);
-
-    const db = await connect();
-    const bugData = await db.collection('bugs').findOne({ _id: bugObjectId });
-
-    if (!bugData) {
-      return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    };
-
+    const bugData = await getByObject('bugs', '_id', bugId)
     if (!bugData.comments || bugData.comments.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no comments.` });
     };
-
     res.status(200).json(bugData.comments);
   } catch (err) {
-    console.error(err);
-    res.status(err.message.includes('ObjectId') ? 400 : 500).json({ error: err.message });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET comments' });
+    }
   };
 });
-
 //|============================================|
 //|------[-GET-A-SPECIFIC-COMMENT-BY-ID-]------|
 //|============================================|
-router.get('/:bugId/comments/:commentId', async (req, res) => {
+router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId'), async (req, res) => {
   debugComments(`GET /:bugId/comments/:commentId hit`);
   try {
     const { bugId, commentId } = req.params;
-
-    // Validate IDs
-    validateID(bugId);
-    validateID(commentId);
-
-    const bugObjectId = new ObjectId(bugId);
-    const commentObjectId = new ObjectId(commentId);
-
-    const db = await connect();
-    const bugData = await db.collection('bugs').findOne(
-      { _id: bugObjectId, 'comments._id': commentObjectId },
-      { projection: { 'comments.$': 1 } }
-    );
-
+    const bugData = await getByObject('bugs', '_id', bugId)
     if (!bugData || !bugData.comments || bugData.comments.length === 0) {
-      return res.status(404).json({ error: `Comment ${commentId} not found.` });
+      return res.status(404).json({ error: `Bug has no comments` });
     };
-
-    res.status(200).json(bugData.comments[0]);
+    const foundComment = bugData.comments.find(comment => comment._id.equals(commentId));
+    if (!foundComment) {
+      return res.status(404).json({ error: `Comment ${commentId} not found.` });
+    }
+    res.status(200).json(foundComment);
   } catch (err) {
-    console.error(err);
-    res.status(err.message.includes('ObjectId') ? 400 : 500).json({ error: err.message });
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 
@@ -91,7 +76,7 @@ router.get('/:bugId/comments/:commentId', async (req, res) => {
 //|============================================|
 //|-----[-POST-A-NEW-COMMENT-TO-A-BUG-]--------|
 //|============================================|
-router.post('/:bugId/comments', async (req, res) => {
+router.post('/:bugId/comments', validId('bugId'), async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
   try {
     const { bugId } = req.params;
@@ -131,9 +116,14 @@ router.post('/:bugId/comments', async (req, res) => {
 
     res.status(201).json({ message: 'Comment added', comment: newComment });
   } catch (err) {
-    console.error(err);
-    res.status(err.message.includes('ObjectId') ? 400 : 500).json({ error: err.message });
-  }
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
+  };
 });
 
 //|====================================================================================================|
@@ -150,7 +140,10 @@ function validateID(i) {
   };
   debugIDValidation(`${i} Passed ID validation`);
 };
-
+function autoCatch(err, res){ validId('bugId')
+    console.error(err);
+    res.status(err.status).json({ error: err.message });
+}
 //|====================================================================================================|
 //|-------------------------------------------[-EXPORT-ROUTER-]----------------------------------------|
 //|====================================================================================================|
