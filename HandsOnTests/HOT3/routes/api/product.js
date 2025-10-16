@@ -22,11 +22,11 @@ router.use(express.json());
 //|==================================================|
 //|--------------[-GET /api/products-]---------------|
 //|==================================================|
-router.get('/list', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const foundData = await listAll('products');
     if (foundData) {
-      return res.status(200).json(foundData);
+      return res.status(200).json([foundData]);
     } else {
       throw new Error('No products found');
     };
@@ -36,7 +36,7 @@ router.get('/list', async (req, res) => {
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET products' });
+      res.status(500).json([{ error: 'Failed to GET products' }]);
     }
   };
 });
@@ -48,16 +48,16 @@ router.get('/:productId', validId('productId'), async (req, res) => {
     const { productId } = req.params;
     const foundData = await getByObject('products', '_id', productId);
     if (!foundData) {
-      return res.status(404).json({ message: `Product ID: ${productId} not found` });
+      return res.status(404).json([{ message: `Product ID: ${productId} not found` }]);
     };
-    return res.status(200).json(foundData);
+    return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET products' });
+      res.status(500).json([{ error: 'Failed to GET products' }]);
     }
   };
 });
@@ -70,16 +70,16 @@ router.get('/name/:productName', async (req, res) => {
     const { productName } = req.params;
     const foundData = await getByObject('products', 'name', productName);
     if (!foundData) {
-      return res.status(404).json({ message: `Product ID: ${productName} not found` });
+      return res.status(404).json([{ message: `Product ID: ${productName} not found` }]);
     };
-    return res.status(200).json(foundData);
+    return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET products' });
+      res.status(500).json([{ error: 'Failed to GET products' }]);
     }
   };
 });
@@ -89,23 +89,23 @@ router.get('/name/:productName', async (req, res) => {
 //|==================================================|
 //|-------------[-POST /api/products-]---------------|
 //|==================================================|
-router.post('/post', validBody(productSchema), async (req, res) => {
+router.post('/', validBody(productSchema), async (req, res) => {
   try {
     const newProduct = req.body;
 
     newProduct.createdOn = new Date() 
     const status = await insertNew('products', newProduct) 
     if(!status.acknowledged){
-      return res.status(500).json({ error: 'Failed to create new product. Please try again later.' });
+      return res.status(500).json([{ error: 'Failed to create new product. Please try again later.' }]);
     }
-    res.status(201).json({ message: `New Product ${newProduct._id} Added!` });
+    res.status(201).json([{ message: `New Product ${newProduct._id} Added!` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to add a product' });
+      res.status(500).json([{ error: 'Failed to add a product' }]);
     }
   };
 });
@@ -120,14 +120,14 @@ router.patch('/:productId', validId('productId'), validBody(productPatchSchema),
     const { productId } = req.params;
     const updates = req.body;
     await updateProduct(productId, updates)
-    res.status(200).json({ message: `Product ${productId} updated successfully.` });
+    res.status(200).json([{ message: `Product ${productId} updated successfully.` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to add a product' });
+      res.status(500).json([{ error: 'Failed to add a product' }]);
     }
   };
 });
@@ -143,12 +143,12 @@ router.delete('/:productId', validId('productId'), async (req, res) => {
   try {
     const result = await deleteByObject("products", '_id', productId)
     if (result.deletedCount === 1) {
-      res.status(200).json({ message: `Product ${productId} deleted successfully.` });
+      res.status(200).json([{ message: `Product ${productId} deleted successfully.` }]);
     } else {
-      res.status(404).json({ message: `Product ${productId} not found.` });
+      res.status(404).json([{ message: `Product ${productId} not found.` }]);
     }
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json([{ message: 'Server error' }]);
     console.error(err)
   };
 });
@@ -157,7 +157,7 @@ router.delete('/:productId', validId('productId'), async (req, res) => {
 //|====================================================================================================|
 function autoCatch(err, res){
     console.error(err);
-    return res.status(err.status).json({ error: err.message });
+    return res.status(err.status).json([{ error: err.message }]);
 };
 //|==================================================|
 //|----------------[EXPORT-ROUTER]-------------------|
