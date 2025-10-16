@@ -48,7 +48,7 @@ router.get('/:productId', validId('productId'), async (req, res) => {
     const { productId } = req.params;
     const foundData = await getByObject('products', '_id', productId);
     if (!foundData) {
-      return res.status(404).json({ message: `User ID: ${productId} not found` });
+      return res.status(404).json({ message: `Product ID: ${productId} not found` });
     };
     return res.status(200).json(foundData);
   } catch (err) {
@@ -70,7 +70,7 @@ router.get('/name/:productName', async (req, res) => {
     const { productName } = req.params;
     const foundData = await getByObject('products', 'name', productName);
     if (!foundData) {
-      return res.status(404).json({ message: `User ID: ${productName} not found` });
+      return res.status(404).json({ message: `Product ID: ${productName} not found` });
     };
     return res.status(200).json(foundData);
   } catch (err) {
@@ -89,7 +89,7 @@ router.get('/name/:productName', async (req, res) => {
 //|==================================================|
 //|-------------[-POST /api/products-]---------------|
 //|==================================================|
-router.post('/products', validBody(productSchema), async (req, res) => {
+router.post('/post', validBody(productSchema), async (req, res) => {
   try {
     const newProduct = req.body;
 
@@ -137,7 +137,21 @@ router.patch('/:productId', validId('productId'), validBody(productPatchSchema),
 //|==================================================|
 //|---------[-DELETE /api/products/:productId-]------|
 //|==================================================|
+router.delete('/:productId', validId('productId'), async (req, res) => {
+  const { productId } = req.params;
 
+  try {
+    const result = await deleteByObject("products", '_id', productId)
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: `Product ${productId} deleted successfully.` });
+    } else {
+      res.status(404).json({ message: `Product ${productId} not found.` });
+    }
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+    console.error(err)
+  };
+});
 //|====================================================================================================|
 //|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
 //|====================================================================================================|
