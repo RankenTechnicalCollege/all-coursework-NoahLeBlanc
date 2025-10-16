@@ -9,7 +9,7 @@ import { productRouter } from "./routes/api/product.js";
 dotenv.config();
 
 //-------------------------------------------- Config ---------------------------------------------
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 2023;
 const app = express();
 
 //--------------------------------------------Middleware-------------------------------------------
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.static("frontend/dist"));
 
 //---------------------------------------------Route-----------------------------------------------
-app.use("/api/product.js", productRouter);
+app.use("/api/products", productRouter);
 //--------------------------------------------Database---------------------------------------------
 ping();
 
