@@ -82,6 +82,51 @@ export async function deleteByObject(collectionName, fieldName, fieldValue) {
   const deletedItem = await db.collection(collectionName).deleteOne({ [fieldName]: fieldValue });
   return deletedItem;
 };
+//|================================================|
+//|--------------[-UPDATE-PRODUCT-]----------------|
+//|================================================|
+export async function updateProduct(productId, updatedProduct) {
+  const db = await connect();
+  //checks if any updates have been passed
+  if (Object.values(updatedProduct).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  };
+  const existingProduct = await getByObject('products', "_id", productId);
+  if(!existingProduct){
+    const err = new Error("Product not found");
+    err.status = 404;
+    throw err;
+  };
+   // Check if any values actually differ
+  const isDifferent = Object.entries(updatedProduct).some(([key, value]) => {
+    return JSON.stringify(existingProduct[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("No changes were made — values are the same");
+    err.status = 400;
+    throw err;
+  };
+  //Updates the product 
+  const result = await db.collection('products').updateOne(
+    { _id: productId},
+    { $set: { ...updatedProduct, lastUpdatedOn: new Date()}}
+  );
+  if (result.matchedCount === 0) {
+      const err = new Error("Product not found");
+      err.status = 404; // Not Found
+      throw err;
+  };
+  //if the product isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the product");
+    err.status = 400; // Bad Request
+    throw err;
+  };
+  return result;
+};
+
 //|====================================================================================================|
 //|---------------------------------------------[-PING-]-----------------------------------------------|
 //|====================================================================================================|
