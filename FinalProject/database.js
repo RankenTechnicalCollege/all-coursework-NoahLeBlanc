@@ -1,5 +1,5 @@
 //|====================================================================================================|
-//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
+//|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|-------------------[-IMPORTS-]--------------------|
@@ -37,45 +37,50 @@ export async function connect() {
   };
 };
 //|====================================================================================================|
-//|-----------------------------------------------[ DATABASE GET ]-------------------------------------|
+//|------------------------------------[-DATABASE-MULTI-USE-FUNCTIONS-]--------------------------------|
 //|====================================================================================================|
 //|================================================|
-//|-----------[ GET ALL FROM COLLECTION ]----------|
+//|-----------[-GET-ALL-FROM-COLLECTION-]----------|
 //|================================================|
-export async function listAll(collection) {
+export async function listAll(collectionName) {
   const db = await connect();
-  const foundData = await db.collection(collection).find().toArray();
+  const foundData = await db.collection(collectionName).find().toArray();
   return foundData;
 };
 //|================================================|
-//|--------------[ GET BY OBJECT ]-----------------|
+//|--------------[-GET-BY-OBJECT-]-----------------|
 //|================================================|
-export async function getByObject(collection, object, item) {
+export async function getByObject(collectionName, fieldName, fieldValue) {
   const db = await connect();
-  const foundItem = await db.collection(collection).findOne({ [object]: item });
-  if(!foundItem){
-    const err = new Error(`${item} not found.`);
+  const foundData = await db.collection(collectionName).findOne({ [fieldName]: item });
+  if(!foundData){
+    const err = new Error(`${fieldValue} not found.`);
     err.status = 400;
     throw err;
   }
-  return foundItem;
+  return foundData;
 };
-//|====================================================================================================|
-//|-----------------------------------------------[ DATABASE INSERT ]----------------------------------|
-//|====================================================================================================|
 //|================================================|
-//|------------[ INSERT NEW OBJECT ]---------------| 
+//|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
-export async function insertNew(collectionName, newObject) {
+export async function insertNew(collectionName, newFieldValue) {
   const db = await connect();
-  const result = await db.collection(collectionName).insertOne(newObject);
+  const result = await db.collection(collectionName).insertOne(newFieldValue);
   return result;
 };
+//|================================================|
+//|--------------[-DELETE-BY-OBJECT-]--------------|
+//|================================================|
+export async function deleteByObject(collectionName, fieldName, fieldValue) {
+  const db = await connect();
+  const deletedItem = await db.collection(collectionName).deleteOne({ [fieldName]: fieldValue });
+  return deletedItem;
+};
 //|====================================================================================================|
-//|--------------------------------------------[ DATABASE UPDATE ]-------------------------------------|
+//|------------------------------------[-DATABASE-USER-FUNCTIONS-]-------------------------------------|
 //|====================================================================================================|
 //|================================================|
-//|--------------[ UPDATE USER ]-------------------|
+//|--------------[-UPDATE-USER-]-------------------|
 //|================================================|
 export async function updateUser(userId, updatedUser) {
   const db = await connect();
@@ -118,8 +123,11 @@ export async function updateUser(userId, updatedUser) {
   };
   return result;
 };
+//|====================================================================================================|
+//|------------------------------------[-DATABASE-BUGS-FUNCTIONS-]-------------------------------------|
+//|====================================================================================================|
 //|================================================|
-//|--------------[ UPDATE BUG ]--------------------|
+//|--------------[-UPDATE-BUG-]--------------------|
 //|================================================|
 export async function updateBug(bugId, updatedBug) {
   const db = await connect();
@@ -152,7 +160,7 @@ export async function updateBug(bugId, updatedBug) {
   return result;
 };
 //|================================================|
-//|---------[ UPDATE: ASSIGN BUG TO USER]----------|
+//|---------[-UPDATE:-ASSIGN-BUG-TO-USER]----------|
 //|================================================|
 export async function assignBugToUser(userId, bugId) {
   const db = await connect();
@@ -195,20 +203,11 @@ export async function assignBugToUser(userId, bugId) {
 
   return result;
 }
-
 //|====================================================================================================|
-//|--------------------------------------------[ DATABASE DELETE ]-------------------------------------|
+//|------------------------------------[-DATABASE-TEST-FUNCTIONS-]-------------------------------------|
 //|====================================================================================================|
-//|================================================|
-//|--------------[-DELETE-BY-OBJECT-]--------------|
-//|================================================|
-export async function deleteByObject(collection, object, item) {
-  const db = await connect();
-  const deletedItem = await db.collection(collection).deleteOne({ [object]: item });
-  return deletedItem;
-};
 //|====================================================================================================|
-//|-------------------------------------------------[ PING ]-------------------------------------------|
+//|---------------------------------------------[-PING-]-----------------------------------------------|
 //|====================================================================================================|
 export async function ping() {
   const db = await connect();
