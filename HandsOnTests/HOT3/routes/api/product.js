@@ -8,9 +8,8 @@ import express from 'express';
 import debug from 'debug';
 //import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { listAll, getByObject, deleteByObject, insertNew} from '../../middleware/database.js'; 
-import { validId } from '../../middleware/validation.js';
-//import { validBody } from '../../middleware/validBody.js';
-//import { productSchema } from '../../middleware/schema.js';
+import { validId, validBody } from '../../middleware/validation.js';
+import { productSchema } from '../../middleware/schema.js';
 
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
@@ -92,6 +91,26 @@ router.get('/name/:productName', async (req, res) => {
 //|==================================================|
 //|-------------[-POST /api/products-]---------------|
 //|==================================================|
+router.post('/products', validBody(productSchema), async (req, res) => {
+  try {
+    const newProduct = req.body;
+
+    newProduct.createdOn = new Date() 
+    const status = await insertNew('products', newProduct) 
+    if(!status.acknowledged){
+      return res.status(500).json({ error: 'Failed to create new product. Please try again later.' });
+    }
+    res.status(201).json({ message: `New Product ${newProduct._id} Added!` });
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to add a product' });
+    }
+  };
+});
 
 //|====================================================================================================|
 //|--------------------------------------[-PRODUCT PATCH FUNCTION-]------------------------------------|
