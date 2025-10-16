@@ -7,7 +7,7 @@
 import express from 'express';
 import debug from 'debug';
 //import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
-//import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { listAll, getByObject, deleteByObject, insertNew} from '../../middleware/database.js'; 
 //import { validId } from '../../middleware/validId.js';
 //import { validBody } from '../../middleware/validBody.js';
 //import { productSchema } from '../../middleware/schema.js';
@@ -25,7 +25,24 @@ router.use(express.json());
 //|==================================================|
 //|--------------[-GET /api/products-]---------------|
 //|==================================================|
-
+router.get('/list', async (req, res) => {
+  try {
+    const foundData = await listAll('products');
+    if (foundData) {
+      return res.status(200).json(foundData);
+    } else {
+      throw new Error('No products found');
+    };
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET products' });
+    }
+  };
+});
 //|==================================================|
 //|----------[-GET /api/products/:productId-]--------|
 //|==================================================|
@@ -56,7 +73,13 @@ router.use(express.json());
 //|==================================================|
 
 //|====================================================================================================|
+//|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
 //|====================================================================================================|
-//|-------------------------------------------[-EXPORTS-]----------------------------------------------|
-//|====================================================================================================|
+function autoCatch(err, res){
+    console.error(err);
+    return res.status(err.status).json({ error: err.message });
+};
+//|==================================================|
+//|----------------[EXPORT-ROUTER]-------------------|
+//|==================================================|
 export {router as productRouter};
