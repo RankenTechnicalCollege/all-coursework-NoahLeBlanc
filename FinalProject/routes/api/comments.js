@@ -5,7 +5,7 @@
 //|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
 import { validId, validBody } from '../../middleware/validation.js';
-import {getByField, insertNewComment, insertIntoDocument} from '../../database.js'; 
+import {getByField, insertNewComment, insertIntoDocument, getNestedItem} from '../../database.js'; 
 import { commentSchema } from '../../middleware/schema.js';
 import express from 'express';
 import debug from 'debug';
@@ -47,15 +47,8 @@ router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId')
   debugComments(`GET /:bugId/comments/:commentId hit`);
   try {
     const { bugId, commentId } = req.params;
-    const bugData = await getByField('bugs', '_id', bugId)
-    if (!bugData || !bugData.comments || bugData.comments.length === 0) {
-      return res.status(404).json({ error: `Bug has no comments` });
-    };
-    const foundComment = bugData.comments.find(comment => comment._id.equals(commentId));
-    if (!foundComment) {
-      return res.status(404).json({ error: `Comment ${commentId} not found.` });
-    };
-    res.status(200).json(foundComment);
+    const foundComment = await getNestedItem('bugs', '_id', bugId, 'comments', commentId)
+    return res.status(200).json(foundComment);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
