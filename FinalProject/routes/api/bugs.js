@@ -5,7 +5,7 @@
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
-import { listAll, getByObject, deleteByObject, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
+import { listAll, getByObject, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
@@ -30,11 +30,10 @@ router.get('/list', async (req, res) => {
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|==================================================|
@@ -51,11 +50,10 @@ router.get('/:bugId', validId('bugId'), async (req, res) => {
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|====================================================================================================|
@@ -79,16 +77,15 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
     const result = await insertNew('bugs', newBug);
     if(!result){
       res.status(500).json({ error: 'Failed to create bug' });
-    }
+    };
     res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|====================================================================================================|
@@ -106,11 +103,10 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|==================================================|
@@ -127,11 +123,10 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug classification' });
-    }
+      res.status(500).json({ error: 'Failed to update bug' });
+    };
   };
 });
 //|==================================================|
@@ -148,11 +143,10 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|==================================================|
@@ -171,7 +165,7 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
     }
     else{
       return res.status(200).json({ message: `Bug ${bugId} is now open.` });
-    }
+    };
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -179,7 +173,7 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
     else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 //|====================================================================================================|
