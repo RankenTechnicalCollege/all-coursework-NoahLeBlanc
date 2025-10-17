@@ -65,17 +65,26 @@ export async function getByField(collectionName, fieldName, fieldValue) {
   return foundData;
 };
 //|================================================|
-//|---------------[-GET-NESTED-FIELD-]-------------|
+//|---------------[-GET-NESTED-ITEM-]-------------|
 //|================================================|
-export async function getNestedField(collectionName, fieldName, fieldValue) {
-  const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
-  if(!foundData){
-    const err = new Error(`${fieldValue} not found.`);
-    err.status = 400;
-    throw err;
-  }
-  return foundData;
+export async function getNestedItem(
+    collectionName,
+    fieldName,
+    fieldValue,
+    nestedArrayPath,   // e.g. 'comments' or 'testCases.testCase'
+    nestedItemId
+  ) {
+  const query = {
+    [fieldName]: fieldValue,
+    [`${nestedArrayPath}.${fieldName}`]: nestedItemId
+  };
+  const projection = {
+    [`${nestedArrayPath}.$`]: 1
+  };
+  const result = await db.collection(collectionName).findOne(query, { projection });
+  return result
 };
+
 //|================================================|
 //|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
@@ -242,6 +251,9 @@ export async function assignBugToUser(userId, bugId) {
 //|====================================================================================================|
 //|------------------------------------[-DATABASE-COMMENTS-FUNCTIONS-]---------------------------------|
 //|====================================================================================================|
+//|================================================|
+//|---------[-UPDATE:-insertNewComment-]-----------|
+//|================================================|
 export async function insertNewComment(bugId, newFieldValue) {
   const existingBug = await getByObject('bugs', "_id", bugId);
   if(!existingBug){
