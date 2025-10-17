@@ -45,6 +45,11 @@ export async function connect() {
 export async function listAll(collectionName) {
   const db = await connect();
   const foundData = await db.collection(collectionName).find().toArray();
+  if(!foundData){
+    const err = new Error(`${fieldValue} not found.`);
+    err.status = 400;
+    throw err;
+  }
   return foundData;
 };
 //|================================================|
@@ -52,7 +57,7 @@ export async function listAll(collectionName) {
 //|================================================|
 export async function getByObject(collectionName, fieldName, fieldValue) {
   const db = await connect();
-  const foundData = await db.collection(collectionName).findOne({ [fieldName]: item });
+  const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
   if(!foundData){
     const err = new Error(`${fieldValue} not found.`);
     err.status = 400;
@@ -66,6 +71,27 @@ export async function getByObject(collectionName, fieldName, fieldValue) {
 export async function insertNew(collectionName, newFieldValue) {
   const db = await connect();
   const result = await db.collection(collectionName).insertOne(newFieldValue);
+  return result;
+};
+//|================================================|
+//|------------[-INSERT-INTO-DOCUMENT-]------------|
+//|================================================|
+export async function insertIntoDocument(collectionName, documentId, arrayFieldName, valueToInsert) {
+  const db = await connect();
+  const result = await db.collection(collectionName).updateOne(
+    {_id: documentId},
+    {$push: {[arrayFieldName]: valueToInsert}}
+  );
+  if(!result.matchedCount){
+    const err = new Error(`${documentId} not found`);
+    err.status = 404;
+    throw err;
+  }
+  if(!result.modifiedCount){
+    const err = new Error(`Failed to update ${collectionName}`);
+    err.status = 500;
+    throw err;
+  }
   return result;
 };
 //|================================================|
@@ -179,10 +205,9 @@ export async function assignBugToUser(userId, bugId) {
   const alreadyAssigned = existingUser.assignedBugs?.some(
     (assignedId) => assignedId.equals(bugObjectId)
   );
-
   if (alreadyAssigned) {
     const err = new Error("Bug already assigned to user");
-    err.status = 400;
+    err.status = 409;
     throw err;
   }
 
@@ -204,8 +229,32 @@ export async function assignBugToUser(userId, bugId) {
   return result;
 }
 //|====================================================================================================|
+//|------------------------------------[-DATABASE-COMMENTS-FUNCTIONS-]---------------------------------|
+//|====================================================================================================|
+export async function insertNewComment(bugId, newFieldValue) {
+  const db = await connect();
+  const existingBug = await getByObject('bugs', "_id", bugId);
+  if(!existingBug){
+    const err = new Error("Bug not found");
+    err.status = 404;
+    throw err;
+  };
+   // Check if any values actually differ
+  const isDifferent = Object.entries(newFieldValue).some(([key, value]) => {
+    return JSON.stringify(existingBug[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("Bug Cannot be a copy");
+    err.status = 400;
+    throw err;
+  };
+  const result = await db.collection('bugs').updateOne({_id: bugId}, {$push: {comments: newFieldValue}});
+  return result;
+};
+//|====================================================================================================|
 //|------------------------------------[-DATABASE-TEST-FUNCTIONS-]-------------------------------------|
 //|====================================================================================================|
+
 //|====================================================================================================|
 //|---------------------------------------------[-PING-]-----------------------------------------------|
 //|====================================================================================================|
