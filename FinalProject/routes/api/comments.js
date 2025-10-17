@@ -5,7 +5,7 @@
 //|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
 import { validId, validBody } from '../../middleware/validation.js';
-import {getByObject, insertNewComment} from '../../database.js'; 
+import {getByField, insertNewComment, insertIntoDocument} from '../../database.js'; 
 import { commentSchema } from '../../middleware/schema.js';
 import express from 'express';
 import debug from 'debug';
@@ -26,7 +26,7 @@ router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
   try {
     debugComments(`GET /:bugId/comments hit`);
     const { bugId } = req.params;
-    const bugData = await getByObject('bugs', '_id', bugId)
+    const bugData = await getByField('bugs', '_id', bugId)
     if (!bugData.comments || bugData.comments.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no comments.` });
     };
@@ -47,7 +47,7 @@ router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId')
   debugComments(`GET /:bugId/comments/:commentId hit`);
   try {
     const { bugId, commentId } = req.params;
-    const bugData = await getByObject('bugs', '_id', bugId)
+    const bugData = await getByField('bugs', '_id', bugId)
     if (!bugData || !bugData.comments || bugData.comments.length === 0) {
       return res.status(404).json({ error: `Bug has no comments` });
     };
@@ -77,8 +77,8 @@ router.post('/:bugId/comments', validId('bugId'), validBody(commentSchema), asyn
     const { bugId } = req.params;
     const newComment = req.body;
     // Add comment to bug
-    await insertNewComment(bugId, newComment) 
-    res.status(201).json({ message: 'Comment added', comment: newComment });
+    await insertIntoDocument('bugs', bugId, 'comments', newComment) 
+    res.status(201).json([{ message: 'Comment added', newComment }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)

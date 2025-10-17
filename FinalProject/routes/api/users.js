@@ -1,7 +1,7 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
-import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../database.js'; 
 import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
 import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
 import { validId, validBody } from '../../middleware/validation.js';
@@ -40,7 +40,7 @@ router.get('/list', async (req, res) => {
 router.get('/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
-    const foundUser = await getByObject('users', '_id', userId);
+    const foundUser = await getByField('users', '_id', userId);
     if (!foundUser) {
       return res.status(404).json({ message: `User ID: ${userId} not found` });
     };
@@ -57,7 +57,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 router.post('/register', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
-    const existingUser = await getByObject('users', 'email', newUser.email)  
+    const existingUser = await getByField('users', 'email', newUser.email)  
     if (existingUser) {
       return res.status(400).json({ error: 'Email is already registered' });
     };
@@ -83,7 +83,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await getByObject("users", "email", email)
+    const user = await getByField("users", "email", email)
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     comparePassword(password, user.password);
 

@@ -6,7 +6,7 @@
 //|==================================================|
 import {testSchema, testPatchSchema } from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
-import { getByObject, insertNew} from '../../database.js';
+import { getByField, insertNew} from '../../database.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -26,7 +26,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
   debugTests(`GET /:bugId/tests hit`);
   try {
     const { bugId } = req.params;
-    const bugData = await getByObject('bugs', '_id', bugId) 
+    const bugData = await getByField('bugs', '_id', bugId) 
     if (!bugData.testCases || bugData.testCases.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no test cases.` });
     };
@@ -46,7 +46,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
 router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
   try {
     const { bugId, testId } = req.params;
-    const bugData = await getByObject('bugs', '_id', bugId) 
+    const bugData = await getByField('bugs', '_id', bugId) 
     if (!bugData || !bugData.testCases) {
       return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
     };

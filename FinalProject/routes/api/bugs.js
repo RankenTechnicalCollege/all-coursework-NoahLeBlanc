@@ -5,7 +5,7 @@
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
-import { listAll, getByObject, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
+import { listAll, getByField, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
@@ -42,7 +42,7 @@ router.get('/list', async (req, res) => {
 router.get('/:bugId', validId('bugId'), async (req, res) => {
   const { bugId } = req.params;
   try {
-    const bug = await getByObject('bugs', '_id', bugId) 
+    const bug = await getByField('bugs', '_id', bugId) 
     if (!bug) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
@@ -70,7 +70,7 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
       createdOn: new Date(),
       lastUpdated: new Date()
     };;
-    const existingBug = await getByObject('bugs', 'title', newBug.title);
+    const existingBug = await getByField('bugs', 'title', newBug.title);
     if (existingBug) {
       return res.status(400).json({ error: 'bug is already registered' });
     };
@@ -137,7 +137,7 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
     const { bugId } = req.params;
     const assignedToUserId = req.body;
     var userId  = validId(Object.values(assignedToUserId)[0]);
-    const user = await getByObject('users', '_id', userId)
+    const user = await getByField('users', '_id', userId)
     await assignBugToUser(userId, bugId)
     res.status(200).json({ message: `Bug ${bugId} assigned to ${user.fullName}` });
   } catch (err) {
