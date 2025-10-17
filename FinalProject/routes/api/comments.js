@@ -4,9 +4,9 @@
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
+import { validId, validBody } from '../../middleware/validation.js';
 import {getByObject, insertNewComment} from '../../database.js'; 
 import { commentSchema } from '../../middleware/schema.js';
-import { validId, validBody} from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -34,11 +34,10 @@ router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to GET comments' });
-    }
+    };
   };
 });
 //|============================================|
@@ -55,16 +54,15 @@ router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId')
     const foundComment = bugData.comments.find(comment => comment._id.equals(commentId));
     if (!foundComment) {
       return res.status(404).json({ error: `Comment ${commentId} not found.` });
-    }
+    };
     res.status(200).json(foundComment);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 
@@ -85,11 +83,10 @@ router.post('/:bugId/comments', validId('bugId'), validBody(commentSchema), asyn
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to update bug' });
-    }
+    };
   };
 });
 
@@ -110,7 +107,7 @@ function validateID(i) {
 function autoCatch(err, res){ validId('bugId')
     console.error(err);
     res.status(err.status).json({ error: err.message });
-}
+};
 //|====================================================================================================|
 //|-------------------------------------------[-EXPORT-ROUTER-]----------------------------------------|
 //|====================================================================================================|
