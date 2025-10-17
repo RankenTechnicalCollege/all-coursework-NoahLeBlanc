@@ -13,6 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const debugDb = debug("app:Database");
 let _db = null;
+const now = new Date()
 
 //|==================================================|
 //|-----------[-MONGODB-INITIALIZATION-]-------------|
@@ -55,7 +56,7 @@ export async function listAll(collectionName) {
 //|================================================|
 //|--------------[-GET-BY-OBJECT-]-----------------|
 //|================================================|
-export async function getByObject(collectionName, fieldName, fieldValue) {
+export async function getByField(collectionName, fieldName, fieldValue) {
   const db = await connect();
   const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
   if(!foundData){
@@ -78,6 +79,12 @@ export async function insertNew(collectionName, newFieldValue) {
 //|================================================|
 export async function insertIntoDocument(collectionName, documentId, arrayFieldName, valueToInsert) {
   const db = await connect();
+  valueToInsert = {
+    _id: new ObjectId(),
+    ...valueToInsert,
+    dateTime: now.toLocaleDateString(), 
+    timeOfCreation: now.toLocaleTimeString()
+  };
   const result = await db.collection(collectionName).updateOne(
     {_id: documentId},
     {$push: {[arrayFieldName]: valueToInsert}}
@@ -134,7 +141,7 @@ export async function updateUser(userId, updatedUser) {
   //Updates the user 
   const result = await db.collection('users').updateOne(
     { _id: userId },
-    { $set: { ...updatedUser, lastUpdated: new Date()}}
+    { $set: { ...updatedUser, lastUpdated: now}}
   );
   if (result.matchedCount === 0) {
       const err = new Error("User not found");
@@ -181,7 +188,7 @@ export async function updateBug(bugId, updatedBug) {
   //Updates the bug
   const result = await db.collection('bugs').updateOne(
     { _id: bugId},
-    { $set: { ...updatedBug, lastUpdated: new Date()}}
+    { $set: { ...updatedBug, lastUpdated: now}}
   );
   return result;
 };
@@ -216,7 +223,7 @@ export async function assignBugToUser(userId, bugId) {
     { _id: userId },
     {
       $addToSet: { assignedBugs: bugObjectId },
-      $set: { lastUpdated: new Date() }
+      $set: { lastUpdated: now}
     }
   );
 
