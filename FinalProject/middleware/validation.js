@@ -27,7 +27,7 @@ export const validBody = (schema) => {
       stripUnknown: true, // optional: removes fields not in schema
     });
     if (error) {
-      return res.status(422).json({
+      return res.status(400).json({
         error: 'Validation failed',
         details: error.details.map(detail => detail.message),
       });
