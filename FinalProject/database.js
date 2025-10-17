@@ -14,7 +14,7 @@ dotenv.config();
 const debugDb = debug("app:Database");
 let _db = null;
 const now = new Date()
-
+const db = await connect();
 //|==================================================|
 //|-----------[-MONGODB-INITIALIZATION-]-------------|
 //|==================================================|
@@ -44,7 +44,6 @@ export async function connect() {
 //|-----------[-GET-ALL-FROM-COLLECTION-]----------|
 //|================================================|
 export async function listAll(collectionName) {
-  const db = await connect();
   const foundData = await db.collection(collectionName).find().toArray();
   if(!foundData){
     const err = new Error(`${fieldValue} not found.`);
@@ -54,10 +53,21 @@ export async function listAll(collectionName) {
   return foundData;
 };
 //|================================================|
-//|--------------[-GET-BY-OBJECT-]-----------------|
+//|--------------[-GET-BY-FIELD-]------------------|
 //|================================================|
 export async function getByField(collectionName, fieldName, fieldValue) {
-  const db = await connect();
+  const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
+  if(!foundData){
+    const err = new Error(`${fieldValue} not found.`);
+    err.status = 400;
+    throw err;
+  }
+  return foundData;
+};
+//|================================================|
+//|---------------[-GET-NESTED-FIELD-]-------------|
+//|================================================|
+export async function getNestedField(collectionName, fieldName, fieldValue) {
   const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
   if(!foundData){
     const err = new Error(`${fieldValue} not found.`);
@@ -70,7 +80,6 @@ export async function getByField(collectionName, fieldName, fieldValue) {
 //|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
 export async function insertNew(collectionName, newFieldValue) {
-  const db = await connect();
   const result = await db.collection(collectionName).insertOne(newFieldValue);
   return result;
 };
@@ -78,7 +87,6 @@ export async function insertNew(collectionName, newFieldValue) {
 //|------------[-INSERT-INTO-DOCUMENT-]------------|
 //|================================================|
 export async function insertIntoDocument(collectionName, documentId, arrayFieldName, valueToInsert) {
-  const db = await connect();
   valueToInsert = {
     _id: new ObjectId(),
     ...valueToInsert,
@@ -105,7 +113,6 @@ export async function insertIntoDocument(collectionName, documentId, arrayFieldN
 //|--------------[-DELETE-BY-OBJECT-]--------------|
 //|================================================|
 export async function deleteByObject(collectionName, fieldName, fieldValue) {
-  const db = await connect();
   const deletedItem = await db.collection(collectionName).deleteOne({ [fieldName]: fieldValue });
   return deletedItem;
 };
@@ -116,7 +123,6 @@ export async function deleteByObject(collectionName, fieldName, fieldValue) {
 //|--------------[-UPDATE-USER-]-------------------|
 //|================================================|
 export async function updateUser(userId, updatedUser) {
-  const db = await connect();
   //checks if any updates have been passed
   if (Object.values(updatedUser).length === 0) {
     const err = new Error("No fields provided to update");
@@ -163,7 +169,6 @@ export async function updateUser(userId, updatedUser) {
 //|--------------[-UPDATE-BUG-]--------------------|
 //|================================================|
 export async function updateBug(bugId, updatedBug) {
-  const db = await connect();
   //checks if any updates have been passed
   if (Object.values(updatedBug).length === 0) {
     const err = new Error("No fields provided to update");
@@ -196,7 +201,6 @@ export async function updateBug(bugId, updatedBug) {
 //|---------[-UPDATE:-ASSIGN-BUG-TO-USER]----------|
 //|================================================|
 export async function assignBugToUser(userId, bugId) {
-  const db = await connect();
 
   const existingUser = await getByObject('users', '_id', userId);
   if (!existingUser) {
@@ -239,7 +243,6 @@ export async function assignBugToUser(userId, bugId) {
 //|------------------------------------[-DATABASE-COMMENTS-FUNCTIONS-]---------------------------------|
 //|====================================================================================================|
 export async function insertNewComment(bugId, newFieldValue) {
-  const db = await connect();
   const existingBug = await getByObject('bugs', "_id", bugId);
   if(!existingBug){
     const err = new Error("Bug not found");
@@ -266,7 +269,6 @@ export async function insertNewComment(bugId, newFieldValue) {
 //|---------------------------------------------[-PING-]-----------------------------------------------|
 //|====================================================================================================|
 export async function ping() {
-  const db = await connect();
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
 };
