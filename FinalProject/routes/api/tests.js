@@ -34,8 +34,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to GET comments' });
     };
@@ -57,9 +56,13 @@ router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (
     };
     res.status(200).json(testCase);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
+    if(err.status){
+      autoCatch(err, res)
+    }else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET comments' });
+    };
+  };
 });
 //|========================================================================================|
 //|------------------------------------[-POST-REQUESTS-]-----------------------------------|
@@ -78,8 +81,7 @@ router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }
-    else{
+    }else{
       console.error(err);
       res.status(500).json({ error: 'Failed to GET comments' });
     };
@@ -129,14 +131,14 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
     debugTests(`Test case ${testId} updated for bug ${bugId}`);
     res.status(200).json({ message: 'Test case updated successfully' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    if(err.status){
+      autoCatch(err, res)
+    }else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET comments' });
+    };
   };
 });
-
-//|====================================================================================================|
-//|-----------------------------------------[ DELETE TEST CASES ]--------------------------------------|
-//|====================================================================================================|
 //|============================================|
 //|--[ DELETE A TEST CASE FROM A BUG ]---------|
 //|============================================|
@@ -165,9 +167,13 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
     debugComments(`Test case ${testId} deleted from bug ${bugId}`);
     res.status(200).json({ message: 'Test case deleted successfully' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
+    if(err.status){
+      autoCatch(err, res)
+    }else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to GET comments' });
+    };
+  };
 });
 //|====================================================================================================|
 //|-------------------------------------------[-FUNCTIONS-]--------------------------------------------|
