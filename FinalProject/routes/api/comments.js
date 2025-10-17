@@ -96,14 +96,6 @@ router.post('/:bugId/comments', validId('bugId'), validBody(commentSchema), asyn
 //|==========================================|
 //|-------[-ID-Validation-Function-]---------|
 //|==========================================|
-function validateID(i) {
-  if (!ObjectId.isValid(i)) {
-    const err = new Error(`${i} is not a valid ObjectId.`);
-    err.status = 400;
-    throw err;
-  };
-  debugIDValidation(`${i} Passed ID validation`);
-};
 function autoCatch(err, res){ validId('bugId')
     console.error(err);
     res.status(err.status).json({ error: err.message });
