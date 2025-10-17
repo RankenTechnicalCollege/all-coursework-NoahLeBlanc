@@ -5,8 +5,8 @@
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
 import {testSchema, testPatchSchema } from '../../middleware/schema.js';
-import { getByObject, insertNew, listAll } from '../../database.js';
 import { validId, validBody } from '../../middleware/validation.js';
+import { getByObject, insertNew} from '../../database.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -29,7 +29,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
     const bugData = await getByObject('bugs', '_id', bugId) 
     if (!bugData.testCases || bugData.testCases.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no test cases.` });
-    }
+    };
     res.status(200).json(bugData.testCases);
   } catch (err) {
     if(err.status){
@@ -38,7 +38,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
     else{
       console.error(err);
       res.status(500).json({ error: 'Failed to GET comments' });
-    }
+    };
   };
 });
 //|============================================|
@@ -50,11 +50,11 @@ router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (
     const bugData = await getByObject('bugs', '_id', bugId) 
     if (!bugData || !bugData.testCases) {
       return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    }
+    };
     const testCase = bugData.testCases.find(tc => tc?.testCase?._id?.equals(testObjectId));
     if (!testCase) {
       return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    }
+    };
     res.status(200).json(testCase);
   } catch (err) {
     console.error(err);
@@ -82,7 +82,7 @@ router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req
     else{
       console.error(err);
       res.status(500).json({ error: 'Failed to GET comments' });
-    }
+    };
   };
 });
 //|========================================================================================|
@@ -114,7 +114,7 @@ router.patch('/:bugId/tests/:testId', async (req, res) => {
     const updateQuery = {};
     for (const key in updates) {
       updateQuery[`testCases.$.testCase.${key}`] = updates[key];
-    }
+    };
 
     const db = await connect();
     const result = await db.collection('bugs').updateOne(
@@ -160,7 +160,7 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
 
     if (result.modifiedCount === 0) {
       return res.status(404).json({ error: `Test case ${testId} not found or not deleted.` });
-    }
+    };
 
     debugComments(`Test case ${testId} deleted from bug ${bugId}`);
     res.status(200).json({ message: 'Test case deleted successfully' });
