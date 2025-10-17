@@ -65,7 +65,7 @@ export async function getByField(collectionName, fieldName, fieldValue) {
   return foundData;
 };
 //|================================================|
-//|---------------[-GET-NESTED-ITEM-]-------------|
+//|---------------[-GET-NESTED-ITEM-]--------------|
 //|================================================|
 export async function getNestedItem(
     collectionName,
@@ -82,6 +82,11 @@ export async function getNestedItem(
     [`${nestedArrayPath}.$`]: 1
   };
   const result = await db.collection(collectionName).findOne(query, { projection });
+  if(!result){
+    const err = new Error(`${nestedItemId} not found`);
+    err.status = 404;
+    throw err;
+  }
   return result
 };
 
