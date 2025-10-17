@@ -6,7 +6,7 @@
 //|==================================================|
 import {testSchema, testPatchSchema } from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
-import { getByField, insertNew} from '../../database.js';
+import { getByField, getNestedItem, insertNew} from '../../database.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -46,14 +46,7 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
 router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
   try {
     const { bugId, testId } = req.params;
-    const bugData = await getByField('bugs', '_id', bugId) 
-    if (!bugData || !bugData.testCases) {
-      return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    };
-    const testCase = bugData.testCases.find(tc => tc?.testCase?._id?.equals(testObjectId));
-    if (!testCase) {
-      return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    };
+    const testCase = await getNestedItem('bugs', '_id', bugId, "testCases", testId) 
     res.status(200).json(testCase);
   } catch (err) {
     if(err.status){
