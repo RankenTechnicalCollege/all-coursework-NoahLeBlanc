@@ -6,9 +6,7 @@
 //|==================================================|
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
 import { listAll, getByObject, deleteByObject, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
-import { validBody } from '../../middleware/validBody.js';
-import { validId } from '../../middleware/validId.js';
-import { ObjectId } from 'mongodb';
+import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -190,7 +188,7 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
 function autoCatch(err, res){
     console.error(err);
     return res.status(err.status).json({ error: err.message });
-}
+};
 //|====================================================================================================|
 //|-------------------------------------------[ EXPORT ROUTER ]----------------------------------------|
 //|====================================================================================================|

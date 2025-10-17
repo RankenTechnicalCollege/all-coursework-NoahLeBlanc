@@ -4,11 +4,9 @@
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
-import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
-import {getByObject, insertNew } from '../../database.js'; 
+import {getByObject, insertNewComment} from '../../database.js'; 
 import { commentSchema } from '../../middleware/schema.js';
-import { validBody } from '../../middleware/validBody.js';
-import { validId } from '../../middleware/validId.js';
+import { validId, validBody} from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -25,8 +23,8 @@ router.use(express.json());
 //|------[-GET-ALL-COMMENTS-FOR-A-BUG-]--------|
 //|============================================|
 router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
-  debugComments(`GET /:bugId/comments hit`);
   try {
+    debugComments(`GET /:bugId/comments hit`);
     const { bugId } = req.params;
     const bugData = await getByObject('bugs', '_id', bugId)
     if (!bugData.comments || bugData.comments.length === 0) {
@@ -76,44 +74,13 @@ router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId')
 //|============================================|
 //|-----[-POST-A-NEW-COMMENT-TO-A-BUG-]--------|
 //|============================================|
-router.post('/:bugId/comments', validId('bugId'), async (req, res) => {
+router.post('/:bugId/comments', validId('bugId'), validBody(commentSchema), async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
   try {
     const { bugId } = req.params;
-    const { author, commentText } = req.body;
-
-    // Validate input with Joi
-    const { error } = commentSchema.validate({ author, commentText });
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    };
-
-    // Validate bug ID
-    validateID(bugId);
-    const bugObjectId = new ObjectId(bugId);
-
-    const db = await connect();
-
-    // Check if bug exists
-    const bugExists = await db.collection('bugs').findOne({ _id: bugObjectId });
-    if (!bugExists) {
-      return res.status(404).json({ error: `Bug ${bugId} not found.` });
-    };
-
-    // Create new comment object
-    const newComment = {
-      _id: new ObjectId(),
-      author,
-      commentText,
-      createdAt: new Date()
-    };
-
+    const newComment = req.body;
     // Add comment to bug
-    await db.collection('bugs').updateOne(
-      { _id: bugObjectId },
-      { $push: { comments: newComment } }
-    );
-
+    await insertNewComment(bugId, newComment) 
     res.status(201).json({ message: 'Comment added', comment: newComment });
   } catch (err) {
     if(err.status){

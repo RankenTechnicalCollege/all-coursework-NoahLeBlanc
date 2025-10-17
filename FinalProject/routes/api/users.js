@@ -1,22 +1,17 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
+import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
+import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
+import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
+import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
-import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
-import { ObjectId } from 'mongodb';
-import { listAll, getByObject, deleteByObject, updateUser, insertNew} from '../../database.js'; 
-import { validId } from '../../middleware/validId.js';
-import { validBody } from '../../middleware/validBody.js';
-import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
-
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
 const router = express.Router();
 const debugUser = debug('app:UserRouter');
-const saltRounds = 10;
-
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
@@ -26,15 +21,16 @@ router.use(express.json());
 router.get('/list', async (req, res) => {
   try {
     const foundData = await listAll('users');
-    if (foundData) {
-      return res.status(200).json(foundData);
-    } else {
-      throw new Error('No users found');
-    };
-  } catch (err) {
     debugUser(`list: Users`);
-    res.status(500).json({ message: err.message });
-    console.error(err)
+    return res.status(200).json(foundData);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 
