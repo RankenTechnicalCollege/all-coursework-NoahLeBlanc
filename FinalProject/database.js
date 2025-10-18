@@ -43,13 +43,13 @@ export async function connect() {
 //|================================================|
 //|-----------[-GET-ALL-FROM-COLLECTION-]----------|
 //|================================================|
-export async function listAll(collectionName) {
-  const foundData = await db.collection(collectionName).find().toArray();
-  if(!foundData){
-    const err = new Error(`${fieldValue} not found.`);
-    err.status = 400;
+export async function listAll(collectionName, query = {}/*<= so cool*/) {
+  const foundData = await db.collection(collectionName).find(query).toArray();
+  if (!foundData || foundData.length === 0) {
+    const err = new Error(`No records found in collection "${collectionName}".`);
+    err.status = 404;
     throw err;
-  };
+  }
   return foundData;
 };
 //|================================================|
@@ -276,10 +276,6 @@ export async function insertNewComment(bugId, newFieldValue) {
   const result = await db.collection('bugs').updateOne({_id: bugId}, {$push: {comments: newFieldValue}});
   return result;
 };
-//|====================================================================================================|
-//|------------------------------------[-DATABASE-TEST-FUNCTIONS-]-------------------------------------|
-//|====================================================================================================|
-
 //|====================================================================================================|
 //|---------------------------------------------[-PING-]-----------------------------------------------|
 //|====================================================================================================|
