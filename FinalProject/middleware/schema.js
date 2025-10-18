@@ -10,7 +10,7 @@ export const userListQuerySchema = Joi.object({
  maxAge:Joi.string().optional(),
  minAge:Joi.string().optional(),
  sortBy:Joi.string().optional() 
-});
+}).unknown(false);
 export const userSchema = Joi.object({
   email: Joi.string().lowercase().trim().email().required(),
   password: Joi.string().trim().min(3).required(),
