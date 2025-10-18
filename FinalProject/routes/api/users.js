@@ -20,7 +20,7 @@ router.use(express.json());
 router.get('/list', async (req, res) => {
   try {
     const foundData = await listAll('users');
-    debugUser(`Success: (list: users)`);
+    debugUser(`Success: (GET/list: users)`);
     return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
@@ -39,7 +39,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
     const foundUser = await getByField('users', '_id', userId);
-    debugUser(`Success: (/:userId: ${userId})`);
+    debugUser(`Success: (GET/:userId: ${userId})`);
     return res.status(200).json([foundUser]);
   } catch (err) {
     if(err.status){
@@ -83,7 +83,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     const { email, password } = req.body;
     const user = await getByField("users", "email", email)
     comparePassword(password, user.password);
-    debugUser(`Success: (/login: ${user._id})`);
+    debugUser(`Success: (POST/login: ${user._id})`);
     res.status(200).json([{message: `Welcome back! ${user._id}`}])
   } catch (err) {
     if(err.status){
@@ -106,6 +106,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
       updates.password = await genPassword(updates.password);
     };
     await updateUser(userId, updates)
+    debugUser(`Success: (PATCH/:userId ${user._id})`);
     res.status(200).json([{ message: `User ${userId} updated successfully.` }]);
   } catch (err) {
     if(err.status){
@@ -127,6 +128,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     if (!result.deletedCount) {
       res.status(404).json({ message: `User ${userId} not found.` });
     };
+    debugUser(`Success: (DELETE/:userId ${user._id})`);
     res.status(200).json([{ message: `User ${userId} deleted successfully.` }]);
     }catch (err) {
       if(err.status){
