@@ -3,7 +3,7 @@
 //|==================================================|
 import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../database.js'; 
 import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
-import { genPassword, comparePassword } from '../../middleware/bcrypt.js';
+import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
@@ -14,7 +14,6 @@ const router = express.Router();
 const debugUser = debug('app:UserRouter');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
