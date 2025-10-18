@@ -49,7 +49,7 @@ export async function listAll(collectionName) {
     const err = new Error(`${fieldValue} not found.`);
     err.status = 400;
     throw err;
-  }
+  };
   return foundData;
 };
 //|================================================|
@@ -61,7 +61,7 @@ export async function getByField(collectionName, fieldName, fieldValue) {
     const err = new Error(`${fieldValue} not found.`);
     err.status = 404;
     throw err;
-  }
+  };
   return foundData;
 };
 //|================================================|
@@ -86,7 +86,7 @@ export async function getNestedItem(
     const err = new Error(`${nestedItemId} not found`);
     err.status = 404;
     throw err;
-  }
+  };
   return result
 };
 
@@ -115,12 +115,12 @@ export async function insertIntoDocument(collectionName, documentId, arrayFieldN
     const err = new Error(`${documentId} not found`);
     err.status = 404;
     throw err;
-  }
+  };
   if(!result.modifiedCount){
     const err = new Error(`Failed to update ${collectionName}`);
     err.status = 500;
     throw err;
-  }
+  };
   return result;
 };
 //|================================================|
@@ -222,7 +222,7 @@ export async function assignBugToUser(userId, bugId) {
     const err = new Error("User not found");
     err.status = 404;
     throw err;
-  }
+  };
 
   // Make sure bugId is a proper ObjectId
   const bugObjectId = typeof bugId === 'string' ? new ObjectId(bugId) : bugId;
@@ -235,8 +235,7 @@ export async function assignBugToUser(userId, bugId) {
     const err = new Error("Bug already assigned to user");
     err.status = 409;
     throw err;
-  }
-
+  };
   // Add the bug ID to the user's assignedBugs
   const result = await db.collection('users').updateOne(
     { _id: userId },
@@ -245,15 +244,13 @@ export async function assignBugToUser(userId, bugId) {
       $set: { lastUpdated: now}
     }
   );
-
   if (result.modifiedCount === 0) {
     const err = new Error("No changes were made to the user");
     err.status = 400;
     throw err;
-  }
-
+  };
   return result;
-}
+};
 //|====================================================================================================|
 //|------------------------------------[-DATABASE-COMMENTS-FUNCTIONS-]---------------------------------|
 //|====================================================================================================|
