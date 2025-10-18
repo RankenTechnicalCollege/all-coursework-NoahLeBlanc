@@ -46,11 +46,15 @@ router.get('/:userId', validId('userId'), async (req, res) => {
     };
     return res.status(200).json(foundUser);
   } catch (err) {
-    res.status(500).json({ message: err.message });
-    console.error(err)
-  }
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
+  };
 });
-
 //|==================================================|
 //|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
@@ -61,9 +65,7 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ error: 'Email is already registered' });
     };
-
     newUser.password = await genPassword(newUser.password);
-
     newUser.creationDate = new Date() 
     const status = await insertNew('users', newUser) 
     if(!status.acknowledged){
@@ -71,11 +73,15 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     }
     res.status(201).json({ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` });
   } catch (err) {
-    res.status(500).json({ message: err.message });
-    console.error(err)
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
-
 //|==================================================|
 //|------------------[-LOGIN-USER-]------------------|
 //|==================================================|
@@ -86,12 +92,15 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     const user = await getByField("users", "email", email)
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     comparePassword(password, user.password);
-
     res.status(200).json({message: `Welcome back! ${user._id}`})
-
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-    console.error(err)
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 
@@ -117,7 +126,6 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
     }
   };
 });
-
 //|==================================================|
 //|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
@@ -132,8 +140,13 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
       res.status(404).json({ message: `User ${userId} not found.` });
     }
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-    console.error(err)
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json({ error: 'Failed to update bug' });
+    }
   };
 });
 //|====================================================================================================|
