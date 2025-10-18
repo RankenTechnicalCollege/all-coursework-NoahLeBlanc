@@ -33,7 +33,6 @@ router.get('/list', async (req, res) => {
     }
   };
 });
-
 //|==================================================|
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
@@ -103,7 +102,6 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     }
   };
 });
-
 //|==================================================|
 //|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
@@ -130,24 +128,22 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
 //|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
 router.delete('/:userId', validId('userId'), async (req, res) => {
-  const { userId } = req.params;
-
   try {
+    const {userId} = req.params;
     const result = await deleteByObject("users", '_id', userId)
-    if (result.deletedCount === 1) {
-      res.status(200).json({ message: `User ${userId} deleted successfully.` });
-    } else {
+    if (!result.deletedCount) {
       res.status(404).json({ message: `User ${userId} not found.` });
     }
-  } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
-    }
-    else{
-      console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
-    }
-  };
+    res.status(200).json({ message: `User ${userId} deleted successfully.` });
+    }catch (err) {
+      if(err.status){
+        autoCatch(err, res)
+      }
+      else{
+        console.error(err);
+        res.status(500).json({ error: 'Failed to delete User' });
+      }
+    };
 });
 //|====================================================================================================|
 //|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
