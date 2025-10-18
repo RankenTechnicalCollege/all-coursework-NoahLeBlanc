@@ -63,10 +63,7 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     };
     newUser.password = await genPassword(newUser.password);
     newUser.creationDate = new Date() 
-    const status = await insertNew('users', newUser) 
-    if(!status.acknowledged){
-      return res.status(500).json({ error: 'Failed to create new user. Please try again later.' });
-    }
+    await insertNew('users', newUser) 
     res.status(201).json({ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` });
   } catch (err) {
     if(err.status){
