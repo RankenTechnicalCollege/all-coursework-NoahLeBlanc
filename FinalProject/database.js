@@ -59,7 +59,7 @@ export async function getByField(collectionName, fieldName, fieldValue) {
   const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
   if(!foundData){
     const err = new Error(`${fieldValue} not found.`);
-    err.status = 400;
+    err.status = 404;
     throw err;
   }
   return foundData;
@@ -127,6 +127,7 @@ export async function insertIntoDocument(collectionName, documentId, arrayFieldN
 //|--------------[-DELETE-BY-OBJECT-]--------------|
 //|================================================|
 export async function deleteByObject(collectionName, fieldName, fieldValue) {
+  await getByField(collectionName, fieldName, fieldValue)
   const deletedItem = await db.collection(collectionName).deleteOne({ [fieldName]: fieldValue });
   return deletedItem;
 };
@@ -143,7 +144,7 @@ export async function updateUser(userId, updatedUser) {
     err.status = 400;
     throw err;
   };
-  const existingUser = await getByObject('users', "_id", userId);
+  const existingUser = await getByField('users', "_id", userId);
   if(!existingUser){
     const err = new Error("User not found");
     err.status = 404;
@@ -189,7 +190,7 @@ export async function updateBug(bugId, updatedBug) {
     err.status = 400;
     throw err;
   };
-  const existingBug = await getByObject('bugs', "_id", bugId);
+  const existingBug = await getByField('bugs', "_id", bugId);
   if(!existingBug){
     const err = new Error("Bug not found");
     err.status = 404;
@@ -216,7 +217,7 @@ export async function updateBug(bugId, updatedBug) {
 //|================================================|
 export async function assignBugToUser(userId, bugId) {
 
-  const existingUser = await getByObject('users', '_id', userId);
+  const existingUser = await getByField('users', '_id', userId);
   if (!existingUser) {
     const err = new Error("User not found");
     err.status = 404;
@@ -260,7 +261,7 @@ export async function assignBugToUser(userId, bugId) {
 //|---------[-UPDATE:-insertNewComment-]-----------|
 //|================================================|
 export async function insertNewComment(bugId, newFieldValue) {
-  const existingBug = await getByObject('bugs', "_id", bugId);
+  const existingBug = await getByField('bugs', "_id", bugId);
   if(!existingBug){
     const err = new Error("Bug not found");
     err.status = 404;
