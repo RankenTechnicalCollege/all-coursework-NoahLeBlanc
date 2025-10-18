@@ -1,5 +1,5 @@
 //|====================================================================================================|
-//|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
+//|------------------------------------------[-INITIALIZATION-]----------------------------------------|
 //|====================================================================================================|
 import Joi from "joi";
 //|====================================================================================================|
@@ -41,7 +41,7 @@ export const userPatchSchema = Joi.object({
       'technical manager'
     )
     .optional()
-}).min(1);
+}).min(1).required();
 export const userLoginSchema = Joi.object({
   email: Joi.string().email().min(1).required(),
   password: Joi.string().min(3).required()
@@ -96,4 +96,5 @@ export const testPatchSchema = Joi.object({
   steps: Joi.string().optional(),
   expectedResult: Joi.string().optional(),
   actualResult: Joi.string().optional()
-}).min(1);
+}).min(1).required();
+;
