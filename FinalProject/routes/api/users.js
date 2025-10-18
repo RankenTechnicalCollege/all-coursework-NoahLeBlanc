@@ -21,7 +21,7 @@ router.get('/list', async (req, res) => {
   try {
     const foundData = await listAll('users');
     debugUser(`Success: (list: users)`);
-    return res.status(200).json(foundData);
+    return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -64,7 +64,7 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     newUser.password = await genPassword(newUser.password);
     newUser.creationDate = new Date() 
     await insertNew('users', newUser) 
-    res.status(201).json({ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` });
+    res.status(201).json([{ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -84,7 +84,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     const user = await getByField("users", "email", email)
     comparePassword(password, user.password);
     debugUser(`Success: (/login: ${user._id})`);
-    res.status(200).json({message: `Welcome back! ${user._id}`})
+    res.status(200).json([{message: `Welcome back! ${user._id}`}])
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -106,7 +106,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
       updates.password = await genPassword(updates.password);
     };
     await updateUser(userId, updates)
-    res.status(200).json({ message: `User ${userId} updated successfully.` });
+    res.status(200).json([{ message: `User ${userId} updated successfully.` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -127,7 +127,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     if (!result.deletedCount) {
       res.status(404).json({ message: `User ${userId} not found.` });
     };
-    res.status(200).json({ message: `User ${userId} deleted successfully.` });
+    res.status(200).json([{ message: `User ${userId} deleted successfully.` }]);
     }catch (err) {
       if(err.status){
         autoCatch(err, res)
