@@ -21,7 +21,7 @@ router.use(express.json());
 router.get('/list', async (req, res) => {
   try {
     const foundData = await listAll('users');
-    debugUser(`list: Users`);
+    debugUser(`Success: (list: users)`);
     return res.status(200).json(foundData);
   } catch (err) {
     if(err.status){
@@ -40,10 +40,8 @@ router.get('/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
     const foundUser = await getByField('users', '_id', userId);
-    if (!foundUser) {
-      return res.status(404).json({ message: `User ID: ${userId} not found` });
-    };
-    return res.status(200).json(foundUser);
+    debugUser(`Success: (/:userId: ${userId})`);
+    return res.status(200).json([foundUser]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -85,12 +83,11 @@ router.post('/register', validBody(userSchema), async (req, res) => {
 //|------------------[-LOGIN-USER-]------------------|
 //|==================================================|
 router.post('/login', validBody(userLoginSchema), async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
     const user = await getByField("users", "email", email)
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     comparePassword(password, user.password);
+    debugUser(`Success: (/login: ${user._id})`);
     res.status(200).json({message: `Welcome back! ${user._id}`})
   } catch (err) {
     if(err.status){
@@ -133,7 +130,7 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     const result = await deleteByObject("users", '_id', userId)
     if (!result.deletedCount) {
       res.status(404).json({ message: `User ${userId} not found.` });
-    }
+    };
     res.status(200).json({ message: `User ${userId} deleted successfully.` });
     }catch (err) {
       if(err.status){
