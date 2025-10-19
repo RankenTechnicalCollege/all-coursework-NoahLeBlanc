@@ -6,7 +6,7 @@
 //|==================================================|
 import {testSchema, testPatchSchema } from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
-import { getByField, getNestedItem, insertNew} from '../../database.js';
+import { getByField, getNestedItem, insertIntoDocument, insertNew} from '../../database.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -30,30 +30,30 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
     if (!bugData.testCases || bugData.testCases.length === 0) {
       return res.status(404).json({ error: `Bug ${bugId} has no test cases.` });
     };
-    res.status(200).json(bugData.testCases);
+    return res.status(200).json(bugData.testCases);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET comments' });
+      return res.status(500).json({ error: 'Failed to GET comments' });
     };
   };
 });
 //|============================================|
-//|-----[-GET-SPECIFIC-TEST-CASE-FOR-A-BUG-]---|
+//|----[-GET-SPECIFIC-TEST-CASE-FOR-A-BUG-]----|
 //|============================================|
 router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
   try {
     const { bugId, testId } = req.params;
     const testCase = await getNestedItem('bugs', '_id', bugId, "testCases", testId) 
-    res.status(200).json(testCase);
+    return res.status(200).json(testCase);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET comments' });
+      return res.status(500).json({ error: 'Failed to GET comments' });
     };
   };
 });
@@ -67,16 +67,16 @@ router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req
   debugTests(`POST /:bugId/tests hit`);
   try {
     const { bugId } = req.params;
-    const testData = req.body;
-    await insertNew()
+    const newTestData = req.body;
+    await insertNew('bugs', newTestData)
     debugTests(`Test case added to bug ${bugId}`);
-    return res.status(201).json({ message: 'Test case added successfully', testCase: newTestCase });
+    return res.status(201).json({ message: `Test case ${newTestData} added successfully`});
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET comments' });
+      return res.status(500).json({ error: 'Failed to GET comments' });
     };
   };
 });
@@ -86,85 +86,38 @@ router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req
 //|============================================|
 //|------[-UPDATE-A-TEST-CASE-FOR-A-BUG-]------|
 //|============================================|
-router.patch('/:bugId/tests/:testId', async (req, res) => {
-  debugTests(`PATCH /:bugId/tests/:testId hit`);
+router.patch('/:bugId/tests/:testId', validId('bugId'), validId('testId'), validBody(testSchema), async (req, res) => {
   try {
     const { bugId, testId } = req.params;
     const updates = req.body;
-
-    // Validate IDs
-    validateID(bugId);
-    validateID(testId);
-
-    const bugObjectId = new ObjectId(bugId);
-    const testObjectId = new ObjectId(testId);
-
-    // Validate update data
-    const { error } = testPatchSchema.validate(updates);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    };
-
-    // Prepare update object
-    const updateQuery = {};
-    for (const key in updates) {
-      updateQuery[`testCases.$.testCase.${key}`] = updates[key];
-    };
-
-    const db = await connect();
-    const result = await db.collection('bugs').updateOne(
-      { _id: bugObjectId, 'testCases.testCase._id': testObjectId },
-      { $set: updateQuery }
-    );
-
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: `Test case ${testId} not found for bug ${bugId}` });
-    };
-
+    const result = await db.collection('bugs').updateOne()
     debugTests(`Test case ${testId} updated for bug ${bugId}`);
-    res.status(200).json({ message: 'Test case updated successfully' });
+    return res.status(200).json({ message: 'Test case updated successfully' });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET comments' });
+      return res.status(500).json({ error: 'Failed to GET comments' });
     };
   };
 });
 //|============================================|
 //|--[ DELETE A TEST CASE FROM A BUG ]---------|
 //|============================================|
-router.delete('/:bugId/tests/:testId', async (req, res) => {
-  debugComments(`DELETE /:bugId/tests/:testId hit`);
+router.delete('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
   try {
+    debugComments(`DELETE /:bugId/tests/:testId hit`);
     const { bugId, testId } = req.params;
-
-    // Validate IDs
-    validateID(bugId);
-    validateID(testId);
-
-    const bugObjectId = new ObjectId(bugId);
-    const testObjectId = new ObjectId(testId);
-
-    const db = await connect();
-    const result = await db.collection('bugs').updateOne(
-      { _id: bugObjectId },
-      { $pull: { testCases: { 'testCase._id': testObjectId } } }
-    );
-
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ error: `Test case ${testId} not found or not deleted.` });
-    };
-
+    const result = null; 
     debugComments(`Test case ${testId} deleted from bug ${bugId}`);
-    res.status(200).json({ message: 'Test case deleted successfully' });
+    return res.status(200).json({ message: 'Test case deleted successfully' });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to GET comments' });
+      return res.status(500).json({ error: 'Failed to GET comments' });
     };
   };
 });
@@ -173,7 +126,7 @@ router.delete('/:bugId/tests/:testId', async (req, res) => {
 //|====================================================================================================|
 function autoCatch(err, res){ validId('bugId')
     console.error(err);
-    res.status(err.status).json({ error: err.message });
+    return res.status(err.status).json({ error: err.message });
 };
 //|====================================================================================================|
 //|-------------------------------------------[-EXPORT-ROUTER-]----------------------------------------|
