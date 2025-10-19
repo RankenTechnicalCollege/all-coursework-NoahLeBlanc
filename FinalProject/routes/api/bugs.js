@@ -27,13 +27,13 @@ router.get('/list', async (req, res) => {
   try {
     const bugs = await listAll('bugs');
     debugBug(`Success: (GET/list: bugs)`);
-    res.status(200).json(bugs);
+    return res.status(200).json(bugs);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -48,13 +48,13 @@ router.get('/:bugId', validId('bugId'), async (req, res) => {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
     debugBug(`Success: (GET/:bugId: ${bugId})`);
-    res.status(200).json(bug);
+    return res.status(200).json(bug);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -78,16 +78,16 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
     };
     const result = await insertNew('bugs', newBug);
     if(!result){
-      res.status(500).json({ error: 'Failed to create bug' });
+      return res.status(500).json({ error: 'Failed to create bug' });
     };
     debugBug(`Success: (POST/new: ${bugs._id})`);
-    res.status(201).json({ message: `Bug created! ${newBug.title}`});
+    return res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -103,13 +103,13 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
     const updatedInfo = req.body;
     await updateBug(bugId, updatedInfo)
     debugBug(`Success: (PATCH/bugId: ${bugId})`);
-    res.status(200).json({ message: `Bug ${bugId} updated.` });
+    return res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -122,7 +122,7 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
     const updatedInfo = req.body;
     await updateBug(bugId, updatedInfo)
     debugBug(`Success: (PATCH/bugId/classify: ${bugId})`);
-    res.status(200).json({ 
+    return res.status(200).json({ 
       message: `Bug ${bugId} classified as ${updatedInfo.classification }.` 
     });
   } catch (err) {
@@ -130,7 +130,7 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -141,17 +141,17 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
   try {
     const { bugId } = req.params;
     const assignedToUserId = req.body;
-    var userId  = validId(Object.values(assignedToUserId)[0]);
+    const userId  = validId(Object.values(assignedToUserId)[0]);
     const user = await getByField('users', '_id', userId)
     await assignBugToUser(userId, bugId)
     debugBug(`Success: (PATCH/bugId/assign: ${bugId})`);
-    res.status(200).json({ message: `Bug ${bugId} assigned to ${user.fullName}` });
+    return res.status(200).json({ message: `Bug ${bugId} assigned to ${user.fullName}` });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
@@ -179,7 +179,7 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     };
   };
 });
