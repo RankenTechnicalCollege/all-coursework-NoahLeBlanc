@@ -26,6 +26,7 @@ router.get('/list', async (req, res) => {
   debugBug("GET /api/bugs hit");
   try {
     const bugs = await listAll('bugs');
+    debugBug(`Success: (GET/list: bugs)`);
     res.status(200).json(bugs);
   } catch (err) {
     if(err.status){
@@ -46,6 +47,7 @@ router.get('/:bugId', validId('bugId'), async (req, res) => {
     if (!bug) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
+    debugBug(`Success: (GET/:bugId: ${bugId})`);
     res.status(200).json(bug);
   } catch (err) {
     if(err.status){
@@ -78,6 +80,7 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
     if(!result){
       res.status(500).json({ error: 'Failed to create bug' });
     };
+    debugBug(`Success: (POST/new: ${bugs._id})`);
     res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     if(err.status){
@@ -99,6 +102,7 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
     const { bugId } = req.params;
     const updatedInfo = req.body;
     await updateBug(bugId, updatedInfo)
+    debugBug(`Success: (PATCH/bugId: ${bugId})`);
     res.status(200).json({ message: `Bug ${bugId} updated.` });
   } catch (err) {
     if(err.status){
@@ -117,6 +121,7 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
     const { bugId } = req.params;
     const updatedInfo = req.body;
     await updateBug(bugId, updatedInfo)
+    debugBug(`Success: (PATCH/bugId/classify: ${bugId})`);
     res.status(200).json({ 
       message: `Bug ${bugId} classified as ${updatedInfo.classification }.` 
     });
@@ -139,6 +144,7 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
     var userId  = validId(Object.values(assignedToUserId)[0]);
     const user = await getByField('users', '_id', userId)
     await assignBugToUser(userId, bugId)
+    debugBug(`Success: (PATCH/bugId/assign: ${bugId})`);
     res.status(200).json({ message: `Bug ${bugId} assigned to ${user.fullName}` });
   } catch (err) {
     if(err.status){
@@ -161,6 +167,7 @@ router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
     if(updatedInfo.closed == true){
+      debugBug(`Success: (PATCH/bugId/close: ${bugId})`);
       return res.status(200).json({ message: `Bug ${bugId} is now closed.` });
     }
     else{
