@@ -7,9 +7,15 @@ import Joi from "joi";
 //|====================================================================================================|
 export const userListQuerySchema = Joi.object({
  role: Joi.string().optional(),
- maxAge:Joi.string().optional(),
- minAge:Joi.string().optional(),
- sortBy:Joi.string().optional() 
+ maxAge:Joi.number().optional(),
+ minAge:Joi.number().optional(),
+ sortBy:Joi.string().optional().lowercase().valid(
+  "givenName",
+  "familyName",
+  "role",
+  "newest",
+  "oldest"
+ ) 
 }).unknown(false);
 export const userSchema = Joi.object({
   email: Joi.string().lowercase().trim().email().required(),
