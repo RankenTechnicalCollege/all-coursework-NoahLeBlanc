@@ -2,9 +2,9 @@
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
 import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../database.js'; 
-import { userSchema, userLoginSchema, userPatchSchema } from '../../middleware/schema.js';
+import { userSchema, userLoginSchema, userPatchSchema, userListQuerySchema } from '../../middleware/schema.js';
 import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.js';
-import { validId, validBody } from '../../middleware/validation.js';
+import { validId, validBody, validQuery } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -17,9 +17,10 @@ router.use(express.json());
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
-router.get('/list', async (req, res) => {
+router.get('/list', validQuery(userListQuerySchema), async (req, res) => {
   try {
-    const foundData = await listAll('users');
+    const query = req.query;
+    const foundData = await listAll('users', query);
     debugUser(`Success: (GET/list: users)`);
     return res.status(200).json([foundData]);
   } catch (err) {
@@ -28,7 +29,7 @@ router.get('/list', async (req, res) => {
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to list users' });
     }
   };
 });
@@ -47,7 +48,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     }
   };
 });
@@ -64,14 +65,15 @@ router.post('/register', validBody(userSchema), async (req, res) => {
     newUser.password = await genPassword(newUser.password);
     newUser.creationDate = new Date() 
     await insertNew('users', newUser) 
-    res.status(201).json([{ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` }]);
+    debugUser(`Success: (POST/register: ${newUser.givenName})`);
+    return res.status(201).json([{ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     }
   };
 });
@@ -84,14 +86,14 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
     const user = await getByField("users", "email", email)
     comparePassword(password, user.password);
     debugUser(`Success: (POST/login: ${user._id})`);
-    res.status(200).json([{message: `Welcome back! ${user._id}`}])
+    return res.status(200).json([{message: `Welcome back! ${user._id}`}])
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     }
   };
 });
@@ -107,14 +109,14 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
     };
     await updateUser(userId, updates)
     debugUser(`Success: (PATCH/:userId ${user._id})`);
-    res.status(200).json([{ message: `User ${userId} updated successfully.` }]);
+    return res.status(200).json([{ message: `User ${userId} updated successfully.` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to update bug' });
     }
   };
 });
@@ -126,17 +128,17 @@ router.delete('/:userId', validId('userId'), async (req, res) => {
     const {userId} = req.params;
     const result = await deleteByObject("users", '_id', userId)
     if (!result.deletedCount) {
-      res.status(404).json({ message: `User ${userId} not found.` });
+      return res.status(404).json({ message: `User ${userId} not found.` });
     };
     debugUser(`Success: (DELETE/:userId ${user._id})`);
-    res.status(200).json([{ message: `User ${userId} deleted successfully.` }]);
+    return res.status(200).json([{ message: `User ${userId} deleted successfully.` }]);
     }catch (err) {
       if(err.status){
         autoCatch(err, res)
       }
       else{
         console.error(err);
-        res.status(500).json({ error: 'Failed to delete User' });
+        return res.status(500).json({ error: 'Failed to delete User' });
       }
     };
 });
