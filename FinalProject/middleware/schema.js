@@ -60,6 +60,23 @@ export const bugSchema = Joi.object({
     description: Joi.string().required(),
     stepsToReproduce: Joi.string().required()
 });
+export const bugListQuerySchema = Joi.object({
+ classification: Joi.string().optional(),
+ maxAge:Joi.number().optional(),
+ minAge:Joi.number().optional(),
+ closed:Joi.number().optional().valid(
+  true,
+  false
+ ),
+ sortBy:Joi.string().optional().lowercase().valid(
+  "newest",
+  "oldest",
+  "title",
+  "classification",
+  "assignedTo",
+  "createdBy"
+ ) 
+}).unknown(false);
 export const bugPatchSchema = Joi.object({
   title: Joi.string().optional(),
   description: Joi.string().optional(),
