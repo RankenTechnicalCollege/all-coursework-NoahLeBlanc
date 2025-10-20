@@ -43,15 +43,95 @@ export async function connect() {
 //|================================================|
 //|-----------[-GET-ALL-FROM-COLLECTION-]----------|
 //|================================================|
-export async function listAll(collectionName, query = {}/*<= so cool*/) {
-  const foundData = await db.collection(collectionName).find(query).toArray();
+export async function listAll(collectionName, query = {}) {
+  query = Object.assign({}, query); // Converts [Object: null prototype] into a normal object
+
+  // Convert numeric strings to numbers
+  const minAge = query.minAge ? Number(query.minAge) : null;
+  const maxAge = query.maxAge ? Number(query.maxAge) : null;
+
+  console.log(`Querying '${collectionName}' with:`, query);
+
+  const mongoQuery = {};
+  let mongoSort = {};
+
+  // Optional role filter
+  if (query.role) {
+    mongoQuery.role = query.role;
+  }
+
+  // Optional age range filter (minAge/maxAge in days)
+  if (minAge || maxAge) {
+    const now = new Date();
+    mongoQuery.creationDate = {};
+
+    if (minAge) {
+      const minAgeDate = new Date(now.getTime() - minAge * 24 * 60 * 60 * 1000);
+      mongoQuery.creationDate.$lte = minAgeDate;
+    }
+
+    if (maxAge) {
+      const maxAgeDate = new Date(now.getTime() - maxAge * 24 * 60 * 60 * 1000);
+      mongoQuery.creationDate.$gte = maxAgeDate;
+    }
+
+    if (Object.keys(mongoQuery.creationDate).length === 0) {
+      delete mongoQuery.creationDate;
+    }
+  }
+
+  // Optional sort
+  if (query.sortBy) {
+    switch (query.sortBy) {
+      case 'givenName':
+        mongoSort = { givenName: 1 };
+        break;
+      case 'familyName':
+        mongoSort = { familyName: 1 };
+        break;
+      case 'role':
+        mongoSort = { role: 1 };
+        break;
+      case 'title':
+        mongoSort = { title: 1 };
+        break;
+      case 'classification':
+        mongoSort = { classification: 1 };
+        break;
+      case 'assignedTo':
+        mongoSort = { assignedTo: 1 };
+        break;
+      case 'createdBy':
+        mongoSort = { createdBy: 1 };
+        break;
+      case 'newest':
+        mongoSort = { creationDate: -1 };
+        break;
+      case 'oldest':
+        mongoSort = { creationDate: 1 };
+        break;
+      default:
+        mongoSort = {};
+    }
+  }
+
+  const cursor = db.collection(collectionName).find(mongoQuery);
+
+  if (Object.keys(mongoSort).length > 0) {
+    cursor.sort(mongoSort);
+  }
+
+  const foundData = await cursor.toArray();
+
   if (!foundData || foundData.length === 0) {
     const err = new Error(`No records found in collection "${collectionName}".`);
     err.status = 404;
     throw err;
   }
+
   return foundData;
-};
+}
+
 //|================================================|
 //|--------------[-GET-BY-FIELD-]------------------|
 //|================================================|
