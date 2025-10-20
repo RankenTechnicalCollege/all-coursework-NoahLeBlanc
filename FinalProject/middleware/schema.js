@@ -61,7 +61,7 @@ export const bugSchema = Joi.object({
     stepsToReproduce: Joi.string().required()
 });
 export const bugListQuerySchema = Joi.object({
- classification: Joi.string().optional(),
+ role: Joi.string().optional(),
  maxAge:Joi.number().optional(),
  minAge:Joi.number().optional(),
  closed:Joi.number().optional().valid(
