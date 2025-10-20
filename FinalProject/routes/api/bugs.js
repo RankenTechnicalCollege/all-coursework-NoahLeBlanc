@@ -4,9 +4,9 @@
 //|==================================================|
 //|---------------------[-IMPORTS-]------------------|
 //|==================================================|
-import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema} from '../../middleware/schema.js';
+import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema, bugListQuerySchema} from '../../middleware/schema.js';
 import { listAll, getByField, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
-import { validId, validBody } from '../../middleware/validation.js';
+import { validId, validBody, validQuery} from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -22,19 +22,20 @@ router.use(express.json());
 //|==================================================|
 //|-----------------[-GET-ALL-BUGS-]-----------------|
 //|==================================================|
-router.get('/list', async (req, res) => {
-  debugBug("GET /api/bugs hit");
+router.get('/list', validQuery(bugListQuerySchema), async (req, res) => {
   try {
-    const bugs = await listAll('bugs');
+    const query = req.query;
+    const foundData = await listAll('bugs', query);
     debugBug(`Success: (GET/list: bugs)`);
-    return res.status(200).json(bugs);
+    return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
-    }else{
+    }
+    else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
-    };
+      return res.status(500).json({ error: 'Failed to list bugs' });
+    }
   };
 });
 //|==================================================|
