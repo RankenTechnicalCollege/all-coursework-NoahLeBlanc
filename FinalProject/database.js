@@ -5,6 +5,7 @@
 //|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
 import { MongoClient, ObjectId } from "mongodb";
+import { betterAuth } from "better-auth";
 import debug from "debug";
 import dotenv from "dotenv";
 //|==================================================|
@@ -37,6 +38,26 @@ export async function connect() {
     throw err;
   };
 };
+//|==================================================|
+//|-----------[-BETTER-AUTH-INITIALIZATION-]---------|
+//|==================================================|
+// Define adapter for better-auth
+const mongoAdapter = {
+  async getUserById(id) {
+    return await usersCollection.findOne({ _id: id });
+  },
+  async getUserByEmail(email) {
+    return await usersCollection.findOne({ email });
+  },
+  async createUser(user) {
+    const result = await usersCollection.insertOne(user);
+    return result.ops[0]; // or result.insertedId, depending on what better-auth expects
+  },
+  // Add more methods depending on what better-auth needs (updateUser, deleteUser, etc.)
+};
+export const auth = betterAuth({
+  database: mongoAdapter,
+});
 //|====================================================================================================|
 //|------------------------------------[-DATABASE-MULTI-USE-FUNCTIONS-]--------------------------------|
 //|====================================================================================================|
