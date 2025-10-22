@@ -58,10 +58,6 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 router.post('/register', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
-    const existingUser = await getByField('users', 'email', newUser.email)  
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email is already registered' });
-    };
     newUser.password = await genPassword(newUser.password);
     newUser.creationDate = new Date() 
     await insertNew('users', newUser) 

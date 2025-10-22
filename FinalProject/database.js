@@ -5,7 +5,6 @@
 //|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
 import { MongoClient, ObjectId } from "mongodb";
-import { betterAuth } from "better-auth";
 import debug from "debug";
 import dotenv from "dotenv";
 //|==================================================|
@@ -14,6 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const debugDb = debug("app:Database");
 let _db = null;
+let _client = null;
 const now = new Date()
 const db = await connect();
 //|==================================================|
@@ -38,26 +38,6 @@ export async function connect() {
     throw err;
   };
 };
-//|==================================================|
-//|-----------[-BETTER-AUTH-INITIALIZATION-]---------|
-//|==================================================|
-// Define adapter for better-auth
-const mongoAdapter = {
-  async getUserById(id) {
-    return await usersCollection.findOne({ _id: id });
-  },
-  async getUserByEmail(email) {
-    return await usersCollection.findOne({ email });
-  },
-  async createUser(user) {
-    const result = await usersCollection.insertOne(user);
-    return result.ops[0]; // or result.insertedId, depending on what better-auth expects
-  },
-  // Add more methods depending on what better-auth needs (updateUser, deleteUser, etc.)
-};
-export const auth = betterAuth({
-  database: mongoAdapter,
-});
 //|====================================================================================================|
 //|------------------------------------[-DATABASE-MULTI-USE-FUNCTIONS-]--------------------------------|
 //|====================================================================================================|
@@ -195,6 +175,22 @@ export async function getNestedItem(
 //|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
 export async function insertNew(collectionName, newFieldValue) {
+  if(newFieldValue.email){
+    const foundData = await db.collection("users").findOne({ "email": newFieldValue.email});
+    if(foundData){
+      const err = new Error(`${newFieldValue.email} already exists.`);
+      err.status = 409;
+      throw err;
+    }
+  }
+  if(newFieldValue.title){
+    const foundData = await db.collection("bugs").findOne({ "title": newFieldValue.title});
+    if(foundData){
+      const err = new Error(`The bug titled: "${newFieldValue.title}" already exists.`);
+      err.status = 409;
+      throw err;
+    }
+  }
   const result = await db.collection(collectionName).insertOne(newFieldValue);
   return result;
 };
@@ -383,4 +379,16 @@ export async function insertNewComment(bugId, newFieldValue) {
 export async function ping() {
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
+};
+//|====================================================================================================|
+//|---------------------------------------------[-PING-]-----------------------------------------------|
+//|====================================================================================================|
+export async function getClient(){
+  if(!_client){
+    await connect();
+  }
+  return _client
+}
+export async function getDatabase(){
+  return await connect();
 };
