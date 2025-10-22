@@ -73,15 +73,11 @@ router.post('/new',validBody(bugSchema), async (req, res) => {
       createdOn: new Date(),
       lastUpdated: new Date()
     };;
-    const existingBug = await getByField('bugs', 'title', newBug.title);
-    if (existingBug) {
-      return res.status(400).json({ error: 'bug is already registered' });
-    };
     const result = await insertNew('bugs', newBug);
     if(!result){
       return res.status(500).json({ error: 'Failed to create bug' });
     };
-    debugBug(`Success: (POST/new: ${bugs._id})`);
+    debugBug(`Success: (POST/new: ${newBug.title})`);
     return res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     if(err.status){

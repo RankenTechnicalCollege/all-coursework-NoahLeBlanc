@@ -186,7 +186,7 @@ export async function insertNew(collectionName, newFieldValue) {
   if(newFieldValue.title){
     const foundData = await db.collection("bugs").findOne({ "title": newFieldValue.title});
     if(foundData){
-      const err = new Error(`${newFieldValue.email} already exists.`);
+      const err = new Error(`The bug titled: "${newFieldValue.title}" already exists.`);
       err.status = 409;
       throw err;
     }
