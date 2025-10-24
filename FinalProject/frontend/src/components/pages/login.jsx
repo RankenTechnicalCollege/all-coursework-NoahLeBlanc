@@ -1,11 +1,9 @@
-
-
+//Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 function Login() {
-  //creates a var to store our users, creates a function to set our initial value is an empty array
-
   return (
     <>
-
     </>
   )
 }

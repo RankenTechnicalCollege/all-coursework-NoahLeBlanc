@@ -24,7 +24,7 @@ export const validBody = (schema) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
-      stripUnknown: true, // optional: removes fields not in schema
+      stripUnknown: true, 
     });
     if (error) {
       return res.status(400).json({
@@ -51,7 +51,7 @@ export const validQuery = (schema) => {
         details: error.details.map(detail => detail.message),
       });
     };
-    req.validatedQuery = value; // ✅ Store validated query in a custom field
+    req.validatedQuery = value;
     next();
   };
 };
