@@ -16,28 +16,6 @@ let _db = null;
 let _client = null;
 const now = new Date()
 const db = await connect();
-//|==================================================|
-//|-----------[-MONGODB-INITIALIZATION-]-------------|
-//|==================================================|
-export async function connect() {
-  try {
-    if (_db) return _db;
-    const connectionString = process.env.MONGO_URI;
-    const dbName = process.env.MONGO_DB_NAME;
-    if (!connectionString) {
-      throw new Error("Missing MONGO_URI environment variable");
-    };
-    if (!dbName) {
-      throw new Error("Missing MONGO_DB_NAME environment variable");
-    };
-    const client = await MongoClient.connect(connectionString);
-    _db = client.db(dbName);
-    return _db;
-  } catch (err) {
-    console.error("Failed to connect to MongoDB:", err);
-    throw err;
-  };
-};
 //|====================================================================================================|
 //|------------------------------------[-DATABASE-MULTI-USE-FUNCTIONS-]--------------------------------|
 //|====================================================================================================|
@@ -374,21 +352,49 @@ export async function insertNewComment(bugId, newFieldValue) {
   return result;
 };
 //|====================================================================================================|
-//|---------------------------------------------[-PING-]-----------------------------------------------|
+//|-------------------------------------------[-MONGO-FUNCTIONS-]--------------------------------------|
 //|====================================================================================================|
+//|==================================================|
+//|-----------[-MONGODB-INITIALIZATION-]-------------|
+//|==================================================|
+export async function connect() {
+  try {
+    if (_db) return _db;
+    const connectionString = process.env.MONGO_URI;
+    const dbName = process.env.MONGO_DB_NAME;
+    if (!connectionString) {
+      throw new Error("Missing MONGO_URI environment variable");
+    };
+    if (!dbName) {
+      throw new Error("Missing MONGO_DB_NAME environment variable");
+    };
+    const client = await MongoClient.connect(connectionString);
+    _db = client.db(dbName);
+    return _db;
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err);
+    throw err;
+  };
+};
+//|==================================================|
+//|---------------------[-PING-]---------------------|
+//|==================================================|
 export async function ping() {
   const pong = await db.command({ ping: 1 });
   debugDb(`ping: ${JSON.stringify(pong)}`);
 };
-//|====================================================================================================|
-//|---------------------------------------------[-PING-]-----------------------------------------------|
-//|====================================================================================================|
+//|==================================================|
+//|------------------[-GET-CLIENT-]------------------|
+//|==================================================|
 export async function getClient(){
   if(!_client){
     await connect();
   }
   return _client
-}
+};
+//|==================================================|
+//|------------------[-GET-DATABASE-]----------------|
+//|==================================================|
 export async function getDatabase(){
   return await connect();
 };
