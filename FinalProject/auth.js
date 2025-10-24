@@ -1,11 +1,17 @@
+//|==================================================|
+//|---------------------[-IMPORTS-]------------------|
+//|==================================================|
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-
 import { getClient, getDatabase } from "./database.js";
-
+//|==================================================|
+//|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
+//|==================================================|
 const client = await getClient();
 const db = await getDatabase();
-
+//|==================================================|
+//|-----------------[-BETTER-AUTH-EXPORT-]-----------|
+//|==================================================|
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
     trustedOrigins: [
@@ -14,7 +20,6 @@ export const auth = betterAuth({
       "http://localhost:8080",
       "https://lawnconnect-service-294349793000.us-central1.run.app"
     ],
-
    database: mongodbAdapter(db, {
         client
     }),
@@ -34,8 +39,4 @@ export const auth = betterAuth({
             profile: {
                 type: "object",
                 required: false,
-            }
-        }
-    }
-
-});
+            }}}});
