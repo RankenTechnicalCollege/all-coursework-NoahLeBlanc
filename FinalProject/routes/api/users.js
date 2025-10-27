@@ -17,7 +17,7 @@ router.use(express.json());
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
-router.get('/list', validQuery(userListQuerySchema), async (req, res) => {
+router.get('', validQuery(userListQuerySchema), async (req, res) => {
   try {
     const query = req.query;
     const foundData = await listAll('users', query);
@@ -55,7 +55,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 //|==================================================|
 //|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
-router.post('/register', validBody(userSchema), async (req, res) => {
+router.post('', validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
     newUser.password = await genPassword(newUser.password);
