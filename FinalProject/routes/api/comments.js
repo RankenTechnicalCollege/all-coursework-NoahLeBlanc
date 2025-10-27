@@ -4,8 +4,9 @@
 //|==================================================|
 //|-------------------[-IMPORTS-]--------------------|
 //|==================================================|
-import { validId, validBody } from '../../middleware/validation.js';
 import {getByField, insertNewComment, insertIntoDocument, getNestedItem} from '../../database.js'; 
+import { isAuthenticated } from '../../middleware/isAuthenticated.js';
+import { validId, validBody } from '../../middleware/validation.js';
 import { commentSchema } from '../../middleware/schema.js';
 import express from 'express';
 import debug from 'debug';
@@ -22,7 +23,7 @@ router.use(express.json());
 //|============================================|
 //|------[-GET-ALL-COMMENTS-FOR-A-BUG-]--------|
 //|============================================|
-router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
+router.get('/:bugId/comments', isAuthenticated,  validId('bugId'), async (req, res) => {
   try {
     debugComments(`GET /:bugId/comments hit`);
     const { bugId } = req.params;
@@ -43,7 +44,7 @@ router.get('/:bugId/comments', validId('bugId'), async (req, res) => {
 //|============================================|
 //|------[-GET-A-SPECIFIC-COMMENT-BY-ID-]------|
 //|============================================|
-router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId'), async (req, res) => {
+router.get('/:bugId/comments/:commentId', isAuthenticated, validId('bugId'), validId('commentId'), async (req, res) => {
   debugComments(`GET /:bugId/comments/:commentId hit`);
   try {
     const { bugId, commentId } = req.params;
@@ -64,7 +65,7 @@ router.get('/:bugId/comments/:commentId', validId('bugId'), validId('commentId')
 //|============================================|
 //|-----[-POST-A-NEW-COMMENT-TO-A-BUG-]--------|
 //|============================================|
-router.post('/:bugId/comments', validId('bugId'), validBody(commentSchema), async (req, res) => {
+router.post('/:bugId/comments', isAuthenticated,  validId('bugId'), validBody(commentSchema), async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
   try {
     const { bugId } = req.params;
