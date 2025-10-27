@@ -7,6 +7,7 @@
 import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema, bugListQuerySchema} from '../../middleware/schema.js';
 import { listAll, getByField, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
 import { validId, validBody, validQuery} from '../../middleware/validation.js';
+import { isAuthenticated } from '../../middleware/isAuthenticated.js';
 import express from 'express';
 import debug from 'debug';
 //|==================================================|
@@ -22,7 +23,7 @@ router.use(express.json());
 //|==================================================|
 //|-----------------[-GET-ALL-BUGS-]-----------------|
 //|==================================================|
-router.get('/list', validQuery(bugListQuerySchema), async (req, res) => {
+router.get('', isAuthenticated, validQuery(bugListQuerySchema), async (req, res) => {
   try {
     const query = req.query;
     const foundData = await listAll('bugs', query);
@@ -41,7 +42,7 @@ router.get('/list', validQuery(bugListQuerySchema), async (req, res) => {
 //|==================================================|
 //|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
-router.get('/:bugId', validId('bugId'), async (req, res) => {
+router.get('/:bugId', isAuthenticated,  validId('bugId'), async (req, res) => {
   const { bugId } = req.params;
   try {
     const bug = await getByField('bugs', '_id', bugId) 
@@ -65,7 +66,7 @@ router.get('/:bugId', validId('bugId'), async (req, res) => {
 //|==================================================|
 //|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
-router.post('/new',validBody(bugSchema), async (req, res) => {
+router.post('',validBody(bugSchema), async (req, res) => {
   try {
     const newBug = {
       ...req.body,
