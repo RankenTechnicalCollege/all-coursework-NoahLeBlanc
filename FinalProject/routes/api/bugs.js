@@ -27,7 +27,7 @@ router.get('', isAuthenticated, validQuery(bugListQuerySchema), async (req, res)
   try {
     const query = req.query;
     const foundData = await listAll('bugs', query);
-    debugBug(`Success: (GET/list: bugs)`);
+    debugBug(`Success: (GET: bugs)`);
     return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
@@ -66,19 +66,32 @@ router.get('/:bugId', isAuthenticated,  validId('bugId'), async (req, res) => {
 //|==================================================|
 //|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
-router.post('',validBody(bugSchema), async (req, res) => {
+router.post('', isAuthenticated, validBody(bugSchema), async (req, res) => {
   try {
     const newBug = {
       ...req.body,
-      closed: false,
       createdOn: new Date(),
-      lastUpdated: new Date()
-    };;
-    const result = await insertNew('bugs', newBug);
-    if(!result){
+      createdBy: req.user.email,
+      classification: "unclassified",
+      closed: false
+    };
+    const newEdit = {
+      timestamp: new Date(),
+      col: "bug",
+      op: "insert",
+      target: {bugId},
+      update: bug,
+      performedBy: req.user.email
+    };
+    const result1 = await insertNew('bug', newBug);
+    const result2 = await insertNew('edits', newEdit);
+    if(!result1){
       return res.status(500).json({ error: 'Failed to create bug' });
     };
-    debugBug(`Success: (POST/new: ${newBug.title})`);
+    if(!result2){
+      return res.status(500).json({ error: 'Failed to create Edit' });
+    };
+    debugBug(`Success: (POST: ${newBug.title})`);
     return res.status(201).json({ message: `Bug created! ${newBug.title}`});
   } catch (err) {
     if(err.status){
