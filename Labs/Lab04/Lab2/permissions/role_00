@@ -1,0 +1,33 @@
+{
+  "role": "developer",
+  "permissions": {
+    "General Permissions": {
+      "canEditAnyUser": 0,
+      "canViewData": 1,
+      "canAssignRoles": 0
+    },
+    "Bugs": {
+      "canViewData": 1,
+      "canCreateBug": 1,
+      "canEditAnyBug": 0,
+      "canCloseAnyBug": 0,
+      "canClassifyAnyBug": 0,
+      "canReassignAnyBug": 0,
+      "canEditMyBug": 1,
+      "canEditIfAssignedTo": 1,
+      "canReassignIfAssignedTo": 1,
+      "canBeAssignedTo": 1,
+      "canLogHours": 1,
+      "canApplyFixInVersion": 1,
+      "canAssignVersionDate": 1
+    },
+    "Comments": {
+      "canAddComment": 1
+    },
+    "Test Cases": {
+      "canAddTestCase": 0,
+      "canEditTestCase": 0,
+      "canDeleteTestCase": 0
+    }
+  }
+}
