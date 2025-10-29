@@ -53,34 +53,34 @@ export function isAuthenticated(req, res, next) {
 //|==================================================|
 //|-----------------[-HAS-ANY-ROLE-]-----------------|
 //|==================================================|
-export async function hasAnyRole(req, res, next) {
-    try{
-        session = await fetchSession(req, res);
-        req.role = session.role;
-        req.session = session.session;
-        next();
-    }catch(err){
-        return res.status(401).json({
-            error : 'Unauthorized',
-            message : 'Invalid or expired session'
-        })};
-};
+export function hasAnyRole() {
+  return (req, res, next) => {
+    if (!req.session || !req.user) {
+      return res.status(401).json({ error: 'You are not logged in!' });
+    }
+    if (!req.role) {
+      return res.status(403).json({ error: 'You do not have a role assigned!' });
+    }
+    next();
+  };
+}
 //|==================================================|
 //|-------------------[-HAS-ROLE-]-------------------|
 //|==================================================|
-export async function hasRole(req, res, next) {
-    try{
-        session = await fetchSession(req, res);
-        req.user = session.user;
-        req.session = session.session;
-        next();
-    }catch(err){
-        return res.status(401).json({
-            error : 'Unauthorized',
-            message : 'Invalid or expired session'
-        })};
+export function hasRole(allowedRoles = []) {
+  return (req, res, next) => {
+    if (!req.session || !req.user) {
+      return res.status(401).json({ error: 'You are not logged in!' });
+    }
+    if (!req.role) {
+      return res.status(403).json({ error: 'You do not have a role assigned!' });
+    }
+    if (!allowedRoles.includes(req.role)) {
+      return res.status(403).json({ error: 'You do not have permission to access this resource!' });
+    }
+    next();
+  };
 };
-
 //|==================================================|
 //|-----------------[-HAS-PERMISSION-]---------------|
 //|==================================================|
