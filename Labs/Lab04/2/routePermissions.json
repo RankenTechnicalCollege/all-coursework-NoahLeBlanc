@@ -1,71 +1,67 @@
 [
   {
-    "route": "/api/auth/sign-up/email",
+    "route": "POST /api/auth/sign-up/email",
     "permissions": {}
   },
   {
-    "route": "/api/auth/sign-in/email",
+    "route": "POST /api/auth/sign-in/email",
     "permissions": {}
   },
   {
-    "route": "/api/users",
+    "route": "GET /api/users",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/user/me",
+    "route": "GET /api/user/me",
     "permissions": {}
   },
   {
-    "route": "/api/users/:userId",
+    "route": "GET /api/users/:userId",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/users/me",
+    "route": "PATCH /api/users/me",
     "permissions": {}
   },
   {
-    "route": "/api/users/:userId",
+    "route": "PATCH /api/users/:userId",
     "permissions": {
       "canEditAnyUser": true
     }
   },
   {
-    "route": "/api/users/:userId",
+    "route": "DELETE /api/users/:userId",
     "permissions": {
       "canEditAnyUser": true
     }
   },
   {
-    "route": "/api/bugs",
+    "route": "GET /api/bugs",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bugs/:bugId",
+    "route": "GET /api/bugs/:bugId",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/classify",
+    "route": "POST /api/bugs",
+    "permissions": {
+      "canCreateBug": true
+    }
+  },
+  {
+    "route": "PATCH /api/bugs/:bugId/classify",
     "permissions": {
       "canClassifyAnyBug": true
     }
-  },
-  {
-    "route": "/api/bugs",
-    "permissions": {
-      "canViewData": true
-    }
-  },
-  {
-    "route": "/api/bugs/:bugId/classify",
-    "permissions": {}
   },
   {
     "route": "PATCH /api/bugs/:bugId/assign",
@@ -75,51 +71,57 @@
     }
   },
   {
-    "route": "/api/bugs/:bugId/close",
+    "route": "PATCH /api/bugs/:bugId/close",
     "permissions": {
       "canCloseAnyBug": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/comments",
+    "route": "GET /api/bugs/:bugId/comments",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/comments/:commentId",
+    "route": "GET /api/bugs/:bugId/comments/:commentId",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/comments",
+    "route": "POST /api/bugs/:bugId/comments",
     "permissions": {
       "canAddComment": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/tests",
+    "route": "GET /api/bugs/:bugId/tests",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bug/:bugId/test/:testId",
+    "route": "GET /api/bug/:bugId/test/:testId",
     "permissions": {
       "canViewData": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/tests",
+    "route": "POST /api/bugs/:bugId/tests",
     "permissions": {
       "canAddTestCase": true
     }
   },
   {
-    "route": "/api/bugs/:bugId/tests/:testId",
+    "route": "PATCH /api/bugs/:bugId/tests/:testId",
     "permissions": {
       "canEditTestCase": true
+    }
+  },
+  {
+    "route": "DELETE /api/bugs/:bugId/tests/:testId",
+    "permissions": {
+      "canDeleteTestCase": true
     }
   }
 ]
