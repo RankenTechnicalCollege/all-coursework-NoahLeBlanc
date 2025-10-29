@@ -1,0 +1,125 @@
+[
+  {
+    "route": "/api/auth/sign-up/email",
+    "permissions": {}
+  },
+  {
+    "route": "/api/auth/sign-in/email",
+    "permissions": {}
+  },
+  {
+    "route": "/api/users",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/user/me",
+    "permissions": {}
+  },
+  {
+    "route": "/api/users/:userId",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/users/me",
+    "permissions": {}
+  },
+  {
+    "route": "/api/users/:userId",
+    "permissions": {
+      "canEditAnyUser": true
+    }
+  },
+  {
+    "route": "/api/users/:userId",
+    "permissions": {
+      "canEditAnyUser": true
+    }
+  },
+  {
+    "route": "/api/bugs",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/classify",
+    "permissions": {
+      "canClassifyAnyBug": true
+    }
+  },
+  {
+    "route": "/api/bugs",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/classify",
+    "permissions": {}
+  },
+  {
+    "route": "PATCH /api/bugs/:bugId/assign",
+    "permissions": {
+      "canReassignAnyBug": true,
+      "canReassignIfAssignedTo": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/close",
+    "permissions": {
+      "canCloseAnyBug": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/comments",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/comments/:commentId",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/comments",
+    "permissions": {
+      "canAddComment": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/tests",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bug/:bugId/test/:testId",
+    "permissions": {
+      "canViewData": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/tests",
+    "permissions": {
+      "canAddTestCase": true
+    }
+  },
+  {
+    "route": "/api/bugs/:bugId/tests/:testId",
+    "permissions": {
+      "canEditTestCase": true
+    }
+  }
+]

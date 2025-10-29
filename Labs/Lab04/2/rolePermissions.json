@@ -1,0 +1,71 @@
+[
+  {
+    "role": "developer",
+    "permissions": {
+      "canViewData": true,
+      "canCreateBug": true,
+      "canEditMyBug": true,
+      "canEditIfAssignedTo": true,
+      "canReassignIfAssignedTo": true,
+      "canBeAssignedTo": true,
+      "canLogHours": true,
+      "canApplyFixInVersion": true,
+      "canAssignVersionDate": true,
+      "canAddComment": true
+    }
+  },
+  {
+    "role": "business analyst",
+    "permissions": {
+      "canViewData": true,
+      "canCreateBug": true,
+      "canEditAnyBug": true,
+      "canCloseAnyBug": true,
+      "canClassifyAnyBug": true,
+      "canReassignAnyBug": true,
+      "canEditMyBug": true,
+      "canEditIfAssignedTo": true,
+      "canReassignIfAssignedTo": true,
+      "canBeAssignedTo": true,
+      "canAddComment": true
+    }
+  },
+  {
+    "role": "product manager",
+    "permissions": {
+      "canViewData": true,
+      "canCreateBug": true,
+      "canEditMyBug": true,
+      "canEditIfAssignedTo": true,
+      "canReassignIfAssignedTo": true,
+      "canAddComment": true
+    }
+  },
+  {
+    "role": "technical manager",
+    "permissions": {
+      "canViewData": true,
+      "canCreateBug": true,
+      "canReassignAnyBug": true,
+      "canEditMyBug": true,
+      "canEditIfAssignedTo": true,
+      "canReassignIfAssignedTo": true,
+      "canAddComment": true
+    }
+  },
+  {
+    "role": "quality analyst",
+    "permissions": {
+      "canViewData": true,
+      "canCreateBug": true,
+      "canEditMyBug": true,
+      "canEditIfAssignedTo": true,
+      "canReassignIfAssignedTo": true,
+      "canBeAssignedTo": true,
+      "canAddComment": true,
+      "canAddTestCase": true,
+      "canEditTestCase": true,
+      "canDeleteTestCase": true
+    }
+  }
+]
