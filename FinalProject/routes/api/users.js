@@ -38,9 +38,31 @@ router.get(
         console.error(err);
         return res.status(500).json({ error: 'Failed to list users' });
       }
-    }
+    };
   }
 );
+//|==================================================|
+//|----------------[-GET-USER-BY-ID-]----------------|
+//|==================================================|
+router.get(
+  '/me',
+  attachSession,
+  isAuthenticated,
+  async (req, res) => {
+  try {
+    const foundUser = await getByField('user', 'email', req.user.email);
+    debugUser(`Success: (GET/mail: ${req.user.email})`);
+    return res.status(200).json([foundUser]);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to update bug' });
+    }
+  };
+});
 //|==================================================|
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
@@ -69,7 +91,11 @@ router.get(
 //|==================================================|
 //|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
-router.post('', attachSession, isAuthenticated, validBody(userSchema), async (req, res) => {
+router.post('',
+  attachSession,
+  isAuthenticated,
+  validBody(userSchema),
+  async (req,res) => {
   try {
     const newUser = req.body;
     newUser.password = await genPassword(newUser.password);
