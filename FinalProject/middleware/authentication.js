@@ -25,17 +25,18 @@ export async function fetchSession(req) {
 //|==================================================|
 export async function attachSession(req, res, next) {
     try {
-        if (!req.session) {
-            const session = await fetchSession(req);
-            req.user = session.user;
-            req.role = session.role;
-            req.session = session.session;
-        }
-        next();
+      if (!req.session) {
+          const session = await fetchSession(req);
+          req.user = session.user;
+          req.id = session.user._id;  
+          req.role = session.role;
+          req.session = session.session;
+      }
+      next();
     } catch (err) {
         return res.status(401).json({
-            error: 'Unauthorized',
-            message: err.message
+          error: 'Unauthorized',
+          message: err.message
         });
     };
 };
@@ -48,7 +49,7 @@ export function isAuthenticated(req, res, next) {
             error: 'Unauthorized',
             message: 'You must be logged in'
         });
-    }
+    };
     next();
 };
 //|==================================================|
@@ -58,10 +59,10 @@ export function hasAnyRole() {
   return (req, res, next) => {
     if (!req.session || !req.user) {
       return res.status(401).json({ error: 'You are not logged in!' });
-    }
+    };
     if (!req.role) {
       return res.status(403).json({ error: 'You do not have a role assigned!' });
-    }
+    };
     next();
   };
 };
@@ -72,19 +73,15 @@ export function hasRole(allowedRoles = []) {
   return (req, res, next) => {
     if (!req.session || !req.user) {
       return res.status(401).json({ error: 'You are not logged in!' });
-    }
-                             //Condition           //If true       //if False
+    };
     const userRoles = Array.isArray(req.user.role) ? req.user.role : [];
-
     if (userRoles.length === 0) {
       return res.status(403).json({ error: 'You do not have a role assigned!' });
-    }
-
+    };
     const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
-
     if (!hasAllowedRole) {
       return res.status(403).json({ error: 'You do not have permission to access this resource!' });
-    }
+    };
     next();
   };
 };
