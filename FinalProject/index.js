@@ -18,7 +18,11 @@ const port = process.env.PORT || 5000;
 const app = express();
 app.use(cors(
   {
-    origin: ["http://localhost:5000","http://localhost:5050", "http://localhost:3000", "http://localhost:8080"],
+    origin: [
+      "http://localhost:5000",
+      "http://localhost:5050",
+      "http://localhost:3000",
+      "http://localhost:8080"],
     credentials: true
   }));
 //--------------------------------------------Middleware-------------------------------------------
@@ -31,7 +35,7 @@ app.use(express.json());
 
 
 //---------------------------------------------Route-----------------------------------------------
-//app.use("/api/users", userRouter);
+app.use("/api/users", userRouter);
 app.use("/api/bugs", bugRouter);
 app.use("/api/comments", commentRouter)
 app.use("/api/tests", testRouter)
