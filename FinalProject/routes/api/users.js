@@ -7,7 +7,7 @@ import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.j
 import { validId, validBody, validQuery } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
-import { attachSession, hasRole, isAuthenticated } from '../../middleware/authentication.js';
+import { attachSession, hasPermission, hasRole, isAuthenticated } from '../../middleware/authentication.js';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -22,7 +22,7 @@ router.get(
   '/',//endpoint 
   attachSession,//attaches previously made session without making a new one
   isAuthenticated,//Checks to see if the user is authenticated(loggedIn)
-  hasRole('developer', 'business analyst', 'product manager'),//Checks to see if the user has any of the roles
+  hasPermission('canViewData'),
   validQuery(userListQuerySchema),
   async (req, res) => {
     try {
@@ -44,7 +44,13 @@ router.get(
 //|==================================================|
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
-router.get('/:userId', attachSession, isAuthenticated, validId('userId'), async (req, res) => {
+router.get(
+  '/:userId',
+  attachSession,
+  isAuthenticated,
+  hasPermission("canViewData"),
+  validId('userId'),
+  async (req, res) => {
   try {
     const { userId } = req.params;
     const foundUser = await getByField('users', '_id', userId);
