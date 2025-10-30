@@ -32,11 +32,15 @@ export const auth = betterAuth({
     },
     user: {
         additionalFields: {
-            role: {
-                type: "object", // MongoDB stores arrays as objects
-                required: false,
-            },
-            profile: {
-                type: "object",
-                required: false,
-            }}}});
+                role: {
+                    type: "array",
+                    of: "string",
+                    required: false,
+                },
+                profile: {
+                    type: "object",
+                    required: false,
+                }
+            }
+        }
+});
