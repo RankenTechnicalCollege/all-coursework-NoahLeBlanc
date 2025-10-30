@@ -115,14 +115,29 @@ export async function listAll(collectionName, query = {}) {
 //|--------------[-GET-BY-FIELD-]------------------|
 //|================================================|
 export async function getByField(collectionName, fieldName, fieldValue) {
-  const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
-  if(!foundData){
+  let query;
+
+  if (Array.isArray(fieldValue)) {
+    // If array, use $in to match any value in the array
+    query = { [fieldName]: { $in: fieldValue } };
+  } else {
+    // Single value (old behavior)
+    query = { [fieldName]: fieldValue };
+  }
+
+  const foundData = Array.isArray(fieldValue)
+    ? await db.collection(collectionName).find(query).toArray() // return all matches
+    : await db.collection(collectionName).findOne(query);        // return single match
+
+  if (!foundData || (Array.isArray(fieldValue) && foundData.length === 0)) {
     const err = new Error(`${fieldValue} not found.`);
     err.status = 404;
     throw err;
-  };
+  }
+
   return foundData;
-};
+}
+
 //|================================================|
 //|---------------[-GET-NESTED-ITEM-]--------------|
 //|================================================|
@@ -153,25 +168,36 @@ export async function getNestedItem(
 //|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
 export async function insertNew(collectionName, newFieldValue) {
-  if(newFieldValue.email){
-    const foundData = await db.collection("users").findOne({ "email": newFieldValue.email});
-    if(foundData){
-      const err = new Error(`${newFieldValue.email} already exists.`);
-      err.status = 409;
-      throw err;
+  // Map of unique fields to their collections
+  const uniqueChecks = {
+    //field: 'collection'
+    email: "user",
+    title: "bug",
+  };
+
+  // Check for uniqueness
+  for (const [field, collection] of Object.entries(uniqueChecks)) {
+    if (newFieldValue[field]) {
+      const found = await db.collection(collection).findOne({ [field]: newFieldValue[field] });
+      if (found) {
+        const err = new Error(
+          field === "email"
+            ? `${newFieldValue[field]} already exists.`
+            : `The bug titled: "${newFieldValue[field]}" already exists.`
+        );
+        err.status = 409;
+        throw err;
+      }
     }
   }
-  if(newFieldValue.title){
-    const foundData = await db.collection("bugs").findOne({ "title": newFieldValue.title});
-    if(foundData){
-      const err = new Error(`The bug titled: "${newFieldValue.title}" already exists.`);
-      err.status = 409;
-      throw err;
-    }
-  }
+
+  // Insert document
   const result = await db.collection(collectionName).insertOne(newFieldValue);
-  return result;
-};
+
+  // Return inserted document with ID
+  return { ...newFieldValue, _id: result.insertedId };
+}
+
 //|================================================|
 //|------------[-INSERT-INTO-DOCUMENT-]------------|
 //|================================================|
