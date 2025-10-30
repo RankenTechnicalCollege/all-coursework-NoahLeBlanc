@@ -63,7 +63,7 @@ export function hasAnyRole() {
     }
     next();
   };
-}
+};
 //|==================================================|
 //|-------------------[-HAS-ROLE-]-------------------|
 //|==================================================|
@@ -72,15 +72,23 @@ export function hasRole(allowedRoles = []) {
     if (!req.session || !req.user) {
       return res.status(401).json({ error: 'You are not logged in!' });
     }
-    if (!req.role) {
+
+    const userRoles = req.user.role 
+      ? [req.user.role] 
+      : req.user.roles || [];
+
+    if (!userRoles.length) {
       return res.status(403).json({ error: 'You do not have a role assigned!' });
     }
-    if (!allowedRoles.includes(req.role)) {
+
+    const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+    if (!hasAllowedRole) {
       return res.status(403).json({ error: 'You do not have permission to access this resource!' });
     }
+
     next();
   };
-};
+}
 //|==================================================|
 //|-----------------[-HAS-PERMISSION-]---------------|
 //|==================================================|
