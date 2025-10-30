@@ -24,21 +24,22 @@ export async function fetchSession(req) {
 //|--------------------[-ATTACH-SESSION-]------------|
 //|==================================================|
 export async function attachSession(req, res, next) {
-    try {
-      if (!req.session) {
-          const session = await fetchSession(req);
-          req.user = session.user;
-          req.id = session.user._id;  
-          req.role = session.role;
-          req.session = session.session;
-      }
-      next();
-    } catch (err) {
-        return res.status(401).json({
-          error: 'Unauthorized',
-          message: err.message
-        });
-    };
+  try {
+    if (!req.session) {
+      const session = await fetchSession(req);
+      req.user = {
+        ...session.user,
+      };
+      req.role = session.role;
+      req.session = session.session;
+    }
+    next();
+  } catch (err) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: err.message
+    });
+  }
 };
 //|==================================================|
 //|-----------------[-IS-AUTHENTICATED-]-------------|
