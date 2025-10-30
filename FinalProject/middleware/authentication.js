@@ -2,6 +2,7 @@
 //|-------------------------------------------[ IMPORTS ]----------------------------------------------|
 //|====================================================================================================|
 import {auth} from "../auth.js";
+import { getByField } from "../database.js";
 //|====================================================================================================|
 //|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
 //|====================================================================================================|
@@ -72,35 +73,51 @@ export function hasRole(allowedRoles = []) {
     if (!req.session || !req.user) {
       return res.status(401).json({ error: 'You are not logged in!' });
     }
+                             //Condition           //If true       //if False
+    const userRoles = Array.isArray(req.user.role) ? req.user.role : [];
 
-    const userRoles = req.user.role 
-      ? [req.user.role] 
-      : req.user.roles || [];
-
-    if (!userRoles.length) {
+    if (userRoles.length === 0) {
       return res.status(403).json({ error: 'You do not have a role assigned!' });
     }
 
     const hasAllowedRole = userRoles.some(role => allowedRoles.includes(role));
+
     if (!hasAllowedRole) {
       return res.status(403).json({ error: 'You do not have permission to access this resource!' });
     }
-
     next();
   };
-}
+};
 //|==================================================|
 //|-----------------[-HAS-PERMISSION-]---------------|
 //|==================================================|
-export async function hasPermission(req, res, next) {
-    try{
-        session = await fetchSession(req, res);
-        req.user = session.user;
-        req.session = session.session;
-        next();
-    }catch(err){
-        return res.status(401).json({
-            error : 'Unauthorized',
-            message : 'Invalid or expired session'
-        })};
-};
+export function hasPermission(permissionKey) {
+  return async (req, res, next) => {
+    try {
+      const userRoles = Array.isArray(req.user.role) ? req.user.role : [];
+      if (userRoles.length === 0) {
+        return res.status(403).json({
+          error: 'Access denied',
+          message: 'User has no assigned roles',
+        });
+      }
+      const roles = await getByField("role", "role", userRoles);
+      const hasPerm = roles.some(
+        (r) => r.permissions && r.permissions[permissionKey] === true
+      );
+      if (!hasPerm) {
+        return res.status(403).json({
+          error: 'Access denied',
+          message: `You lack permission: ${permissionKey}`,
+        });
+      }
+      next();
+    } catch (err) {
+      console.error('Permission check failed:', err);
+      return res.status(500).json({
+        error: 'Server error',
+        message: 'An error occurred while checking permissions',
+      });
+    }
+  };
+}
