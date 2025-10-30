@@ -7,6 +7,7 @@ import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.j
 import { validId, validBody, validQuery } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
+import { attachSession, hasRole, isAuthenticated } from '../../middleware/authentication.js';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -17,26 +18,33 @@ router.use(express.json());
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
-router.get('', validQuery(userListQuerySchema), async (req, res) => {
-  try {
-    const query = req.query;
-    const foundData = await listAll('users', query);
-    debugUser(`Success: (GET/list: users)`);
-    return res.status(200).json([foundData]);
-  } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
+router.get(
+  '/',//endpoint 
+  attachSession,//attaches previously made session without making a new one
+  isAuthenticated,//Checks to see if the user is authenticated(loggedIn)
+  hasRole('developer', 'business analyst', 'product manager'),//Checks to see if the user has any of the roles
+  validQuery(userListQuerySchema),
+  async (req, res) => {
+    try {
+      const query = req.query;
+      const foundData = await listAll('user', query);
+
+      debugUser('Success: (GET /list users)');
+      return res.status(200).json(foundData);
+    } catch (err) {
+      if (err.status) {
+        autoCatch(err, res);
+      } else {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to list users' });
+      }
     }
-    else{
-      console.error(err);
-      return res.status(500).json({ error: 'Failed to list users' });
-    }
-  };
-});
+  }
+);
 //|==================================================|
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
-router.get('/:userId', validId('userId'), async (req, res) => {
+router.get('/:userId', attachSession, isAuthenticated, validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
     const foundUser = await getByField('users', '_id', userId);
@@ -55,7 +63,7 @@ router.get('/:userId', validId('userId'), async (req, res) => {
 //|==================================================|
 //|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
-router.post('', validBody(userSchema), async (req, res) => {
+router.post('', attachSession, isAuthenticated, validBody(userSchema), async (req, res) => {
   try {
     const newUser = req.body;
     newUser.password = await genPassword(newUser.password);
@@ -76,7 +84,7 @@ router.post('', validBody(userSchema), async (req, res) => {
 //|==================================================|
 //|------------------[-LOGIN-USER-]------------------|
 //|==================================================|
-router.post('/login', validBody(userLoginSchema), async (req, res) => {
+router.post('/login', attachSession, isAuthenticated, validBody(userLoginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await getByField("users", "email", email)
@@ -96,7 +104,7 @@ router.post('/login', validBody(userLoginSchema), async (req, res) => {
 //|==================================================|
 //|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
-router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (req, res) => {
+router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), validBody(userPatchSchema), async (req, res) => {
   try {
     const { userId } = req.params;
     const updates = req.body;
@@ -119,7 +127,7 @@ router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (r
 //|==================================================|
 //|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
-router.delete('/:userId', validId('userId'), async (req, res) => {
+router.delete('/:userId', attachSession, isAuthenticated, validId('userId'), async (req, res) => {
   try {
     const {userId} = req.params;
     const result = await deleteByObject("users", '_id', userId)
