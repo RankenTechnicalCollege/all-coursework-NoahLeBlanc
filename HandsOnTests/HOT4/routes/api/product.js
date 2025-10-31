@@ -4,7 +4,7 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
-import { listAll, getByField, deleteByObject, insertNew, updateProduct} from '../../middleware/database.js'; 
+import { listAll, getByField, deleteByObject, insertNew, updateProduct, listAllProducts} from '../../middleware/database.js'; 
 import { productSchema, productPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
@@ -25,21 +25,17 @@ router.use(express.json());
 //|==================================================|
 router.get('/', async (req, res) => {
   try {
-    const foundData = await listAll('products');
-    if (foundData) {
-      return res.status(200).json([foundData]);
-    } else {
-      throw new Error('No products found');
-    };
+    const foundData = await listAllProducts(req.query);
+    return res.status(200).json(foundData);
+
   } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
-    }
-    else{
-      console.error(err);
+    if (err.status) {
+      autoCatch(err, res);
+    } else {
+      console.error('Unexpected error while fetching products:', err);
       res.status(500).json([{ error: 'Failed to GET products' }]);
     }
-  };
+  }
 });
 //|==================================================|
 //|----------[-GET /api/products/:productId-]--------|

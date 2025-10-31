@@ -49,6 +49,90 @@ export async function listAll(collectionName) {
   const foundData = await db.collection(collectionName).find().toArray();
   return foundData;
 };
+//|=================================================|
+//|----------[-GET-ALL-PRODUCTS-WITH-QUERY-]--------|
+//|=================================================|
+export async function listAllProducts(query = {}) {
+  query = Object.assign({}, query); // Normalize [Object: null prototype]
+
+  const keywords = query.keywords?.trim() || null;
+  const category = query.category?.trim() || null;
+  const minPrice = query.minPrice ? Number(query.minPrice) : null;
+  const maxPrice = query.maxPrice ? Number(query.maxPrice) : null;
+  const sortBy = query.sortBy || 'name';
+  const pageSize = query.pageSize ? Number(query.pageSize) : 5;
+  const pageNumber = query.pageNumber ? Number(query.pageNumber) : 1;
+
+  console.log(`Searching products with query:`, query);
+
+  const mongoQuery = {};
+  let mongoSort = {};
+
+  // --- Keyword search ---
+  if (keywords) {
+    mongoQuery.name = { $regex: keywords, $options: 'i' }; // case-insensitive search
+  }
+
+  // --- Category filter ---
+  if (category) {
+    mongoQuery.category = category;
+  }
+
+  // --- Price range filters ---
+  if (minPrice !== null || maxPrice !== null) {
+    mongoQuery.price = {};
+    if (minPrice !== null) mongoQuery.price.$gte = minPrice;
+    if (maxPrice !== null) mongoQuery.price.$lte = maxPrice;
+  }
+
+  // --- Sorting logic ---
+  switch (sortBy) {
+    case 'name':
+      mongoSort = { name: 1 };
+      break;
+    case 'category':
+      mongoSort = { category: 1, name: 1 };
+      break;
+    case 'lowestPrice':
+      mongoSort = { price: 1, name: 1 };
+      break;
+    case 'newest':
+      mongoSort = { createdAt: -1, name: 1 };
+      break;
+    default:
+      mongoSort = { name: 1 }; // default sort
+  }
+
+  // --- Pagination ---
+  const skip = (pageNumber - 1) * pageSize;
+
+  // --- Execute query ---
+  const cursor = db.collection('products').find(mongoQuery)
+    .sort(mongoSort)
+    .skip(skip)
+    .limit(pageSize);
+
+  const products = await cursor.toArray();
+
+  // --- Count total for pagination ---
+  const totalItems = await db.collection('products').countDocuments(mongoQuery);
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  if (!products || products.length === 0) {
+    const err = new Error('No products found.');
+    err.status = 404;
+    throw err;
+  }
+
+  return {
+    pageNumber,
+    pageSize,
+    totalPages,
+    totalItems,
+    products,
+  };
+}
+
 //|================================================|
 //|--------------[-GET-BY-FIELD-]------------------|
 //|================================================|
