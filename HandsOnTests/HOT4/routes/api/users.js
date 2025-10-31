@@ -9,6 +9,7 @@ import { userSchema, userPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
+import { attachSession } from '../../middleware/authentication.js';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -22,7 +23,7 @@ router.use(express.json());
 //|==================================================|
 //|-----------------[-GET /API/USERS-]---------------|
 //|==================================================|
-router.get('/', async (req, res) => {
+router.get('/users', async (req, res) => {
   try {
     const foundData = await listAll('user');
     if (foundData) {
@@ -41,15 +42,32 @@ router.get('/', async (req, res) => {
   };
 });
 //|==================================================|
-//|----------[-GET /API/USERS/:USERID-]--------|
+//|------------[-GET /API/USERS/:USERID-]------------|
 //|==================================================|
-router.get('/:userId', validId('userId'), async (req, res) => {
+router.get('/users/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
     const foundData = await getByField('user', '_id', userId);
     if (!foundData) {
       return res.status(404).json([{ message: `user ID: ${userId} not found` }]);
     };
+    return res.status(200).json([foundData]);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      res.status(500).json([{ error: 'Failed to GET users' }]);
+    }
+  };
+});
+//|==================================================|
+//|---------------[-GET /API/USERS/ME]---------------|
+//|==================================================|
+router.get('/user/me', attachSession, async (req, res) => {
+  try {
+    const foundData = await getByField('user', '_id', validId(req.user._id));
     return res.status(200).json([foundData]);
   } catch (err) {
     if(err.status){
