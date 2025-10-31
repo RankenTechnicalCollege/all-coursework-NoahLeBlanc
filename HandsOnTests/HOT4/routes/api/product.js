@@ -9,6 +9,7 @@ import { productSchema, productPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
+import { attachSession, hasRole, isAuthenticated } from '../../middleware/authentication.js';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -43,7 +44,7 @@ router.get('/', async (req, res) => {
 //|==================================================|
 //|----------[-GET /api/products/:productId-]--------|
 //|==================================================|
-router.get('/:productId', validId('productId'), async (req, res) => {
+router.get('/:productId', isAuthenticated, validId('productId'), async (req, res) => {
   try {
     const { productId } = req.params;
     const foundData = await getByField('products', '_id', productId);
@@ -65,7 +66,7 @@ router.get('/:productId', validId('productId'), async (req, res) => {
 //|==================================================|
 //|------[-GET /api/products/name/:productName-]-----|
 //|==================================================|
-router.get('/name/:productName', async (req, res) => {
+router.get('/name/:productName', isAuthenticated, async (req, res) => {
   try {
     const { productName } = req.params;
     const foundData = await getByField('products', 'name', productName);
@@ -89,7 +90,7 @@ router.get('/name/:productName', async (req, res) => {
 //|==================================================|
 //|-------------[-POST /api/products-]---------------|
 //|==================================================|
-router.post('/', validBody(productSchema), async (req, res) => {
+router.post('/', hasRole('admin'), validBody(productSchema), async (req, res) => {
   try {
     const newProduct = req.body;
 
@@ -115,7 +116,7 @@ router.post('/', validBody(productSchema), async (req, res) => {
 //|==================================================|
 //|---------[-PATCH /api/products/:productId-]-------|
 //|==================================================|
-router.patch('/:productId', validId('productId'), validBody(productPatchSchema), async (req, res) => {
+router.patch('/:productId', hasRole('admin'), validId('productId'), validBody(productPatchSchema), async (req, res) => {
   try {
     const { productId } = req.params;
     const updates = req.body;
@@ -137,7 +138,7 @@ router.patch('/:productId', validId('productId'), validBody(productPatchSchema),
 //|==================================================|
 //|---------[-DELETE /api/products/:productId-]------|
 //|==================================================|
-router.delete('/:productId', validId('productId'), async (req, res) => {
+router.delete('/:productId',attachSession, hasRole('admin'), validId('productId'), async (req, res) => {
   const { productId } = req.params;
 
   try {
