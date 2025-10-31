@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from 'cors';
 //------------------Routes------------------------//
 import { productRouter } from "./routes/api/product.js";
+import { userRouter } from "./routes/api/users.js";
 import { ping } from "./middleware/database.js";
 dotenv.config();
 //-------------------------------------------- Config ---------------------------------------------
@@ -25,6 +26,7 @@ app.use(express.static("frontend/dist"));
 app.use(express.json());
 //---------------------------------------------Route-----------------------------------------------
 app.use("/api/products", productRouter);
+app.use("/api", userRouter);
 //---------------------------------------------auth-----------------------------------------------
 //Login: POST /api/auth/sign-in/email
 //Registration: POST /api/auth/sign-up/email
