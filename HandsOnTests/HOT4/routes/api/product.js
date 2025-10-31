@@ -4,7 +4,7 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
-import { listAll, getByObject, deleteByObject, insertNew, updateProduct} from '../../middleware/database.js'; 
+import { listAll, getByField, deleteByObject, insertNew, updateProduct} from '../../middleware/database.js'; 
 import { productSchema, productPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
 router.get('/:productId', validId('productId'), async (req, res) => {
   try {
     const { productId } = req.params;
-    const foundData = await getByObject('products', '_id', productId);
+    const foundData = await getByField('products', '_id', productId);
     if (!foundData) {
       return res.status(404).json([{ message: `Product ID: ${productId} not found` }]);
     };
@@ -68,7 +68,7 @@ router.get('/:productId', validId('productId'), async (req, res) => {
 router.get('/name/:productName', async (req, res) => {
   try {
     const { productName } = req.params;
-    const foundData = await getByObject('products', 'name', productName);
+    const foundData = await getByField('products', 'name', productName);
     if (!foundData) {
       return res.status(404).json([{ message: `Product ID: ${productName} not found` }]);
     };

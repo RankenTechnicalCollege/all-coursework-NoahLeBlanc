@@ -50,18 +50,32 @@ export async function listAll(collectionName) {
   return foundData;
 };
 //|================================================|
-//|--------------[-GET-BY-OBJECT-]-----------------|
+//|--------------[-GET-BY-FIELD-]------------------|
 //|================================================|
-export async function getByObject(collectionName, fieldName, fieldValue) {
-  const db = await connect();
-  const foundData = await db.collection(collectionName).findOne({ [fieldName]: fieldValue});
-  if(!foundData){
+export async function getByField(collectionName, fieldName, fieldValue) {
+  let query;
+
+  if (Array.isArray(fieldValue)) {
+    // If array, use $in to match any value in the array
+    query = { [fieldName]: { $in: fieldValue } };
+  } else {
+    // Single value (old behavior)
+    query = { [fieldName]: fieldValue };
+  }
+
+  const foundData = Array.isArray(fieldValue)
+    ? await db.collection(collectionName).find(query).toArray() // return all matches
+    : await db.collection(collectionName).findOne(query);        // return single match
+
+  if (!foundData || (Array.isArray(fieldValue) && foundData.length === 0)) {
     const err = new Error(`${fieldValue} not found.`);
-    err.status = 400;
+    err.status = 404;
     throw err;
   }
+
   return foundData;
-};
+}
+
 //|================================================|
 //|------------[-INSERT-NEW-OBJECT-]---------------|-
 //|================================================|
@@ -95,7 +109,7 @@ export async function updateProduct(productId, updatedProduct) {
     err.status = 400;
     throw err;
   };
-  const existingProduct = await getByObject('products', "_id", productId);
+  const existingProduct = await getByField('products', "_id", productId);
   if(!existingProduct){
     const err = new Error("Product not found");
     err.status = 404;
