@@ -109,15 +109,6 @@ export async function updateProduct(productId, updatedProduct) {
     err.status = 400;
     throw err;
   };
-  const isDifferent = Object.entries(updatedProduct).some(([key, value]) => {
-    return JSON.stringify(existingProduct[key]) !== JSON.stringify(value);
-  });
-  if (!isDifferent) {
-    const err = new Error("No changes were made — values are the same");
-    err.status = 400;
-    throw err;
-  };
-  //Updates the product 
   const result = await db.collection('products').updateOne(
     { _id: productId},
     { $set: { ...updatedProduct, lastUpdatedOn: new Date()}}
@@ -146,27 +137,19 @@ export async function updateUser(userId, updatedUser) {
     err.status = 400;
     throw err;
   };
-  const isDifferent = Object.entries(updatedUser).some(([key, value]) => {
-    return JSON.stringify(existingProduct[key]) !== JSON.stringify(value);
-  });
-  if (!isDifferent) {
-    const err = new Error("No changes were made — values are the same");
-    err.status = 400;
-    throw err;
-  };
-  //Updates the product 
-  const result = await db.collection('products').updateOne(
+  //Updates the user 
+  const result = await db.collection('user').updateOne(
     { _id: userId},
     { $set: { ...updatedUser, lastUpdatedOn: new Date()}}
   );
   if (result.matchedCount === 0) {
-      const err = new Error("Product not found");
+      const err = new Error("user not found");
       err.status = 404; // Not Found
       throw err;
   };
-  //if the product isn't modified throws an error
+  //if the user isn't modified throws an error
   if (result.modifiedCount === 0) {
-    const err = new Error("No changes were made to the product");
+    const err = new Error("No changes were made to the user");
     err.status = 400; // Bad Request
     throw err;
   };
