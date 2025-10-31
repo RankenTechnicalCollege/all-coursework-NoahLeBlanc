@@ -9,7 +9,7 @@ import {userPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
-import { attachSession } from '../../middleware/authentication.js';
+import { attachSession, hasRole, isAuthenticated } from '../../middleware/authentication.js';
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
@@ -23,7 +23,10 @@ router.use(express.json());
 //|==================================================|
 //|-----------------[-GET /API/USERS-]---------------|
 //|==================================================|
-router.get('/users', async (req, res) => {
+router.get('/users',
+    attachSession,
+    hasRole('admin'),
+    async (req, res) => {
   try {
     const foundData = await listAll('user');
     if (foundData) {
@@ -44,7 +47,12 @@ router.get('/users', async (req, res) => {
 //|==================================================|
 //|------------[-GET /API/USERS/:USERID-]------------|
 //|==================================================|
-router.get('/users/:userId', validId('userId'), async (req, res) => {
+router.get('/users/:userId',
+ attachSession,
+ hasRole('admin'),
+ validId('userId'),
+ isAuthenticated,
+ async (req, res) => {
   try {
     const { userId } = req.params;
     const foundData = await getByField('user', '_id', userId);
@@ -65,7 +73,10 @@ router.get('/users/:userId', validId('userId'), async (req, res) => {
 //|==================================================|
 //|---------------[-GET /API/USERS/ME]---------------|
 //|==================================================|
-router.get('/user/me', attachSession, async (req, res) => {
+router.get('/user/me',
+ attachSession,
+ isAuthenticated,
+ async (req, res) => {
   try {
     const foundData = await getByField('user', '_id', validId(req.user._id));
     return res.status(200).json([foundData]);
@@ -80,15 +91,16 @@ router.get('/user/me', attachSession, async (req, res) => {
   };
 });
 //|====================================================================================================|
-//|--------------------------------------[-user POST FUNCTION-]----------------------------------------|
-//|====================================================================================================|
-//|====================================================================================================|
-//|--------------------------------------[-user PATCH FUNCTION-]------------------------------------|
+//|--------------------------------------[-user PATCH FUNCTION-]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|--------------[-PATCH /api/user/me-]--------------|
 //|==================================================|
-router.patch('/user/me', attachSession, validBody(userPatchSchema), async (req, res) => {
+router.patch('/user/me',
+ attachSession,
+ isAuthenticated,
+ validBody(userPatchSchema),
+ async (req, res) => {
   try {
     const updatedUser = req.body;
     await updateUser(validId(req.user._id), updatedUser)
@@ -101,27 +113,6 @@ router.patch('/user/me', attachSession, validBody(userPatchSchema), async (req, 
       console.error(err);
       res.status(500).json([{ error: 'Failed to update you' }]);
     }
-  };
-});
-//|====================================================================================================|
-//|--------------------------------------[-user DELETE FUNCTION-]--------------------------------------|
-//|====================================================================================================|
-//|==================================================|
-//|---------[-DELETE /api/users/:userId-]------|
-//|==================================================|
-router.delete('/:userId', validId('userId'), async (req, res) => {
-  const { userId } = req.params;
-
-  try {
-    const result = await deleteByObject("users", '_id', userId)
-    if (result.deletedCount === 1) {
-      res.status(200).json([{ message: `user ${userId} deleted successfully.` }]);
-    } else {
-      res.status(404).json([{ message: `user ${userId} not found.` }]);
-    }
-  } catch (err) {
-    res.status(500).json([{ message: 'Server error' }]);
-    console.error(err)
   };
 });
 //|====================================================================================================|
