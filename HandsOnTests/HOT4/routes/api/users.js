@@ -4,7 +4,7 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
-import { listAll, getByObject, deleteByObject, insertNew} from '../../middleware/database.js'; 
+import { listAll, getByField, deleteByObject, insertNew} from '../../middleware/database.js'; 
 import { userSchema, userPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
@@ -24,7 +24,7 @@ router.use(express.json());
 //|==================================================|
 router.get('/', async (req, res) => {
   try {
-    const foundData = await listAll('users');
+    const foundData = await listAll('user');
     if (foundData) {
       return res.status(200).json([foundData]);
     } else {
@@ -46,31 +46,9 @@ router.get('/', async (req, res) => {
 router.get('/:userId', validId('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
-    const foundData = await getByObject('user', '_id', userId);
+    const foundData = await getByField('user', '_id', userId);
     if (!foundData) {
       return res.status(404).json([{ message: `user ID: ${userId} not found` }]);
-    };
-    return res.status(200).json([foundData]);
-  } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
-    }
-    else{
-      console.error(err);
-      res.status(500).json([{ error: 'Failed to GET users' }]);
-    }
-  };
-});
-
-//|==================================================|
-//|------[-GET /api/users/name/:userName-]-----|
-//|==================================================|
-router.get('/name/:userName', async (req, res) => {
-  try {
-    const { userName } = req.params;
-    const foundData = await getByObject('users', 'name', userName);
-    if (!foundData) {
-      return res.status(404).json([{ message: `user ID: ${userName} not found` }]);
     };
     return res.status(200).json([foundData]);
   } catch (err) {
@@ -89,7 +67,7 @@ router.get('/name/:userName', async (req, res) => {
 //|==================================================|
 //|-------------[-POST /api/users-]---------------|
 //|==================================================|
-router.post('/', validBody(userschema), async (req, res) => {
+router.post('/', validBody(userSchema), async (req, res) => {
   try {
     const newuser = req.body;
 
