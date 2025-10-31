@@ -109,13 +109,6 @@ export async function updateProduct(productId, updatedProduct) {
     err.status = 400;
     throw err;
   };
-  const existingProduct = await getByField('products', "_id", productId);
-  if(!existingProduct){
-    const err = new Error("Product not found");
-    err.status = 404;
-    throw err;
-  };
-   // Check if any values actually differ
   const isDifferent = Object.entries(updatedProduct).some(([key, value]) => {
     return JSON.stringify(existingProduct[key]) !== JSON.stringify(value);
   });
@@ -141,7 +134,44 @@ export async function updateProduct(productId, updatedProduct) {
     throw err;
   };
   return result;
-};
+}
+//|================================================|
+//|-----------------[-UPDATE-USER-]----------------|
+//|================================================|
+export async function updateUser(userId, updatedUser) {
+  const db = await connect();
+  //checks if any updates have been passed
+  if (Object.values(updatedUser).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  };
+  const isDifferent = Object.entries(updatedUser).some(([key, value]) => {
+    return JSON.stringify(existingProduct[key]) !== JSON.stringify(value);
+  });
+  if (!isDifferent) {
+    const err = new Error("No changes were made — values are the same");
+    err.status = 400;
+    throw err;
+  };
+  //Updates the product 
+  const result = await db.collection('products').updateOne(
+    { _id: userId},
+    { $set: { ...updatedUser, lastUpdatedOn: new Date()}}
+  );
+  if (result.matchedCount === 0) {
+      const err = new Error("Product not found");
+      err.status = 404; // Not Found
+      throw err;
+  };
+  //if the product isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the product");
+    err.status = 400; // Bad Request
+    throw err;
+  };
+  return result;
+};;
 //|==================================================|
 //|------------------[-GET-CLIENT-]------------------|
 //|==================================================|
