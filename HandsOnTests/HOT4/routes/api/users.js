@@ -4,8 +4,8 @@
 //|==================================================|
 //|--------------------[-IMPORTS-]-------------------|
 //|==================================================|
-import { listAll, getByField, deleteByObject, insertNew} from '../../middleware/database.js'; 
-import { userSchema, userPatchSchema} from '../../middleware/schema.js';
+import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../middleware/database.js'; 
+import {userPatchSchema} from '../../middleware/schema.js';
 import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
@@ -80,55 +80,31 @@ router.get('/user/me', attachSession, async (req, res) => {
   };
 });
 //|====================================================================================================|
-//|--------------------------------------[-user POST FUNCTION-]-------------------------------------|
+//|--------------------------------------[-user POST FUNCTION-]----------------------------------------|
 //|====================================================================================================|
-//|==================================================|
-//|-------------[-POST /api/users-]---------------|
-//|==================================================|
-router.post('/', validBody(userSchema), async (req, res) => {
-  try {
-    const newuser = req.body;
-
-    newuser.createdOn = new Date() 
-    const status = await insertNew('users', newuser) 
-    if(!status.acknowledged){
-      return res.status(500).json([{ error: 'Failed to create new user. Please try again later.' }]);
-    }
-    res.status(201).json([{ message: `New user ${newuser._id} Added!` }]);
-  } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
-    }
-    else{
-      console.error(err);
-      res.status(500).json([{ error: 'Failed to add a user' }]);
-    }
-  };
-});
 //|====================================================================================================|
 //|--------------------------------------[-user PATCH FUNCTION-]------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|---------[-PATCH /api/users/:userId-]-------|
+//|--------------[-PATCH /api/user/me-]--------------|
 //|==================================================|
-router.patch('/:userId', validId('userId'), validBody(userPatchSchema), async (req, res) => {
+router.patch('/user/me', attachSession, validBody(userPatchSchema), async (req, res) => {
   try {
-    const { userId } = req.params;
-    const updates = req.body;
-    await updateuser(userId, updates)
-    res.status(200).json([{ message: `user ${userId} updated successfully.` }]);
+    const updatedUser = req.body;
+    await updateUser(validId(req.user._id), updatedUser)
+    res.status(200).json([{ message: `user updated successfully.` }]);
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }
     else{
       console.error(err);
-      res.status(500).json([{ error: 'Failed to add a user' }]);
+      res.status(500).json([{ error: 'Failed to update you' }]);
     }
   };
 });
 //|====================================================================================================|
-//|--------------------------------------[-user DELETE FUNCTION-]-----------------------------------|
+//|--------------------------------------[-user DELETE FUNCTION-]--------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|---------[-DELETE /api/users/:userId-]------|
