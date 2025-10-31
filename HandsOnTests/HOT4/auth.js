@@ -3,7 +3,7 @@
 //|==================================================|
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { getClient, getDatabase } from "./database.js";
+import { getClient, getDatabase } from "./middleware/database.js";
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|
