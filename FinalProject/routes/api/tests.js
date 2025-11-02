@@ -1,17 +1,40 @@
 //|====================================================================================================|
-//|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
+//|-------------------------------------------[-IMPORTS-]----------------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|---------------------[-IMPORTS-]------------------|
+//|---------------------[-SCHEMA-]-------------------|
 //|==================================================|
-import {testSchema, testPatchSchema } from '../../middleware/schema.js';
-import { validId, validBody } from '../../middleware/validation.js';
-import { getByField, getNestedItem, insertIntoDocument, insertNew} from '../../database.js';
+import { getByField,
+ getNestedItem,
+ insertIntoDocument,
+ insertNew} 
+ from '../../database.js';
+//|==================================================|
+//|-------------------[-DATABASE-]-------------------|
+//|==================================================|
+import {testSchema,
+ testPatchSchema } 
+ from '../../middleware/schema.js';
+//|==================================================|
+//|------------------[-VALIDATION-]------------------|
+//|==================================================|
+import { attachSession,
+ isAuthenticated } 
+ from '../../middleware/authentication.js';
+//|==================================================|
+//|-----------------[-AUTHENTICATION-]---------------|
+//|==================================================|
+import { validId,
+ validBody } 
+ from '../../middleware/validation.js';
+//|==================================================|
+//|-----------------[-EXPRESS & DEBUG-]--------------|
+//|==================================================|
 import express from 'express';
 import debug from 'debug';
-//|==================================================|
-//|----------------[-JOI-INITIALIZATION-]------------|
-//|==================================================|
+//|====================================================================================================|
+//|-------------------------------------------[-MIDDLEWARE-]-------------------------------------------|
+//|====================================================================================================|
 const router = express.Router();
 const debugTests = debug('app:TestAPI');
 router.use(express.urlencoded({ extended: false }));
@@ -22,7 +45,11 @@ router.use(express.json());
 //|============================================|
 //|------[-GET-ALL-TEST-CASES-FOR-A-BUG-]------|
 //|============================================|
-router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
+router.get('/:bugId/tests' ,
+ attachSession,
+ isAuthenticated,
+  validId('bugId'),
+ async (req, res) => {
   debugTests(`GET /:bugId/tests hit`);
   try {
     const { bugId } = req.params;
@@ -43,7 +70,12 @@ router.get('/:bugId/tests', validId('bugId'), async (req, res) => {
 //|============================================|
 //|----[-GET-SPECIFIC-TEST-CASE-FOR-A-BUG-]----|
 //|============================================|
-router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
+router.get('/:bugId/tests/:testId',
+ attachSession,
+ isAuthenticated,
+ validId('bugId'),
+ validId('testId'),
+ async (req, res) => {
   try {
     const { bugId, testId } = req.params;
     const testCase = await getNestedItem('bugs', '_id', bugId, "testCases", testId) 
@@ -63,7 +95,12 @@ router.get('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (
 //|============================================|
 //|---[-CREATE-A-NEW-TEST-CASE-FOR-A-BUG-]-----|
 //|============================================|
-router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req, res) => {
+router.post('/:bugId/tests',
+ attachSession,
+ isAuthenticated,
+  validId("bugId"),
+ validBody(testSchema),
+ async (req, res) => {
   debugTests(`POST /:bugId/tests hit`);
   try {
     const { bugId } = req.params;
@@ -86,7 +123,13 @@ router.post('/:bugId/tests', validId("bugId"), validBody(testSchema), async (req
 //|============================================|
 //|------[-UPDATE-A-TEST-CASE-FOR-A-BUG-]------|
 //|============================================|
-router.patch('/:bugId/tests/:testId', validId('bugId'), validId('testId'), validBody(testSchema), async (req, res) => {
+router.patch('/:bugId/tests/:testId',
+ attachSession,
+ isAuthenticated,
+ validId('bugId'),
+ validId('testId'),
+ validBody(testSchema),
+ async (req, res) => {
   try {
     const { bugId, testId } = req.params;
     const updates = req.body;
@@ -105,7 +148,10 @@ router.patch('/:bugId/tests/:testId', validId('bugId'), validId('testId'), valid
 //|============================================|
 //|--[ DELETE A TEST CASE FROM A BUG ]---------|
 //|============================================|
-router.delete('/:bugId/tests/:testId', validId('bugId'), validId('testId'), async (req, res) => {
+router.delete('/:bugId/tests/:testId',
+ validId('bugId'),
+ validId('testId'),
+ async (req, res) => {
   try {
     debugComments(`DELETE /:bugId/tests/:testId hit`);
     const { bugId, testId } = req.params;
