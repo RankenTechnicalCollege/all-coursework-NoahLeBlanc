@@ -1,16 +1,52 @@
 //|====================================================================================================|
 //|-------------------------------------------[-IMPORTS-]----------------------------------------------|
 //|====================================================================================================|
-import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../database.js'; 
-import { userSchema, userLoginSchema, userPatchSchema, userListQuerySchema } from '../../middleware/schema.js';
-import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.js';
-import { validId, validBody, validQuery } from '../../middleware/validation.js';
+//|==================================================|
+//|---------------------[-SCHEMA-]-------------------|
+//|==================================================|
+import { userSchema,
+ userLoginSchema,
+ userPatchSchema,
+ userListQuerySchema } 
+ from '../../middleware/schema.js';
+//|==================================================|
+//|-----------------[-AUTHENTICATION-]---------------|
+//|==================================================|
+import { attachSession,
+ hasPermission,
+ hasRole,
+ isAuthenticated } 
+ from '../../middleware/authentication.js';
+//|==================================================|
+//|-------------------[-DATABASE-]-------------------|
+//|==================================================|
+import { listAll,
+ getByField,
+ deleteByObject,
+ updateUser,
+ insertNew} 
+ from '../../database.js'; 
+//|==================================================|
+//|--------------------[-BCRYPT-]--------------------|
+//|==================================================|
+import { genPassword,
+ comparePassword } 
+ from '../../middleware/bcryptFunctions.js';
+//|==================================================|
+//|------------------[-VALIDATION-]------------------|
+//|==================================================|
+import { validId,
+ validBody,
+ validQuery } 
+ from '../../middleware/validation.js';
+//|==================================================|
+//|---------------[-EXPRESS & DEBUG-]----------------|
+//|==================================================|
 import express from 'express';
 import debug from 'debug';
-import { attachSession, hasPermission, hasRole, isAuthenticated } from '../../middleware/authentication.js';
-//|==================================================|
-//|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
-//|==================================================|
+//|====================================================================================================|
+//|----------------------------------------[-MIDDLEWARE INITIALIZATION-]-------------------------------|
+//|====================================================================================================|
 const router = express.Router();
 const debugUser = debug('app:UserRouter');
 router.use(express.urlencoded({ extended: false }));
@@ -136,7 +172,7 @@ router.post('',
     const newUser = req.body;
     newUser.password = await genPassword(newUser.password);
     newUser.creationDate = new Date() 
-    await insertNew('users', newUser) 
+    await insertNew('user', newUser) 
     debugUser(`Success: (POST/register: ${newUser.givenName})`);
     return res.status(201).json([{ message: `New User ${newUser.givenName + " " + newUser.familyName} Registered!` }]);
   } catch (err) {
@@ -155,7 +191,7 @@ router.post('',
 router.post('/login', attachSession, isAuthenticated, validBody(userLoginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await getByField("users", "email", email)
+    const user = await getByField("user", "email", email)
     comparePassword(password, user.password);
     debugUser(`Success: (POST/login: ${user._id})`);
     return res.status(200).json([{message: `Welcome back! ${user._id}`}])
@@ -175,7 +211,7 @@ router.post('/login', attachSession, isAuthenticated, validBody(userLoginSchema)
 //|==================================================|
 //|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
-router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), validBody(userPatchSchema(false)), async (req, res) => {
+router.patch('/:userId', attachSession, isAuthenticated, hasPermission("canEditAnyUser"), validId('userId'), validBody(userPatchSchema(false)), async (req, res) => {
   try {
     const { userId } = req.params;
     const updates = req.body;
@@ -201,10 +237,10 @@ router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), vali
 //|==================================================|
 //|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
-router.delete('/:userId', attachSession, isAuthenticated, validId('userId'), async (req, res) => {
+router.delete('/:userId', attachSession, isAuthenticated, hasPermission("canEditAnyUser"), validId('userId'), async (req, res) => {
   try {
     const {userId} = req.params;
-    const result = await deleteByObject("users", '_id', userId)
+    const result = await deleteByObject("user", '_id', userId)
     if (!result.deletedCount) {
       return res.status(404).json({ message: `User ${userId} not found.` });
     };
