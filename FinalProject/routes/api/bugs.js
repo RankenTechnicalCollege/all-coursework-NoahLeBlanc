@@ -2,17 +2,50 @@
 //|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|---------------------[-IMPORTS-]------------------|
+//|---------------------[-SCHEMA-]-------------------|
 //|==================================================|
-import { bugSchema, bugPatchSchema, bugClassifySchema, bugAssignSchema, bugCloseSchema, bugListQuerySchema} from '../../middleware/schema.js';
-import { listAll, getByField, assignBugToUser, insertNew, updateBug} from '../../database.js'; 
-import { validId, validBody, validQuery} from '../../middleware/validation.js';
-import { isAuthenticated } from '../../middleware/isAuthenticated.js';
+import { bugSchema,
+ bugPatchSchema,
+ bugClassifySchema,
+ bugAssignSchema,
+ bugCloseSchema,
+ bugListQuerySchema} 
+ from '../../middleware/schema.js';
+//|==================================================|
+//|-------------------[-DATABASE-]-------------------|
+//|==================================================|
+import { listAll,
+ getByField,
+ assignBugToUser,
+ insertNew,
+ updateBug} 
+ from '../../database.js'; 
+
+//|==================================================|
+//|------------------[-VALIDATION-]------------------|
+//|==================================================|
+import { validId,
+ validBody,
+ validQuery} 
+ from '../../middleware/validation.js';
+
+//|==================================================|
+//|-----------------[-AUTHENTICATION-]---------------|
+//|==================================================|
+import { attachSession,
+ hasPermission,
+ isAuthenticated 
+} from '../../middleware/authentication.js';
+
+//|==================================================|
+//|-----------------[-EXPRESS & DEBUG-]--------------|
+//|==================================================|
 import express from 'express';
 import debug from 'debug';
-//|==================================================|
-//|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
-//|==================================================|
+
+//|====================================================================================================|
+//|---------------------------------------[-MIDDLEWARE-INITIALIZATION-]--------------------------------|
+//|====================================================================================================|
 const router = express.Router();
 const debugBug = debug('app:BugRouter');
 router.use(express.urlencoded({ extended: false }));
@@ -23,10 +56,14 @@ router.use(express.json());
 //|==================================================|
 //|-----------------[-GET-ALL-BUGS-]-----------------|
 //|==================================================|
-router.get('', isAuthenticated, validQuery(bugListQuerySchema), async (req, res) => {
+router.get('',
+ attachSession,
+ isAuthenticated, hasPermission("canViewData"),
+ validQuery(bugListQuerySchema),
+ async (req, res) => {
   try {
     const query = req.query;
-    const foundData = await listAll('bugs', query);
+    const foundData = await listAll('bug', query);
     debugBug(`Success: (GET: bugs)`);
     return res.status(200).json([foundData]);
   } catch (err) {
@@ -42,10 +79,14 @@ router.get('', isAuthenticated, validQuery(bugListQuerySchema), async (req, res)
 //|==================================================|
 //|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
-router.get('/:bugId', isAuthenticated,  validId('bugId'), async (req, res) => {
+router.get('/:bugId',
+ isAuthenticated,
+ hasPermission("canViewData"),
+ validId('bugId'),
+ async (req, res) => {
   const { bugId } = req.params;
   try {
-    const bug = await getByField('bugs', '_id', bugId) 
+    const bug = await getByField('bug', '_id', bugId) 
     if (!bug) {
       return res.status(404).json({ error: `Bug ${bugId} not found.` });
     };
@@ -66,7 +107,11 @@ router.get('/:bugId', isAuthenticated,  validId('bugId'), async (req, res) => {
 //|==================================================|
 //|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
-router.post('', isAuthenticated, validBody(bugSchema), async (req, res) => {
+router.post('',
+ isAuthenticated,
+ hasPermission("canViewData"),
+ validBody(bugSchema),
+ async (req, res) => {
   try {
     const newBug = {
       ...req.body,
@@ -75,24 +120,21 @@ router.post('', isAuthenticated, validBody(bugSchema), async (req, res) => {
       classification: "unclassified",
       closed: false
     };
+    // Insert new bug and get its ID directly
+    const result = await insertNew('bug', newBug);
+    // Assume result.insertedId contains the new bug's ID
+    const bugId = result.insertedId || newBug._id; // fallback in case insertNew returns the full object
+    // Log the edit
     const newEdit = {
       timestamp: new Date(),
       col: "bug",
       op: "insert",
-      target: {bugId},
-      update: bug,
+      target: { _id: bugId },
+      update: "bug",
       performedBy: req.user.email
     };
-    const result1 = await insertNew('bug', newBug);
-    const result2 = await insertNew('edits', newEdit);
-    if(!result1){
-      return res.status(500).json({ error: 'Failed to create bug' });
-    };
-    if(!result2){
-      return res.status(500).json({ error: 'Failed to create Edit' });
-    };
-    debugBug(`Success: (POST: ${newBug.title})`);
-    return res.status(201).json({ message: `Bug created! ${newBug.title}`});
+    await insertNew('edits', newEdit);
+    res.status(201).json({ message: "Bug created successfully", bug: { ...newBug, _id: bugId } });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
@@ -108,7 +150,12 @@ router.post('', isAuthenticated, validBody(bugSchema), async (req, res) => {
 //|==================================================|
 //|-----------------[-PATCH UPDATE BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req, res) => {
+router.patch('/:bugId',
+ validId('bugId'),
+ hasPermission("canViewData",
+ "canEditIfAssignedTo",
+ "canEditMyBug"). validBody(bugPatchSchema),
+ async (req, res) => {
   try {
     const { bugId } = req.params;
     const updatedInfo = req.body;
@@ -127,7 +174,11 @@ router.patch('/:bugId', validId('bugId'), validBody(bugPatchSchema), async (req,
 //|==================================================|
 //|---------------[-PATCH-CLASSIFY-BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema), async (req, res) => {
+router.patch('/:bugId/classify',
+ validId('bugId'),
+ hasPermission("canViewData"),
+ validBody(bugClassifySchema),
+ async (req, res) => {
   try {
     const { bugId } = req.params;
     const updatedInfo = req.body;
@@ -148,7 +199,10 @@ router.patch('/:bugId/classify', validId('bugId'), validBody(bugClassifySchema),
 //|==================================================|
 //|-----------------[-PATCH ASSIGN BUG-]-------------|
 //|==================================================|
-router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), async (req, res) => {
+router.patch('/:bugId/assign',
+ validId('bugId'),
+ validBody(bugAssignSchema),
+ async (req, res) => {
   try {
     const { bugId } = req.params;
     const assignedToUserId = req.body;
@@ -169,7 +223,10 @@ router.patch('/:bugId/assign', validId('bugId'), validBody(bugAssignSchema), asy
 //|==================================================|
 //|-----------------[-PATCH CLOSE BUG-]--------------|
 //|==================================================|
-router.patch('/:bugId/close', validId("bugId"), validBody(bugCloseSchema), async (req, res) => {
+router.patch('/:bugId/close',
+ validId("bugId"),
+ validBody(bugCloseSchema),
+ async (req, res) => {
   try {
     const { bugId } = req.params;
     const updatedInfo = req.body;
