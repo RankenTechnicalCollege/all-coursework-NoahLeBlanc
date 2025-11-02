@@ -128,7 +128,7 @@ router.patch('/:bugId/tests/:testId',
  isAuthenticated,
  validId('bugId'),
  validId('testId'),
- validBody(testSchema),
+ validBody(testPatchSchema),
  async (req, res) => {
   try {
     const { bugId, testId } = req.params;
@@ -168,7 +168,7 @@ router.delete('/:bugId/tests/:testId',
   };
 });
 //|====================================================================================================|
-//|-------------------------------------------[-FUNCTIONS-]--------------------------------------------|
+//|---------------------------------------------[-FUNCTIONS-]------------------------------------------|
 //|====================================================================================================|
 function autoCatch(err, res){ validId('bugId')
     console.error(err);
