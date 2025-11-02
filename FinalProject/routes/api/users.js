@@ -1,6 +1,6 @@
-//|==================================================|
-//|--------------------[-IMPORTS-]-------------------|
-//|==================================================|
+//|====================================================================================================|
+//|-------------------------------------------[-IMPORTS-]----------------------------------------------|
+//|====================================================================================================|
 import { listAll, getByField, deleteByObject, updateUser, insertNew} from '../../database.js'; 
 import { userSchema, userLoginSchema, userPatchSchema, userListQuerySchema } from '../../middleware/schema.js';
 import { genPassword, comparePassword } from '../../middleware/bcryptFunctions.js';
@@ -15,6 +15,61 @@ const router = express.Router();
 const debugUser = debug('app:UserRouter');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
+//|========================================================================================|
+//|---------------------------------------[-MY-REQUESTS-]----------------------------------|
+//|========================================================================================|
+//|==================================================|
+//|----------------[-GET-MY-INFO-]-------------------|
+//|==================================================|
+router.get(
+  '/me',
+  attachSession,
+  isAuthenticated,
+  async (req, res) => {
+  try {
+    const foundUser = await getByField('user', '_id', validId(req.user.id));
+    debugUser(`Success: (GET/me: ${(req.user.id)})`);
+    return res.status(200).json([foundUser]);
+  } catch (err) {
+    if(err.status){
+      autoCatch(err, res)
+    }
+    else{
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to update bug' });
+    }
+  };
+});
+//|==================================================|
+//|----------------[-CHANGE-MY-INFO-]----------------|
+//|==================================================|
+router.put(
+  '/me',
+  attachSession,
+  isAuthenticated,
+  validBody(userPatchSchema(false)),
+  async (req, res) => {
+    try {
+      const updates = req.body;
+      if (updates.password) {
+        updates.password = await genPassword(updates.password);
+      };
+      const updatedUser = await updateUser(validId(req.user.id), updates);
+      debugUser(`Success: (PUT /me: ${req.id})`);
+      return res.status(200).json(updatedUser);
+    } catch (err) {
+      if (err.status) {
+        autoCatch(err, res);
+      } else {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to update user' });
+      }
+    }
+  }
+);
+//|========================================================================================|
+//|---------------------------------------[-GET-REQUESTS-]---------------------------------|
+//|========================================================================================|
 //|==================================================|
 //|----------------[-LIST-ALL-USERS-]----------------|
 //|==================================================|
@@ -45,28 +100,6 @@ router.get(
 //|----------------[-GET-USER-BY-ID-]----------------|
 //|==================================================|
 router.get(
-  '/me',
-  attachSession,
-  isAuthenticated,
-  async (req, res) => {
-  try {
-    const foundUser = await getByField('user', 'email', req.user.email);
-    debugUser(`Success: (GET/mail: ${req.user.email})`);
-    return res.status(200).json([foundUser]);
-  } catch (err) {
-    if(err.status){
-      autoCatch(err, res)
-    }
-    else{
-      console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
-    }
-  };
-});
-//|==================================================|
-//|----------------[-GET-USER-BY-ID-]----------------|
-//|==================================================|
-router.get(
   '/:userId',
   attachSession,
   isAuthenticated,
@@ -75,7 +108,7 @@ router.get(
   async (req, res) => {
   try {
     const { userId } = req.params;
-    const foundUser = await getByField('users', '_id', userId);
+    const foundUser = await getByField('user', '_id', userId);
     debugUser(`Success: (GET/:userId: ${userId})`);
     return res.status(200).json([foundUser]);
   } catch (err) {
@@ -88,6 +121,9 @@ router.get(
     }
   };
 });
+//|========================================================================================|
+//|---------------------------------------[-POST-REQUESTS-]--------------------------------|
+//|========================================================================================|
 //|==================================================|
 //|----------------[-REGISTER-USER-]-----------------|
 //|==================================================|
@@ -133,10 +169,13 @@ router.post('/login', attachSession, isAuthenticated, validBody(userLoginSchema)
     }
   };
 });
+//|========================================================================================|
+//|---------------------------------------[-PATCH-REQUESTS-]-------------------------------|
+//|========================================================================================|
 //|==================================================|
 //|----------------[-PATCH-USER-BY-ID-]--------------|
 //|==================================================|
-router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), validBody(userPatchSchema), async (req, res) => {
+router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), validBody(userPatchSchema(false)), async (req, res) => {
   try {
     const { userId } = req.params;
     const updates = req.body;
@@ -156,6 +195,9 @@ router.patch('/:userId', attachSession, isAuthenticated, validId('userId'), vali
     }
   };
 });
+//|========================================================================================|
+//|---------------------------------------[-DELETE-REQUESTS-]------------------------------|
+//|========================================================================================|
 //|==================================================|
 //|----------------[-DELETE-USER-BY-ID-]-------------|
 //|==================================================|
