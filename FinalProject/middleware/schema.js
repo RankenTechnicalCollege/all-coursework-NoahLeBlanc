@@ -32,22 +32,25 @@ export const userSchema = Joi.object({
       'product manager',
       'technical manager').required()
 });
-export const userPatchSchema = Joi.object({
-  email: Joi.string().min(1).optional(),
-  password: Joi.string().min(3).optional(),
-  givenName: Joi.string().min(1).optional(),
-  familyName: Joi.string().min(1).optional(),
-  fullName: Joi.string().min(1).optional(), 
-  role: Joi.string()
-    .valid(
-      'developer',
-      'quality analyst',
-      'business analyst',
-      'product manager',
-      'technical manager'
-    )
-    .optional()
-}).min(1).required();
+export const userPatchSchema = (allowRoleEdit = false) =>
+  Joi.object({
+    email: Joi.string().min(1).optional(),
+    password: Joi.string().min(3).optional(),
+    givenName: Joi.string().min(1).optional(),
+    familyName: Joi.string().min(1).optional(),
+    fullName: Joi.string().min(1).optional(),
+    role: allowRoleEdit
+      ? Joi.string()
+          .valid(
+            'developer',
+            'quality analyst',
+            'business analyst',
+            'product manager',
+            'technical manager'
+          )
+          .optional()
+      : Joi.forbidden()
+  }).min(1).required();
 export const userLoginSchema = Joi.object({
   email: Joi.string().email().min(1).required(),
   password: Joi.string().min(3).required()

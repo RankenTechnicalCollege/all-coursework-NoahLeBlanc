@@ -2,28 +2,52 @@
 //|-------------------------------------------[ INITIALIZATION ]---------------------------------------|
 //|====================================================================================================|
 //|==================================================|
-//|-------------------[-IMPORTS-]--------------------|
+//|-------------------[-DATABASE-]-------------------|
 //|==================================================|
-import {getByField, insertNewComment, insertIntoDocument, getNestedItem} from '../../database.js'; 
-import { isAuthenticated } from '../../middleware/isAuthenticated.js';
-import { validId, validBody } from '../../middleware/validation.js';
-import { commentSchema } from '../../middleware/schema.js';
+import {getByField,
+ insertNewComment,
+ insertIntoDocument,
+ getNestedItem} 
+ from '../../database.js'; 
+//|==================================================|
+//|------------------[-AUTHENTICATION-]--------------|
+//|==================================================|
+import { hasPermission, isAuthenticated } 
+from '../../middleware/authentication.js';
+//|==================================================|
+//|-------------------[-VALIDATION-]-----------------|
+//|==================================================|
+import { validId,
+ validBody } 
+ from '../../middleware/validation.js';
+//|==================================================|
+//|-------------------[-SCHEMA-]---------------------|
+//|==================================================|
+import { commentSchema } 
+from '../../middleware/schema.js';
+//|==================================================|
+//|----------------[-EXPRESS & DEBUG-]---------------|
+//|==================================================|
 import express from 'express';
 import debug from 'debug';
-//|==================================================|
-//|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
-//|==================================================|
+//|====================================================================================================|
+//|--------------------------------------  [ MIDDLEWARE INITIALIZATION ]-------------------------------|
+//|====================================================================================================|
 const router = express.Router();
 const debugComments = debug('app:Comments');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-//|========================================================================================|
-//|-------------------------------------[-GET-REQUESTS-]-----------------------------------|
-//|========================================================================================|
-//|============================================|
-//|------[-GET-ALL-COMMENTS-FOR-A-BUG-]--------|
-//|============================================|
-router.get('/:bugId/comments', isAuthenticated,  validId('bugId'), async (req, res) => {
+//|====================================================================================================|
+//|----------------------------------------------[-GET-REQUESTS-]--------------------------------------|
+//|====================================================================================================|
+//|==================================================|
+//|-----------[-GET-ALL-COMMENTS-FOR-A-BUG-]---------|
+//|==================================================|
+router.get('/:bugId/comments',
+ isAuthenticated,
+ hasPermission("canViewData"),
+ validId('bugId'),
+ async (req, res) => {
   try {
     debugComments(`GET /:bugId/comments hit`);
     const { bugId } = req.params;
@@ -41,10 +65,15 @@ router.get('/:bugId/comments', isAuthenticated,  validId('bugId'), async (req, r
     };
   };
 });
-//|============================================|
-//|------[-GET-A-SPECIFIC-COMMENT-BY-ID-]------|
-//|============================================|
-router.get('/:bugId/comments/:commentId', isAuthenticated, validId('bugId'), validId('commentId'), async (req, res) => {
+//|==================================================|
+//|-----------[-GET-A-SPECIFIC-COMMENT-BY-ID-]-------|
+//|==================================================|
+router.get('/:bugId/comments/:commentId',
+ isAuthenticated,
+ hasPermission("canViewData"),
+ validId('bugId'),
+ validId('commentId'),
+ async (req, res) => {
   debugComments(`GET /:bugId/comments/:commentId hit`);
   try {
     const { bugId, commentId } = req.params;
@@ -59,19 +88,24 @@ router.get('/:bugId/comments/:commentId', isAuthenticated, validId('bugId'), val
     };
   };
 });
-//|========================================================================================|
-//|------------------------------------[-POST-REQUESTS-]-----------------------------------|
-//|========================================================================================|
-//|============================================|
-//|-----[-POST-A-NEW-COMMENT-TO-A-BUG-]--------|
-//|============================================|
-router.post('/:bugId/comments', isAuthenticated,  validId('bugId'), validBody(commentSchema), async (req, res) => {
+//|====================================================================================================|
+//|--------------------------------------------[-POST-REQUESTS-]---------------------------------------|
+//|====================================================================================================|
+//|==================================================|
+//|----------[-POST-A-NEW-COMMENT-TO-A-BUG-]---------|
+//|==================================================|
+router.post('/:bugId/comments',
+ isAuthenticated,
+ hasPermission("canAddComments"),
+ validId('bugId'),
+ validBody(commentSchema),
+ async (req, res) => {
   debugComments(`POST /:bugId/comments hit`);
   try {
     const { bugId } = req.params;
     const newComment = req.body;
     // Add comment to bug
-    await insertIntoDocument('bugs', bugId, 'comments', newComment) 
+    await insertIntoDocument('bug', bugId, 'comments', newComment) 
     return res.status(201).json([{ message: 'Comment added', newComment }]);
   } catch (err) {
     if(err.status){

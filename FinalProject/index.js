@@ -30,10 +30,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("frontend/dist"));
 app.use(express.json());
 
-
-
-
-
 //---------------------------------------------Route-----------------------------------------------
 app.use("/api/users", userRouter);
 app.use("/api/bugs", bugRouter);

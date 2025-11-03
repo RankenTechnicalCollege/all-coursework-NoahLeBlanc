@@ -245,7 +245,7 @@ export async function updateUser(userId, updatedUser) {
     err.status = 400;
     throw err;
   };
-  const existingUser = await getByField('users', "_id", userId);
+  const existingUser = await getByField('user', "_id", userId);
   if(!existingUser){
     const err = new Error("User not found");
     err.status = 404;
@@ -261,7 +261,7 @@ export async function updateUser(userId, updatedUser) {
     throw err;
   };
   //Updates the user 
-  const result = await db.collection('users').updateOne(
+  const result = await db.collection('user').updateOne(
     { _id: userId },
     { $set: { ...updatedUser, lastUpdated: now}}
   );
@@ -318,7 +318,7 @@ export async function updateBug(bugId, updatedBug) {
 //|================================================|
 export async function assignBugToUser(userId, bugId) {
 
-  const existingUser = await getByField('users', '_id', userId);
+  const existingUser = await getByField('user', '_id', userId);
   if (!existingUser) {
     const err = new Error("User not found");
     err.status = 404;
@@ -338,7 +338,7 @@ export async function assignBugToUser(userId, bugId) {
     throw err;
   };
   // Add the bug ID to the user's assignedBugs
-  const result = await db.collection('users').updateOne(
+  const result = await db.collection('user').updateOne(
     { _id: userId },
     {
       $addToSet: { assignedBugs: bugObjectId },

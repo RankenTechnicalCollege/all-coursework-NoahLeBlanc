@@ -19,6 +19,7 @@ import {testSchema,
 //|------------------[-VALIDATION-]------------------|
 //|==================================================|
 import { attachSession,
+ hasPermission,
  isAuthenticated } 
  from '../../middleware/authentication.js';
 //|==================================================|
@@ -48,6 +49,7 @@ router.use(express.json());
 router.get('/:bugId/tests' ,
  attachSession,
  isAuthenticated,
+ hasPermission("canViewData"),
   validId('bugId'),
  async (req, res) => {
   debugTests(`GET /:bugId/tests hit`);
@@ -73,6 +75,7 @@ router.get('/:bugId/tests' ,
 router.get('/:bugId/tests/:testId',
  attachSession,
  isAuthenticated,
+ hasPermission("canViewData"),
  validId('bugId'),
  validId('testId'),
  async (req, res) => {
@@ -98,6 +101,7 @@ router.get('/:bugId/tests/:testId',
 router.post('/:bugId/tests',
  attachSession,
  isAuthenticated,
+ hasPermission("canAddTestCase"),
   validId("bugId"),
  validBody(testSchema),
  async (req, res) => {
@@ -126,6 +130,7 @@ router.post('/:bugId/tests',
 router.patch('/:bugId/tests/:testId',
  attachSession,
  isAuthenticated,
+ hasPermission("canEditTestCase"),
  validId('bugId'),
  validId('testId'),
  validBody(testPatchSchema),
@@ -146,9 +151,12 @@ router.patch('/:bugId/tests/:testId',
   };
 });
 //|============================================|
-//|--[ DELETE A TEST CASE FROM A BUG ]---------|
+//|-----[ DELETE A TEST CASE FROM A BUG ]------|
 //|============================================|
 router.delete('/:bugId/tests/:testId',
+ attachSession,
+ isAuthenticated,
+ hasPermission("canDeleteTestCase"),
  validId('bugId'),
  validId('testId'),
  async (req, res) => {

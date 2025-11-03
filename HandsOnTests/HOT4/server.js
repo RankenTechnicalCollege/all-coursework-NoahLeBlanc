@@ -9,11 +9,12 @@ import { userRouter } from "./routes/api/users.js";
 import { ping } from "./middleware/database.js";
 dotenv.config();
 //-------------------------------------------- Config ---------------------------------------------
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 2023;
 const app = express();
 app.use(cors(
   {
     origin: [
+      "http://localhost:2023",
       "http://localhost:5000",
       "http://localhost:5050",
       "http://localhost:3000",

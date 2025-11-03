@@ -1,5 +1,5 @@
 //|====================================================================================================|
-//|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
+//|-------------------------------------------[-IMPORTS-]----------------------------------------------|
 //|====================================================================================================|
 //|==================================================|
 //|---------------------[-SCHEMA-]-------------------|
@@ -20,7 +20,6 @@ import { listAll,
  insertNew,
  updateBug} 
  from '../../database.js'; 
-
 //|==================================================|
 //|------------------[-VALIDATION-]------------------|
 //|==================================================|
@@ -28,7 +27,6 @@ import { validId,
  validBody,
  validQuery} 
  from '../../middleware/validation.js';
-
 //|==================================================|
 //|-----------------[-AUTHENTICATION-]---------------|
 //|==================================================|
@@ -36,13 +34,11 @@ import { attachSession,
  hasPermission,
  isAuthenticated 
 } from '../../middleware/authentication.js';
-
 //|==================================================|
 //|-----------------[-EXPRESS & DEBUG-]--------------|
 //|==================================================|
 import express from 'express';
 import debug from 'debug';
-
 //|====================================================================================================|
 //|---------------------------------------[-MIDDLEWARE-INITIALIZATION-]--------------------------------|
 //|====================================================================================================|
@@ -152,9 +148,12 @@ router.post('',
 //|==================================================|
 router.patch('/:bugId',
  validId('bugId'),
- hasPermission("canViewData",
- "canEditIfAssignedTo",
- "canEditMyBug"). validBody(bugPatchSchema),
+ hasPermission(
+  "canViewData",
+  "canEditIfAssignedTo",
+  "canEditMyBug"
+ ),
+ validBody(bugPatchSchema),
  async (req, res) => {
   try {
     const { bugId } = req.params;
@@ -176,7 +175,12 @@ router.patch('/:bugId',
 //|==================================================|
 router.patch('/:bugId/classify',
  validId('bugId'),
- hasPermission("canViewData"),
+ attachSession,
+ isAuthenticated,
+ hasPermission(
+ "canViewData",
+ "canEditIfAssignedTo",
+ "canEditMyBug"),
  validBody(bugClassifySchema),
  async (req, res) => {
   try {
@@ -200,6 +204,13 @@ router.patch('/:bugId/classify',
 //|-----------------[-PATCH ASSIGN BUG-]-------------|
 //|==================================================|
 router.patch('/:bugId/assign',
+ attachSession,
+ isAuthenticated,
+ hasPermission(
+  "canReassignAnyBug",
+  "canReassignIfAssignedTo",
+  "canEditMyBug"
+ ),
  validId('bugId'),
  validBody(bugAssignSchema),
  async (req, res) => {
@@ -224,6 +235,9 @@ router.patch('/:bugId/assign',
 //|-----------------[-PATCH CLOSE BUG-]--------------|
 //|==================================================|
 router.patch('/:bugId/close',
+ attachSession,
+ isAuthenticated,
+ hasPermission("canCloseAnyBug"),
  validId("bugId"),
  validBody(bugCloseSchema),
  async (req, res) => {
