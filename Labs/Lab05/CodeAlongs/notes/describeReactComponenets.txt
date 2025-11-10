@@ -1,0 +1,9 @@
+React lets you build user interfaces out of individual pieces called componenets.
+create your own react componenets like thumnail, likeButton, and video.
+then comvine them into entire screens, pages, and apps.
+
+before the newer versions the componenets were made out of js classes
+but now they are js functions
+
+use can ofc use them conditionally, 
+react is programming

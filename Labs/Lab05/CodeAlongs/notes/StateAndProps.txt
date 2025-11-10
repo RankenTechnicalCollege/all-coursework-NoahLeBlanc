@@ -1,0 +1,16 @@
+State:
+	state can hold any kind of js value, including objects.
+	they are similar to variables. you store your data here.
+	you should always treat state as read only
+	when you as a user edit a webpage, you can keep or lose the state on refresh.
+
+	when you want to update an object, create a new one first, then reassign it.
+
+	useState is a function that allows you to create state and work with it.
+
+Props:
+	short for properties and they are used to pass data between react componenets.
+	React's data flow between componenets is uni-directional(from paren tot child)
+	
+	if you want to send your state, from parent down to the children.
+	then you must prop drill, down to the child you wnat ot interact with.

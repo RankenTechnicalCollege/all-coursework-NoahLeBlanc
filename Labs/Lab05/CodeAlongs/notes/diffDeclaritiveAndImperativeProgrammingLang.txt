@@ -1,0 +1,9 @@
+declarive programming: the what
+	you describe what you want
+
+
+HTML/CSS/SQl are alsod eclarive
+
+imperative langs: the how
+	this focuses on how you do it 
+	

@@ -1,0 +1,16 @@
+1:
+	init render (create the VDOM blueprint)
+	Creates the VDom 
+	updates the real dom
+
+2:
+	state update (create a new blueprint)
+	react does not immedialtely touch the real DOM 
+	it creates a new VDOM tree 2 based on the updated state
+
+3:
+	VDOM tree 1 is compared against VDOM tree 2
+	it checks the elements in a tree structure
+
+4:
+	reconcilliation 
