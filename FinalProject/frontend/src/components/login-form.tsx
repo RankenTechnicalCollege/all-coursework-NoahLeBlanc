@@ -22,8 +22,8 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+        <CardHeader className="justify-center">
+          <CardTitle className="text-center text-3xl">Let's Debug</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
@@ -36,7 +36,7 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="Email"
                   required
                 />
               </Field>
@@ -45,12 +45,12 @@ export function LoginForm({
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a
                     href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto text-red-600 inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" placeholder="Password" required />
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
