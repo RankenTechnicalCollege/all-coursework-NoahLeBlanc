@@ -1,12 +1,10 @@
-import { useState } from 'react'
 import './App.css'
-
+import CartList from "./components/cartList.tsx"
 function App() {
-  const [count, setCount] = useState(0)
+  //the useEffect hook is used to load data from the api
   return (
     <>
-      <div>
-      </div>
+      <CartList/>
     </>
   )
 }
