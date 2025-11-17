@@ -9,17 +9,6 @@
     }
   ],
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
-
-    /* Projects */
-    // "incremental": true,
-    // "composite": true,
-    // "tsBuildInfoFile": "./.tsbuildinfo",
-    // "disableSourceOfProjectReferenceRedirect": true,
-    // "disableSolutionSearching": true,
-    // "disableReferencedProjectLoad": true,
-
-    /* Language and Environment */
     "target": "es2016",
 
     /* Modules */
