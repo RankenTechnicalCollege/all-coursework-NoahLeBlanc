@@ -1,9 +1,22 @@
-import { LoginForm } from "@/components/login-form"
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { AppLayout } from './layout/app-layout';
+import { LoginForm } from './components/login-form';
+import { FaviconManager } from './components/FaviconManager';
+
 function App() {
   return (
-    <div className=' lg:mx-100 md:mx-50 sm:mx-20 mt-40  bg-dark text-light'>
-      <LoginForm/>
-    </div>
-  )
+    <>
+      <FaviconManager /> {/* sets the favicon */}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<div className="p-4">Home page content</div>} />
+          </Route>
+          <Route path="/login" element={<LoginForm className="mx-80 my-32" />} />
+        </Routes>
+      </BrowserRouter>
+    </>
+  );
 }
-export default App
+
+export default App;
