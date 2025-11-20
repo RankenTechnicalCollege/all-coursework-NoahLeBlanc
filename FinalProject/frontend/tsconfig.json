@@ -1,31 +1,16 @@
 {
   "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
-    "target": "es2016",
-
-    /* Modules */
-    "module": "commonjs",
-    "baseUrl": ".",                               /* Added */
-    "paths": { "@/*": ["./src/*"] },              /* Added */
-    // "rootDir": "./",
-    // "moduleResolution": "node",
-
-    /* Interop Constraints */
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Type Checking */
-    "strict": true,
-
-    /* Completeness */
-    "skipLibCheck": true
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
   }
 }
