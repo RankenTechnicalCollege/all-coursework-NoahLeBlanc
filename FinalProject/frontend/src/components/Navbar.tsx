@@ -14,11 +14,11 @@ const Navbar = () => {
           <a href="#features" className="text-sm hover:text-primary transition-colors">
             Features
           </a>
-          <a href="#pricing" className="text-sm hover:text-primary transition-colors">
-            Pricing
-          </a>
           <a href="#about" className="text-sm hover:text-primary transition-colors">
             About
+          </a>
+          <a href="#Contact" className="text-sm hover:text-primary transition-colors">
+            Contact 
           </a>
         </div>
 

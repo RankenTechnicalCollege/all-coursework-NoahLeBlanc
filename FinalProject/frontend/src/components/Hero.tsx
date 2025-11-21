@@ -45,20 +45,11 @@ const Hero = () => {
                 <div className="text-2xl font-bold">50k+</div>
                 <div className="text-sm text-muted-foreground">Bugs Resolved</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold">99.9%</div>
-                <div className="text-sm text-muted-foreground">Uptime</div>
-              </div>
             </div>
           </div>
           
           <div className="relative animate-fade-in">
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 blur-3xl rounded-full"></div>
-            <img 
-              src={heroDashboard} 
-              alt="Bug Tracker Dashboard Interface"
-              className="relative rounded-2xl shadow-2xl animate-float"
-            />
           </div>
         </div>
       </div>
