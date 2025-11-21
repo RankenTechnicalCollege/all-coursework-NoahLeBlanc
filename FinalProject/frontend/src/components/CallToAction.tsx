@@ -21,7 +21,7 @@ const CallToAction = () => {
                 size="lg"
                 className="bg-background text-foreground hover:bg-background/90 shadow-xl group"
               >
-                Start Free Trial
+                 Sign up
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
@@ -29,13 +29,9 @@ const CallToAction = () => {
                 size="lg"
                 className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
               >
-                Schedule Demo
+               Sign In 
               </Button>
             </div>
-            
-            <p className="text-sm text-primary-foreground/70 pt-4">
-              No credit card required • 14-day free trial • Cancel anytime
-            </p>
           </div>
         </div>
       </div>

@@ -19,7 +19,6 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Integrations</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">API</a></li>
             </ul>
@@ -46,7 +45,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-          © 2025 BugTracker. All rights reserved.
+          © 2025 BugTracker. Yet to by Copyrighted.
         </div>
       </div>
     </footer>
