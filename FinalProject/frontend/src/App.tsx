@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import BugList from "./components/pages/bugList";
 import { UserList } from "./components/pages/userList";
+import BugEdit from "./components/pages/bugEdit";
+import UserEdit from "./components/pages/userEdit";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/BugList" element={<BugList />} />
           <Route path="/UserList" element={<UserList />} />
+          <Route path="/BugEdit" element={<BugEdit/>} />
+          <Route path="/UserEdit" element={<UserEdit/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
