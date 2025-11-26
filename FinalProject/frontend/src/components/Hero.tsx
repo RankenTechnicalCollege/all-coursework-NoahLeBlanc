@@ -17,22 +17,18 @@ const Hero = () => {
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
               Modern Bug Tracking for{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Modern Teams
+                Modern Team
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
               Streamline your workflow with an intuitive bug tracking system. 
-              Capture, prioritize, and resolve issues faster than ever.
             </p>
             
             <div className="flex flex-wrap gap-4">
               <Button variant="hero" size="lg" className="group">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button variant="outline" size="lg">
-                Watch Demo
               </Button>
             </div>
             
