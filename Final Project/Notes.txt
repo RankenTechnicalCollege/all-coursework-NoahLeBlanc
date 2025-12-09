@@ -1,0 +1,46 @@
+bcrypt
+------
+A library for hashing and comparing passwords securely. 
+Used for authentication systems to safely store user passwords.
+
+better-auth
+-----------
+A Node.js authentication helper library.
+Simplifies tasks like token generation, password verification, and session management.
+
+bootstrap-icons
+---------------
+A library of open-source icons designed to work with Bootstrap.
+Includes SVG icons for UI elements, easy to integrate into web projects.
+
+cors
+----
+Cross-Origin Resource Sharing middleware for Express.js.
+Allows you to enable or restrict requests from different origins (domains).
+
+debug
+-----
+A small debugging utility for Node.js.
+Lets you log debug information conditionally, helpful for development.
+
+dotenv
+------
+Loads environment variables from a .env file into process.env.
+Keeps secrets and configuration separate from code.
+
+express
+-------
+A fast, unopinionated web framework for Node.js.
+Used to build APIs, web servers, and handle routing, middleware, and requests.
+
+
+mongodb
+-------
+Official MongoDB driver for Node.js.
+Provides tools to connect to MongoDB, query databases, and manipulate documents.
+
+vite
+----
+A fast, modern frontend build tool and development server.
+Supports ES modules, hot module replacement (HMR), and optimized builds.
+

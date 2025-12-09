@@ -1,0 +1,8 @@
+The VDOM makes updates performant 
+because the direct Real DOM (document object model)
+DOM manipulation is kinda slow.
+by comparign the virtual copies in memory first, 
+react ensures that it only applies the absoulute smalles change possible
+to the browsers dom.
+
+the vdom makes it faster like a sort

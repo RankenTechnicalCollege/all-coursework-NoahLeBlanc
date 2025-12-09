@@ -1,0 +1,7 @@
+Descirbe react compnents 
+summarise jsx and its rules
+explain state and props
+differentiate declariteve and imperative programming
+discuss the virtual dom and it's benefit
+state benefits of react as a single page application
+install react and vite and describe the anatomy of a new react app

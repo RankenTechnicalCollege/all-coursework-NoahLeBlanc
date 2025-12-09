@@ -54,7 +54,8 @@ router.use(express.json());
 //|==================================================|
 router.get('',
  attachSession,
- isAuthenticated, hasPermission("canViewData"),
+ isAuthenticated,
+ hasPermission("canViewData"),
  validQuery(bugListQuerySchema),
  async (req, res) => {
   try {
@@ -76,6 +77,7 @@ router.get('',
 //|-----------------[-GET-BUG-BY-ID-]----------------|
 //|==================================================|
 router.get('/:bugId',
+ attachSession,
  isAuthenticated,
  hasPermission("canViewData"),
  validId('bugId'),
@@ -93,7 +95,7 @@ router.get('/:bugId',
       autoCatch(err, res)
     }else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to get bug' });
     };
   };
 });
@@ -104,6 +106,7 @@ router.get('/:bugId',
 //|-----------------[-POST-CREATE-BUG-]--------------|
 //|==================================================|
 router.post('',
+ attachSession,
  isAuthenticated,
  hasPermission("canViewData"),
  validBody(bugSchema),
@@ -136,7 +139,7 @@ router.post('',
       autoCatch(err, res)
     }else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to create bug' });
     };
   };
 });
@@ -147,6 +150,8 @@ router.post('',
 //|-----------------[-PATCH UPDATE BUG-]-------------|
 //|==================================================|
 router.patch('/:bugId',
+ attachSession,
+ isAuthenticated,
  validId('bugId'),
  hasPermission(
   "canViewData",
@@ -174,9 +179,9 @@ router.patch('/:bugId',
 //|---------------[-PATCH-CLASSIFY-BUG-]-------------|
 //|==================================================|
 router.patch('/:bugId/classify',
- validId('bugId'),
  attachSession,
  isAuthenticated,
+ validId('bugId'),
  hasPermission(
  "canViewData",
  "canEditIfAssignedTo",
@@ -189,14 +194,14 @@ router.patch('/:bugId/classify',
     await updateBug(bugId, updatedInfo)
     debugBug(`Success: (PATCH/bugId/classify: ${bugId})`);
     return res.status(200).json({ 
-      message: `Bug ${bugId} classified as ${updatedInfo.classification }.` 
+      message: `Bug ${bugId} classified as ${updatedInfo.classification}.` 
     });
   } catch (err) {
     if(err.status){
       autoCatch(err, res)
     }else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to classify bug' });
     };
   };
 });
@@ -206,12 +211,12 @@ router.patch('/:bugId/classify',
 router.patch('/:bugId/assign',
  attachSession,
  isAuthenticated,
+ validId('bugId'),
  hasPermission(
   "canReassignAnyBug",
   "canReassignIfAssignedTo",
   "canEditMyBug"
  ),
- validId('bugId'),
  validBody(bugAssignSchema),
  async (req, res) => {
   try {
@@ -227,7 +232,7 @@ router.patch('/:bugId/assign',
       autoCatch(err, res)
     }else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to assign bug' });
     };
   };
 });
@@ -261,7 +266,7 @@ router.patch('/:bugId/close',
     }
     else{
       console.error(err);
-      return res.status(500).json({ error: 'Failed to update bug' });
+      return res.status(500).json({ error: 'Failed to close/open bug' });
     };
   };
 });

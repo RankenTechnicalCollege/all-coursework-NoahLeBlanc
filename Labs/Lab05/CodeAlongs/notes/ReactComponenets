@@ -1,0 +1,8 @@
+react dev is based on reuasable modulur componenets 
+componenets are reuasble blocks containing both UI and logic
+this can be used on the frontend, because react is only for frontend
+while the backend is for stuff like node, mongo,express ect
+
+it's sorta like clases in c# or Java
+
+react has only been around for 	12 years

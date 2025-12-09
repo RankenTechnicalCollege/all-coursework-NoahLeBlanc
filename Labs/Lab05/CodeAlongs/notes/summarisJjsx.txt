@@ -1,0 +1,11 @@
+jsx allows html and js to be combined 
+jsx follows xml rules
+
+xml rules:
+	all elements must have one parent, no orphans
+	every opening tag must have a closer
+
+browsers do not natibely support jsx
+	jsx must be converted to html and js through the build process
+	several tools exist for managing this process including vite, webpack and snowpack
+.tsx file extension is used for files that contain both ts and jsx
