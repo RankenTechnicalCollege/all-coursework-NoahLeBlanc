@@ -1,0 +1,264 @@
+//|====================================================================================================|
+//|-------------------------------------------[-INITIALIZATION-]---------------------------------------|
+//|====================================================================================================|
+//|==================================================|
+//|-------------------[-IMPORTS-]--------------------|
+//|==================================================|
+import { MongoClient, } from "mongodb";
+import debug from "debug";
+import dotenv from "dotenv";
+//|==================================================|
+//|----------------[-INSTANTIATION-]-----------------|
+//|==================================================|
+dotenv.config();
+const debugDb = debug("app:Database");
+let _db = null;
+let _client = null;
+const now = new Date()
+const db = await connect();
+//|==================================================|
+//|-----------[-MONGODB-INITIALIZATION-]-------------|
+//|==================================================|
+export async function connect() {
+  try {
+    if (_db) return _db;
+    const connectionString = process.env.MONGO_URI;
+    const dbName = process.env.MONGO_DB_NAME;
+    if (!connectionString) {
+      throw new Error("Missing MONGO_URI environment variable");
+    };
+    if (!dbName) {
+      throw new Error("Missing MONGO_DB_NAME environment variable");
+    };
+    const client = await MongoClient.connect(connectionString);
+    _db = client.db(dbName);
+    return _db;
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err);
+    throw err;
+  };
+};
+//|====================================================================================================|
+//|------------------------------------[-DATABASE-MULTI-USE-FUNCTIONS-]--------------------------------|
+//|====================================================================================================|
+//|================================================|
+//|-----------[-GET-ALL-FROM-COLLECTION-]----------|
+//|================================================|
+export async function listAll(collectionName) {
+  const db = await connect();
+  const foundData = await db.collection(collectionName).find().toArray();
+  return foundData;
+};
+//|=================================================|
+//|----------[-GET-ALL-PRODUCTS-WITH-QUERY-]--------|
+//|=================================================|
+export async function listAllProducts(query = {}) {
+  query = Object.assign({}, query); // Normalize [Object: null prototype]
+
+  const keywords = query.keywords?.trim() || null;
+  const category = query.category?.trim() || null;
+  const minPrice = query.minPrice ? Number(query.minPrice) : null;
+  const maxPrice = query.maxPrice ? Number(query.maxPrice) : null;
+  const sortBy = query.sortBy || 'name';
+  const pageSize = query.pageSize ? Number(query.pageSize) : 5;
+  const pageNumber = query.pageNumber ? Number(query.pageNumber) : 1;
+
+  console.log(`Searching products with query:`, query);
+
+  const mongoQuery = {};
+  let mongoSort = {};
+
+  // --- Keyword search ---
+  if (keywords) {
+    mongoQuery.name = { $regex: keywords, $options: 'i' }; // case-insensitive search
+  }
+
+  // --- Category filter ---
+  if (category) {
+    mongoQuery.category = category;
+  }
+
+  // --- Price range filters ---
+  if (minPrice !== null || maxPrice !== null) {
+    mongoQuery.price = {};
+    if (minPrice !== null) mongoQuery.price.$gte = minPrice;
+    if (maxPrice !== null) mongoQuery.price.$lte = maxPrice;
+  }
+
+  // --- Sorting logic ---
+  switch (sortBy) {
+    case 'name':
+      mongoSort = { name: 1 };
+      break;
+    case 'category':
+      mongoSort = { category: 1, name: 1 };
+      break;
+    case 'lowestPrice':
+      mongoSort = { price: 1, name: 1 };
+      break;
+    case 'newest':
+      mongoSort = { createdAt: -1, name: 1 };
+      break;
+    default:
+      mongoSort = { name: 1 }; // default sort
+  }
+
+  // --- Pagination ---
+  const skip = (pageNumber - 1) * pageSize;
+
+  // --- Execute query ---
+  const cursor = db.collection('products').find(mongoQuery)
+    .sort(mongoSort)
+    .skip(skip)
+    .limit(pageSize);
+
+  const products = await cursor.toArray();
+
+  // --- Count total for pagination ---
+  const totalItems = await db.collection('products').countDocuments(mongoQuery);
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  if (!products || products.length === 0) {
+    const err = new Error('No products found.');
+    err.status = 404;
+    throw err;
+  }
+
+  return {
+    pageNumber,
+    pageSize,
+    totalPages,
+    totalItems,
+    products,
+  };
+}
+
+//|================================================|
+//|--------------[-GET-BY-FIELD-]------------------|
+//|================================================|
+export async function getByField(collectionName, fieldName, fieldValue) {
+  let query;
+
+  if (Array.isArray(fieldValue)) {
+    // If array, use $in to match any value in the array
+    query = { [fieldName]: { $in: fieldValue } };
+  } else {
+    // Single value (old behavior)
+    query = { [fieldName]: fieldValue };
+  }
+
+  const foundData = Array.isArray(fieldValue)
+    ? await db.collection(collectionName).find(query).toArray() // return all matches
+    : await db.collection(collectionName).findOne(query);        // return single match
+
+  if (!foundData || (Array.isArray(fieldValue) && foundData.length === 0)) {
+    const err = new Error(`${fieldValue} not found.`);
+    err.status = 404;
+    throw err;
+  }
+
+  return foundData;
+}
+
+//|================================================|
+//|------------[-INSERT-NEW-OBJECT-]---------------|-
+//|================================================|
+export async function insertNew(collectionName, newFieldValue) {
+  const db = await connect();
+  const foundData = await db.collection(collectionName).findOne({ name: newFieldValue.name});
+  if(foundData){
+    const err = new Error(`${newFieldValue.name} already exists.`);
+    err.status = 400;
+    throw err;
+  }
+  const result = await db.collection(collectionName).insertOne(newFieldValue);
+  return result;
+};
+//|================================================|
+//|--------------[-DELETE-BY-OBJECT-]--------------|
+//|================================================|
+export async function deleteByObject(collectionName, fieldName, fieldValue) {
+  const db = await connect();
+  const deletedItem = await db.collection(collectionName).deleteOne({ [fieldName]: fieldValue });
+  return deletedItem;
+};
+//|================================================|
+//|--------------[-UPDATE-PRODUCT-]----------------|
+//|================================================|
+export async function updateProduct(productId, updatedProduct) {
+  const db = await connect();
+  //checks if any updates have been passed
+  if (Object.values(updatedProduct).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  };
+  const result = await db.collection('products').updateOne(
+    { _id: productId},
+    { $set: { ...updatedProduct, lastUpdatedOn: new Date()}}
+  );
+  if (result.matchedCount === 0) {
+      const err = new Error("Product not found");
+      err.status = 404; // Not Found
+      throw err;
+  };
+  //if the product isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the product");
+    err.status = 400; // Bad Request
+    throw err;
+  };
+  return result;
+}
+//|================================================|
+//|-----------------[-UPDATE-USER-]----------------|
+//|================================================|
+export async function updateUser(userId, updatedUser) {
+  const db = await connect();
+  //checks if any updates have been passed
+  if (Object.values(updatedUser).length === 0) {
+    const err = new Error("No fields provided to update");
+    err.status = 400;
+    throw err;
+  };
+  //Updates the user 
+  const result = await db.collection('user').updateOne(
+    { _id: userId},
+    { $set: { ...updatedUser, lastUpdatedOn: new Date()}}
+  );
+  if (result.matchedCount === 0) {
+      const err = new Error("user not found");
+      err.status = 404; // Not Found
+      throw err;
+  };
+  //if the user isn't modified throws an error
+  if (result.modifiedCount === 0) {
+    const err = new Error("No changes were made to the user");
+    err.status = 400; // Bad Request
+    throw err;
+  };
+  return result;
+};;
+//|==================================================|
+//|------------------[-GET-CLIENT-]------------------|
+//|==================================================|
+export async function getClient(){
+  if(!_client){
+    await connect();
+  }
+  return _client
+};
+//|==================================================|
+//|------------------[-GET-DATABASE-]----------------|
+//|==================================================|
+export async function getDatabase(){
+  return await connect();
+};
+//|====================================================================================================|
+//|---------------------------------------------[-PING-]-----------------------------------------------|
+//|====================================================================================================|
+export async function ping() {
+  const db = await connect();
+  const pong = await db.command({ ping: 1 });
+  debugDb(`ping: ${JSON.stringify(pong)}`);
+};
