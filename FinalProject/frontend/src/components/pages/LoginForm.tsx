@@ -17,13 +17,13 @@ import { Input } from "@/components/ui/input";
 //|====================================================================================================|
 function LoginForm() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center repeatingBackground" >
       <FieldContent className="w-full max-w-md p-6 bg-gray-300 rounded-lg shadow-md">
         <FieldSet>
           <div className="flex items-center mb-4">
             <img
-              className="w-10 h-10"
-              src="/login-3-svgrepo-com.svg"
+              className="w-15 h-15 animationWiggle"
+              src="/bug-svgrepo-com.svg"
               alt="Login Symbol"
             />
             <FieldDescription className="ml-4 text-2xl">Let's Debug.</FieldDescription>
