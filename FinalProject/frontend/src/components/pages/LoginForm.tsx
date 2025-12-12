@@ -10,6 +10,7 @@ import {
   FieldLabel,
   FieldSet,
 } from "@/components/ui/field"
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 //|====================================================================================================|
 //|-----------------------------------------------[-Main-]---------------------------------------------|
@@ -41,7 +42,7 @@ function LoginForm() {
         </FieldSet>
         <div className="bg-gray-300 mt-5 mx-4 rounded-full flex justify-center items-center p-2">
           <p className="mr-2">Not a user?</p>
-          <a href="" className="text-blue-500">Register</a>
+          <Link className="text-blue-500" to="/RegisterForm">Register</Link>
         </div>
       </FieldContent>
     </div>
