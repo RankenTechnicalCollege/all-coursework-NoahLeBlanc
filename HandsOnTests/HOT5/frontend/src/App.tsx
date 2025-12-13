@@ -23,6 +23,7 @@ import ProductPage from "./components/pages/ProductPage";
 import LoginForm from "./components/pages/LoginForm";
 import RegisterForm from "./components/pages/SignUpForm";
 import NotFound from "./components/pages/NotFound";
+import Layout from "./components/Layout";
 
 //|====================================================================================================|
 //|----------------------------------------------[-Main-]----------------------------------------------|
@@ -31,24 +32,24 @@ const App = () => (
   <TooltipProvider>
     <Sonner />
     <Routes>
-      {/* Login Routes */}
+      {/* No Layout */}
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
 
-      {/* User Routes */}
-      <Route path="/users/:id" element={<UserPage />} />
-      <Route path="/me" element={<UserMePage />} />
-      <Route path="/me/edit" element={<UserEdit />} />
-
-      {/* Product Routes */}
-      <Route path="/products" element={<ProductList />} />
-      <Route path="/products/:id" element={<ProductPage />} />
+      {/* With Layout */}
+      <Route element={<Layout />}>
+        <Route path="/users/:id?" element={<UserPage />} />
+        <Route path="/me" element={<UserMePage />} />
+        <Route path="/me/edit" element={<UserEdit />} />
+        <Route path="/products" element={<ProductPage />} />
+        <Route path="/products/:id?" element={<ProductList />} />
+      </Route>
 
       {/* Not Found */}
       <Route path="*" element={<NotFound />} />
-
     </Routes>
   </TooltipProvider>
-);
+)
+
 
 export default App;

@@ -12,14 +12,10 @@ export default function NotFound() {
       <h1 className="text-7xl font-bold text-gray-800">404</h1>
 
       <p className="text-xl text-gray-600 mt-4">
-        Oops… the page you're looking for doesn’t exist.
+        Oops… You can't buy anything here.
       </p>
-
-      <Button
-        className="mt-6"
-        asChild
-      >
-        <Link className="text-blue-500" to="/RegisterForm">Return Home</Link>
+      <Button asChild className="mt-6">
+        <Link to="/register">Return Home</Link>
       </Button>
     </div>
   )

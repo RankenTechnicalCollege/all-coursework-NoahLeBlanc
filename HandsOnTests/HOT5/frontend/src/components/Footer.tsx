@@ -1,21 +1,20 @@
 //|====================================================================================================|
 //|----------------------------------------------[-Imports-]-------------------------------------------|
 //|====================================================================================================|
-import { Outlet } from "react-router-dom"
-import Navbar from "./Navbar"
-import Footer from "./Footer"
+import { Separator } from "@/components/ui/separator"
+
 //|====================================================================================================|
 //|-----------------------------------------------[-Main-]---------------------------------------------|
 //|====================================================================================================|
-function Layout() {
+function Footer() {
   return (
-    <div className="flex min-h-screen flex-col m-0 p-0">
-      <Navbar />
-      <main className="flex-1 px-4">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <footer className="w-full">
+      <Separator />
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-sm text-muted-foreground">
+        <span>© {new Date().getFullYear()} Your Company</span>
+        <span>All rights reserved.</span>
+      </div>
+    </footer>
   )
 }
-export default Layout
+export default Footer
