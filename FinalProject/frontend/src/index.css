@@ -132,3 +132,10 @@
   75% { transform: rotate(-5deg); }
   100% { transform: rotate(0deg); }
 }
+
+.repeatingBackground {
+  background-image: url("./../public/RepeatingBackround.png"); /* put your actual file name here */
+  background-repeat: repeat; /* repeats both horizontally & vertically */
+  background-size: 160px 160px; /* 32px * 5 = 160px */
+  image-rendering: pixelated; /* preserves sharp edges for pixel art */
+}
