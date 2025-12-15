@@ -134,8 +134,18 @@
 }
 
 .repeatingBackground {
-  background-image: url("./../public/RepeatingBackround.png"); /* put your actual file name here */
-  background-repeat: repeat; /* repeats both horizontally & vertically */
-  background-size: 160px 160px; /* 32px * 5 = 160px */
-  image-rendering: pixelated; /* preserves sharp edges for pixel art */
+  background-image: url('/backround.gif');  /* use background-image, not background shorthand if you want to set individual properties */
+  background-repeat: repeat;                /* repeats the GIF */
+  background-position: top left;            /* start tiling from top-left */
+  background-size: auto;                     /* keep original GIF size */
+  background-attachment: fixed;             /* optional: keeps GIF fixed while scrolling */
+}
+button {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: hsl(210 10% 50%); /* adjust darker shade */
 }

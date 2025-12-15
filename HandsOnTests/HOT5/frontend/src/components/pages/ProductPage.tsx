@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ type Product = {
 };
 
 function ProductPage() {
+  const { id } = useParams<{ id?: string }>();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,64 +26,59 @@ function ProductPage() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch("http://localhost:2023/api/products", {
-          credentials: "include",
-        });
+        let response;
+        const url = id
+          ? `http://localhost:2023/api/products/${id}`
+          : "http://localhost:2023/api/products";
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        response = await fetch(url, { credentials: "include" });
+
+        const text = await response.text();
+        console.log("API response:", text);
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error("API did not return valid JSON");
         }
 
-        const data = await response.json();
+        let productsArray: Product[] = [];
 
-        // Extract the products array from the paginated response
-        const productsArray = data.products ?? [];
+        if (Array.isArray(data)) {
+          productsArray = data;
+        } else if (data.products) {
+          productsArray = data.products;
+        } else if (data._id) {
+          productsArray = [data];
+        } else {
+          throw new Error("Invalid product data structure");
+        }
 
-        // Optional: normalize fields to prevent missing data
-        const normalizedProducts = productsArray.map((p: any) => ({
-          _id: p._id,
-          name: p.name ?? "",
-          price: p.price ?? 0,
-          category: p.category ?? "",
-        }));
-
-        setProducts(normalizedProducts);
+        setProducts(productsArray);
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Failed to fetch products");
+        console.error("Error fetching product(s):", err);
+        setError((err as Error).message || "Failed to fetch product(s)");
       } finally {
         setLoading(false);
       }
     }
 
     fetchProducts();
-  }, []);
+  }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-10 text-lg">
-        Loading products...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center py-10 text-red-600 text-lg">
-        {error}
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center py-10">Loading products...</div>;
+  if (error) return <div className="flex justify-center py-10 text-red-600">{error}</div>;
+  if (products.length === 0) return <div className="flex justify-center py-10">No products found.</div>;
 
   return (
     <div className="flex justify-center py-8 px-4">
       <Card className="w-full max-w-5xl shadow-lg border border-gray-200">
         <CardHeader className="bg-gray-50 border-b border-gray-200">
           <CardTitle className="text-2xl font-semibold text-gray-800">
-            Product List
+            {id ? "Product Details" : "Product List"}
           </CardTitle>
         </CardHeader>
-
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
@@ -94,20 +91,21 @@ function ProductPage() {
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
-
               <TableBody>
                 {products.map((product) => (
-                  <TableRow
-                    key={product._id}
-                    className="hover:bg-gray-100 transition-colors"
-                  >
-                    <TableCell className="text-sm text-gray-700">
-                      {product._id}
+                  <TableRow key={product._id} className="hover:bg-gray-100 transition-colors">
+                    <TableCell className="py-2 px-4 text-sm text-blue-600">
+                      <Link
+                        to={`/products/${product._id}`}
+                        className="block w-full h-full hover:underline"
+                      >
+                        {product._id}
+                      </Link>
                     </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>${product.price}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-4 font-medium">{product.name}</TableCell>
+                    <TableCell className="py-2 px-4">${product.price}</TableCell>
+                    <TableCell className="py-2 px-4">{product.category}</TableCell>
+                    <TableCell className="py-2 px-4">
                       <img
                         src="/gear-svgrepo-com.svg"
                         className="w-5 h-5 opacity-70 hover:opacity-100"

@@ -14,7 +14,6 @@ import UserMePage from "./components/pages/UserMePage";
 //|====================================================|
 //|--------------------[-Products-]--------------------|
 //|====================================================|
-import ProductList from "./components/pages/ProductList";
 import ProductPage from "./components/pages/ProductPage";
 
 //|====================================================|
@@ -44,8 +43,7 @@ const App = () => (
         <Route path="/users/:id?" element={<UserPage />} />
         <Route path="user/me" element={<UserMePage />} />
         <Route path="/me/edit" element={<UserEdit />} />
-        <Route path="/products" element={<ProductPage />} />
-        <Route path="/products/:id?" element={<ProductList />} />
+        <Route path="/products/:id?" element={<ProductPage />} />
       </Route>
 
       {/* Not Found */}

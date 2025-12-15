@@ -1,7 +1,12 @@
+//|====================================================================================================|
+//|----------------------------------------------[-Imports-]-------------------------------------------|
+//|====================================================================================================|
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
+import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 import {
   Field,
   FieldContent,
@@ -12,8 +17,11 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
-// Zod schema
+//|====================================================================================================|
+//|--------------------------------------------[-Zod Schema-]-----------------------------------------|
+//|====================================================================================================|
 const registerSchema = z
   .object({
     email: z.string().email("Invalid email address"),
@@ -27,7 +35,13 @@ const registerSchema = z
 
 type RegisterInput = z.infer<typeof registerSchema>;
 
+//|====================================================================================================|
+//|--------------------------------------------[-Main Component-]--------------------------------------|
+//|====================================================================================================|
 function RegisterForm() {
+  const navigate = useNavigate();
+
+  //|===================[-React Hook Form Setup-]===================|
   const {
     register,
     handleSubmit,
@@ -37,36 +51,39 @@ function RegisterForm() {
     resolver: zodResolver(registerSchema),
   });
 
+  //|===================[-Handle Form Submission-]===================|
   const onSubmit = async (data: RegisterInput) => {
     try {
-      const response = await fetch("/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, password: data.password }),
-      });
+      //|--------------------[-Call Backend API-]--------------------|
+      const response = await axios.post(
+        `${API_URL}/auth/sign-up/email`,
+        { email: data.email, password: data.password },
+        { withCredentials: true }
+      );
 
-      const result = await response.json();
+      //|--------------------[-Handle Success-]--------------------|
+      toast.success("Registration successful! Redirecting to login...");
+      reset();
+      navigate("/login");
 
-      if (!response.ok) {
-        toast.error(result.error || "Registration failed");
-      } else {
-        toast.success(result.message || "User registered successfully!");
-        reset();
-      }
-    } catch {
-      toast.error("Server error. Please try again later.");
+    } catch (err: any) {
+      //|--------------------[-Handle Backend Errors-]--------------------|
+      console.error(err);
+      const message = err.response?.data?.message || "Registration failed. Please try again.";
+      toast.error(message);
     }
   };
 
+  //|===================[-Render Form-]===================|
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center repeatingBackground">
       <FieldContent className="w-full max-w-md p-6 bg-gray-300 rounded-lg shadow-md">
         <FieldSet>
           <div className="flex items-center mb-4">
             <img
               className="w-10 h-10"
               src="/login-3-svgrepo-com.svg"
-              alt="Login Symbol"
+              alt="Register Symbol"
             />
             <FieldDescription className="ml-4 text-2xl">
               Let's get your debugging journey started!
@@ -111,6 +128,7 @@ function RegisterForm() {
               </Field>
             </FieldGroup>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -121,6 +139,7 @@ function RegisterForm() {
           </form>
         </FieldSet>
 
+        {/* Link to Login */}
         <div className="bg-gray-300 mt-5 mx-4 rounded-full flex justify-center items-center p-2">
           <p className="mr-2">Already a user?</p>
           <a href="/login" className="text-blue-500">Login</a>
