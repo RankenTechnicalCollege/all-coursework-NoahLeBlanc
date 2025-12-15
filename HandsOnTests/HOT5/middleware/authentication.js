@@ -1,70 +1,67 @@
-//|====================================================================================================|
-//|-------------------------------------------[ IMPORTS ]----------------------------------------------|
-//|====================================================================================================|
-import {auth} from "../auth.js";
-import { getByField } from "./database.js";
-//|====================================================================================================|
-//|-------------------------------------------[ FUNCTIONS ]--------------------------------------------|
-//|====================================================================================================|
-//|==================================================|
-//|--------------------[-FETCH-SESSION-]-------------|
-//|==================================================|
+import { auth } from "../auth.js";
+
+// =====================
+// Fetch session
+// =====================
 export async function fetchSession(req) {
-    try {
-        const session = await auth.api.getSession({ headers: req.headers });
-        if (!session) {
-            throw new Error("No session found");
-        }
-        return session;
-    } catch (err) {
-        throw new Error("Invalid or expired session");
-    }
+  const session = await auth.api.getSession({
+    headers: req.headers
+  });
+
+  if (!session) {
+    throw new Error("No session found");
+  }
+
+  return session;
 }
-//|==================================================|
-//|--------------------[-ATTACH-SESSION-]------------|
-//|==================================================|
+
+// =====================
+// Attach session
+// =====================
 export async function attachSession(req, res, next) {
   try {
-    if (!req.session) {
-      const session = await fetchSession(req);
-      req.user = {
-        ...session.user,
-      };
-      req.role = session.role;
-      req.session = session.session;
-    }
+    const session = await fetchSession(req);
+
+    req.session = session.session;
+    req.user = session.user;
+
     next();
   } catch (err) {
     return res.status(401).json({
-      error: 'Unauthorized',
-      message: err.message
+      error: "Unauthorized",
+      message: "Invalid or expired session"
     });
   }
-};
-//|==================================================|
-//|-----------------[-IS-AUTHENTICATED-]-------------|
-//|==================================================|
+}
+
+// =====================
+// Require authentication
+// =====================
 export function isAuthenticated(req, res, next) {
-    if (!req.session || !req.user) {
-        return res.status(401).json({
-            error: 'Unauthorized',
-            message: 'You must be logged in'
-        });
-    };
-    next();
-};
-//|==================================================|
-//|-------------------[-HAS-ROLE-]-------------------|
-//|==================================================|
+  if (!req.user) {
+    return res.status(401).json({
+      error: "Unauthorized",
+      message: "You must be logged in"
+    });
+  }
+  next();
+}
+
+// =====================
+// Require role(s)
+// =====================
 export function hasRole(allowedRoles = []) {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'You are not logged in!' });
-    };
-    const userRoles = Array.isArray(req.user.role) ? req.user.role : [];
-    if (userRoles.length === 0) {
-      return res.status(403).json({ error: 'You are not the admin!' });
-    };
+      return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const userRole = req.user.role;
+
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
     next();
   };
-};
+}

@@ -10,6 +10,7 @@ import { validId, validBody } from '../../middleware/validation.js';
 import express from 'express';
 import debug from 'debug';
 import { attachSession, hasRole, isAuthenticated } from '../../middleware/authentication.js';
+
 //|==================================================|
 //|-----------[-MIDDLEWARE-INITIALIZATION-]----------|
 //|==================================================|

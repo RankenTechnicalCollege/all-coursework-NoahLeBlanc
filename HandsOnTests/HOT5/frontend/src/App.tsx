@@ -20,6 +20,7 @@ import ProductPage from "./components/pages/ProductPage";
 //|====================================================|
 //|------------------[-Auth & misc-]-------------------|
 //|====================================================|
+import Dashboard from "./components/pages/Dashboard";
 import LoginForm from "./components/pages/LoginForm";
 import RegisterForm from "./components/pages/SignUpForm";
 import NotFound from "./components/pages/NotFound";
@@ -38,8 +39,10 @@ const App = () => (
 
       {/* With Layout */}
       <Route element={<Layout />}>
+        <Route path="/dashboard" element={<Dashboard/>} />
+        <Route path="/" element={<Dashboard/>} />
         <Route path="/users/:id?" element={<UserPage />} />
-        <Route path="/me" element={<UserMePage />} />
+        <Route path="user/me" element={<UserMePage />} />
         <Route path="/me/edit" element={<UserEdit />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/products/:id?" element={<ProductList />} />

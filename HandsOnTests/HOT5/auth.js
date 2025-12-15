@@ -13,34 +13,34 @@ const db = await getDatabase();
 //|-----------------[-BETTER-AUTH-EXPORT-]-----------|
 //|==================================================|
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5000",
+    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:2023", // ✅ Fixed port!
     trustedOrigins: [
       "http://localhost:5173",
       "http://localhost:3000",
       "http://localhost:8080",
       "https://lawnconnect-service-294349793000.us-central1.run.app"
     ],
-   database: mongodbAdapter(db, {
+    database: mongodbAdapter(db, {
         client
     }),
-     emailAndPassword: { 
+    emailAndPassword: { 
         enabled: true, 
     },
-     session:{
-        cookieCache:true,
+    session: {
+        cookieCache: true,
         maxAge: 60 * 60 * 1000 // 1 hour
     },
     user: {
         additionalFields: {
-                role: {
-                    type: "array",
-                    of: "string",
-                    required: false,
-                },
-                profile: {
-                    type: "object",
-                    required: false,
-                }
+            role: {
+                type: "array",
+                of: "string",
+                required: false,
+            },
+            profile: {
+                type: "object",
+                required: false,
             }
         }
+    }
 });

@@ -8,9 +8,9 @@ import { Separator } from "@/components/ui/separator"
 //|====================================================================================================|
 function Footer() {
   return (
-    <footer className="w-full">
+    <footer className="w-full bg-black">
       <Separator />
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-sm text-muted-foreground">
+      <div className="mx-auto flex max-w-7xl items-center  justify-between px-6 py-4 text-sm text-muted-foreground">
         <span>© {new Date().getFullYear()} Your Company</span>
         <span>All rights reserved.</span>
       </div>
