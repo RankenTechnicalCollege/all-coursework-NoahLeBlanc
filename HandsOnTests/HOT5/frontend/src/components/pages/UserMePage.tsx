@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type User = {
   id: string;
@@ -9,98 +9,136 @@ type User = {
   role: string;
 };
 
-function UsersMePage() {
+function UserMePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchMe() {
       try {
         const response = await fetch("http://localhost:2023/api/user/me", {
           credentials: "include",
         });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`); // ✅ Fixed syntax
-        }
-
-        const responseText = await response.text();
-        console.log("Raw response:", responseText); // 🔍 Debug log
-
-        const data = JSON.parse(responseText);
-        console.log("Parsed data:", data); // 🔍 Debug log
-
-        const userData = data[0]; // Assuming backend returns an array with one user
-        console.log("User data:", userData); // 🔍 Debug log
-
-        if (!userData) {
-          throw new Error("User data not found");
-        }
+        // Your API returns an array with a single user
+        const userData = Array.isArray(data) ? data[0] : data;
 
         const transformedUser: User = {
           id: userData._id,
-          name: userData.fullName || userData.name || "Unknown", // ✅ Added fallbacks
-          email: userData.email,
-          role: Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "user",
+          name: userData.fullName || "",
+          email: userData.email || "",
+          role: Array.isArray(userData.role) && userData.role.length > 0 ? userData.role[0] : "",
         };
 
-        console.log("Transformed user:", transformedUser); // 🔍 Debug log
         setUser(transformedUser);
       } catch (err) {
-        console.error("Error fetching user info:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch your info");
+        console.error("Error fetching user:", err);
+        setError("Failed to fetch user info");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchUser();
+    fetchMe();
   }, []);
 
-  if (loading) {
-    return <div className="flex justify-center items-center py-10 text-lg">Loading your info...</div>;
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) return;
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
 
-  if (error) {
-    return <div className="flex justify-center items-center py-10 text-red-600 text-lg">{error}</div>;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
 
-  if (!user) {
-    return <div className="flex justify-center items-center py-10 text-lg">No user info available</div>;
-  }
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("http://localhost:2023/api/user/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          fullName: user.name,
+          email: user.email,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      setSuccess("User updated successfully!");
+    } catch (err) {
+      console.error("Error updating user:", err);
+      setError("Failed to update user");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-10 text-lg">Loading...</div>;
+  if (error) return <div className="flex justify-center py-10 text-red-600 text-lg">{error}</div>;
+  if (!user) return <div className="flex justify-center py-10 text-lg">No user data found.</div>;
 
   return (
     <div className="flex justify-center py-8 px-4">
-      <Card className="w-full max-w-3xl shadow-lg border border-gray-200">
+      <Card className="w-full max-w-md shadow-lg border border-gray-200">
         <CardHeader className="bg-gray-50 border-b border-gray-200">
-          <CardTitle className="text-2xl font-semibold text-gray-800">Your Profile</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-gray-800">Edit Your Info</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow className="hover:bg-gray-100 transition-colors duration-150 cursor-pointer">
-                  <TableCell className="py-2 px-4 text-sm text-gray-700">{user.id}</TableCell>
-                  <TableCell className="py-2 px-4 text-sm font-medium text-gray-900">{user.name}</TableCell>
-                  <TableCell className="py-2 px-4 text-sm text-gray-700">{user.email}</TableCell>
-                  <TableCell className="py-2 px-4 text-sm text-gray-700">{user.role}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
+          {success && <div className="text-green-600 mb-4">{success}</div>}
+          {error && <div className="text-red-600 mb-4">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={user.name}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={user.email}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Role</label>
+              <input
+                type="text"
+                name="role"
+                value={user.role}
+                disabled
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2 bg-gray-100"
+              />
+            </div>
+
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Update"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
   );
 }
 
-export default UsersMePage;
+export default UserMePage;
