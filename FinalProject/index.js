@@ -21,10 +21,11 @@ const app = express();
 //-------------------------------------------- Middleware ----------------------------------------
 app.use(cors({
   origin: [
-    "http://localhost:5000",
-    "http://localhost:5050",
+    "http://localhost:5000",  // backend itself
+    "http://localhost:5050", 
     "http://localhost:3000",
-    "http://localhost:8080"
+    "http://localhost:8080",
+    "http://localhost:5173"   // Add your frontend origin here
   ],
   credentials: true
 }));

@@ -1,12 +1,7 @@
-//|====================================================================================================|
-//|----------------------------------------------[-Imports-]-------------------------------------------|
-//|====================================================================================================|
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom"; // Added Link import
 import { toast } from "react-toastify";
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL;
 import {
   Field,
   FieldContent,
@@ -17,132 +12,154 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
 
-//|====================================================================================================|
-//|--------------------------------------------[-Zod Schema-]-----------------------------------------|
-//|====================================================================================================|
-const registerSchema = z
-  .object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(6, "Confirm Password must be at least 6 characters"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+const API_URL = import.meta.env.VITE_API_URL;
 
-type RegisterInput = z.infer<typeof registerSchema>;
+const apiClient = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
 
-//|====================================================================================================|
-//|--------------------------------------------[-Main Component-]--------------------------------------|
-//|====================================================================================================|
 function RegisterForm() {
   const navigate = useNavigate();
 
-  //|===================[-React Hook Form Setup-]===================|
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-  });
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  //|===================[-Handle Form Submission-]===================|
-  const onSubmit = async (data: RegisterInput) => {
+  // Validation
+  const passwordsMatch = password === confirmPassword;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Email validation
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isValidEmail) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!passwordsMatch) {
+      setError("Passwords must match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setError(null); // Reset error
+    setIsSubmitting(true);
+
     try {
-      //|--------------------[-Call Backend API-]--------------------|
-      const response = await axios.post(
-        `${API_URL}/auth/sign-up/email`,
-        { email: data.email, password: data.password },
-        { withCredentials: true }
-      );
+      const response = await apiClient.post("/auth/sign-up/email", {
+        email,
+        password,
+      });
 
-      //|--------------------[-Handle Success-]--------------------|
-      toast.success("Registration successful! Redirecting to login...");
-      reset();
-      navigate("/login");
-
+      if (response.data?.success) {
+        toast.success("Registration successful! Redirecting to login...");
+        navigate("/login");
+      } else {
+        throw new Error("Registration failed.");
+      }
     } catch (err: any) {
-      //|--------------------[-Handle Backend Errors-]--------------------|
-      console.error(err);
-      const message = err.response?.data?.message || "Registration failed. Please try again.";
+      console.error(err); // Log the error to check its structure
+      const message =
+        err.response?.data?.message || err.message || "Registration failed.";
+      setError(message);
       toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  //|===================[-Render Form-]===================|
   return (
-    <div className="min-h-screen flex items-center justify-center repeatingBackground">
-      <FieldContent className="w-full max-w-md p-6 bg-gray-300 rounded-lg shadow-md">
-        <FieldSet>
-          <div className="flex items-center mb-4">
-            <img
-              className="w-10 h-10"
-              src="/login-3-svgrepo-com.svg"
-              alt="Register Symbol"
-            />
-            <FieldDescription className="ml-4 text-2xl">
-              Let's get your debugging journey started!
-            </FieldDescription>
-          </div>
+    <div className="min-h-screen flex items-center justify-center repeatingBackground dark">
+      <FieldContent className="w-full max-w-md p-6 rounded-lg shadow-md bg-card text-card-foreground border-2 border-pink-950">
+        <form onSubmit={handleSubmit}>
+          <FieldSet>
+            {/* Header */}
+            <div className="flex items-center mb-4">
+              <img
+                className="w-15 h-15 animationWiggle invert"
+                src="/bug-svgrepo-com.svg"
+                alt="Signup"
+              />
+              <FieldDescription className="ml-4 text-2xl">
+                Let's get your debugging journey started!
+              </FieldDescription>
+            </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Form Fields */}
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email:</FieldLabel>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
-                  placeholder="User@email.com"
-                  {...register("email")}
-                  aria-invalid={!!errors.email}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  placeholder="user@email.com"
+                  className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
-                {errors.email && <FieldError>{errors.email.message}</FieldError>}
+                {error && error.includes("email") && <FieldError>{error}</FieldError>}
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password">Password:</FieldLabel>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
                   type="password"
-                  {...register("password")}
-                  aria-invalid={!!errors.password}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  minLength={6}
+                  className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
-                {errors.password && <FieldError>{errors.password.message}</FieldError>}
+                {error && error.includes("password") && <FieldError>{error}</FieldError>}
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="confirmPassword">Confirm Password:</FieldLabel>
+                <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  {...register("confirmPassword")}
-                  aria-invalid={!!errors.confirmPassword}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
-                {errors.confirmPassword && (
-                  <FieldError>{errors.confirmPassword.message}</FieldError>
-                )}
+                {error && error.includes("Passwords") && <FieldError>{error}</FieldError>}
               </Field>
             </FieldGroup>
+
+            {/* Error Message */}
+            {error && !error.includes("passwords") && <FieldError className="mt-2">{error}</FieldError>}
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="mt-4 w-full p-2 bg-blue-500 text-white rounded"
+              disabled={isSubmitting || !email || !password || !passwordsMatch || !isValidEmail}
+              className="w-full mt-4 p-2 rounded bg-primary text-primary-foreground hover:opacity-90"
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting ? "Creating account..." : "Sign Up"}
             </button>
-          </form>
-        </FieldSet>
+          </FieldSet>
+        </form>
 
         {/* Link to Login */}
-        <div className="bg-gray-300 mt-5 mx-4 rounded-full flex justify-center items-center p-2">
+        <div className="mt-5 mx-4 rounded-full flex justify-center items-center p-2 bg-muted">
           <p className="mr-2">Already a user?</p>
-          <a href="/login" className="text-blue-500">Login</a>
+          <Link className="text-blue-500" to="/login">
+            Login
+          </Link>
         </div>
       </FieldContent>
     </div>

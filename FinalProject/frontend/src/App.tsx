@@ -15,7 +15,7 @@ import UserList from "./components/pages/UserList";
 //|---------------------[-Bugs-]----------------------|
 //|====================================================|
 import BugEdit from "./components/pages/BugEdit";
-import BugListSummary from "./components/pages/BugListSummary";
+import BugList from "./components/pages/BugList";
 
 //|====================================================|
 //|------------------[-Auth & Misc-]------------------|
@@ -46,7 +46,7 @@ const App = () => (
       <Route path="/me" element={<UserEdit />} /> {/* Current user profile */}
 
       {/*---------------- Bug Routes -----------------*/}
-      <Route path="/bugs" element={<BugListSummary />} />
+      <Route path="/bugs" element={<BugList/>} />
       <Route path="/bugs/:id" element={<BugEdit />} />
 
       {/*---------------- Fallback ------------------*/}
