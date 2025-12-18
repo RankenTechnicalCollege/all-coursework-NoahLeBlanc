@@ -1,59 +1,44 @@
-//|====================================================================================================|
-//|----------------------------------------------[-Imports-]-------------------------------------------|
-//|====================================================================================================|
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route } from "react-router-dom";
 
-//|====================================================|
-//|---------------------[-Users-]----------------------|
-//|====================================================|
-import UserEdit from "./components/pages/UserEdit";
-import UserList from "./components/pages/UserList";
+// Layout
+import Layout from "./components/Layout";
 
-//|====================================================|
-//|---------------------[-Bugs-]----------------------|
-//|====================================================|
-import BugEdit from "./components/pages/BugEdit";
-import BugList from "./components/pages/BugList";
-
-//|====================================================|
-//|------------------[-Auth & Misc-]------------------|
-//|====================================================|
+// Pages
 import Index from "./components/pages/Index";
 import NotFound from "./components/pages/NotFound";
 import LoginForm from "./components/pages/LoginForm";
 import RegisterForm from "./components/pages/RegisterForm";
 
-//|====================================================================================================|
-//|-----------------------------------------------[-App-]---------------------------------------------|
-//|====================================================================================================|
+// Users
+import UserEdit from "./components/pages/UserEdit";
+import UserList from "./components/pages/UserList";
+
+// Bugs
+import BugEdit from "./components/pages/BugEdit";
+import BugList from "./components/pages/BugList";
+
 const App = () => (
-  // <QueryClientProvider client={queryClient}>
-  <TooltipProvider>
-    <Sonner />
+  <Routes>
+    {/* ---------- Public (no layout) ---------- */}
+    <Route path="/" element={<Index />} />
+    <Route path="/login" element={<LoginForm />} />
+    <Route path="/register" element={<RegisterForm />} />
 
-    {/* BrowserRouter is already in main.jsx */}
-    <Routes>
-      {/*---------------- Auth Routes ----------------*/}
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<LoginForm />} />
-      <Route path="/register" element={<RegisterForm />} />
-
-      {/*---------------- User Routes ----------------*/}
+    {/* ---------- Layout wrapped routes ---------- */}
+    <Route element={<Layout />}>
+      {/* Users */}
       <Route path="/users" element={<UserList />} />
       <Route path="/users/:id" element={<UserEdit />} />
-      <Route path="/me" element={<UserEdit />} /> {/* Current user profile */}
+      <Route path="/me" element={<UserEdit />} />
 
-      {/*---------------- Bug Routes -----------------*/}
-      <Route path="/bugs" element={<BugList/>} />
+      {/* Bugs */}
+      <Route path="/bugs" element={<BugList />} />
       <Route path="/bugs/:id" element={<BugEdit />} />
+    </Route>
 
-      {/*---------------- Fallback ------------------*/}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </TooltipProvider>
-  // </QueryClientProvider>
+    {/* ---------- Fallback ---------- */}
+    <Route path="*" element={<NotFound />} />
+  </Routes>
 );
 
 export default App;
