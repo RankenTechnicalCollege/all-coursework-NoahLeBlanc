@@ -8,7 +8,7 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
 
-    //ShadCn Addition
+    /* ShadCn */
     "baseUrl": ".",
     "paths": {
       "@/*": [

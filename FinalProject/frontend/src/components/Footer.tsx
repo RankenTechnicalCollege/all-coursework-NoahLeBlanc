@@ -1,20 +1,9 @@
-//|====================================================================================================|
-//|----------------------------------------------[-Imports-]-------------------------------------------|
-//|====================================================================================================|
-import { Separator } from "@/components/ui/separator"
-
-//|====================================================================================================|
-//|-----------------------------------------------[-Main-]---------------------------------------------|
-//|====================================================================================================|
-function Footer() {
+export default function Footer() {
   return (
-    <footer className="w-full">
-      <Separator />
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-sm text-muted-foreground">
-        <span>© {new Date().getFullYear()} Your Company</span>
-        <span>All rights reserved.</span>
+    <footer className="bg-gray-800 text-white py-4 mt-8">
+      <div className="container mx-auto text-center">
+        <p>Niah LeBlanc © 2025</p>
       </div>
     </footer>
-  )
+  );
 }
-export default Footer
